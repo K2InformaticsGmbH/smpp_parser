@@ -47,6 +47,14 @@ ucs2_to_utf16(ShortMessage) ->
       ucs2_to_utf16_cp(ShortMessage, []), utf16, utf8).
 
 ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
+% Erlang DOC: An integer in the range 16#D800 to 16#DFFF (invalid range
+%  reserved for UTF-16 surrogate pairs)
+ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
+    ucs2_to_utf16_cp(
+      Rest, lists:reverse(
+              lists:flatten(
+                io_lib:format("\\u~2.16.0B~2.16.0B", [A,B])
+               )) ++ Result);
 ucs2_to_utf16_cp([A,B|Rest], Result) ->
     ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
