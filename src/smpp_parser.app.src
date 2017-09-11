@@ -1,7 +1,7 @@
 {application, smpp_parser,
  [
   {description, "A parser for SMPP protocol PDUs"},
-  {vsn, "0.0.1"},
+  {vsn, "1.0.0"},
   {modules, [smpp, smpp_base_syntax, smpp_common_lib, smpp_operation,
              smpp_param_syntax, smpp_pdu_syntax]},
   {registered, []},
