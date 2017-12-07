@@ -42,11 +42,29 @@ internal2json(SMPP) when is_map(SMPP) ->
             SMPP -> SMPP
         end).
 
+ucs2_to_utf16({cp, CPList}) ->
+    case unicode:characters_to_binary(CPList, utf16, utf8) of
+        {error, ConvertedBin, [[Failed]|Rest]} ->
+            <<ConvertedBin/binary, (Failed bsr 8), (Failed band 16#00FF),
+              (ucs2_to_utf16({cp, Rest}))/binary>>;
+        ConvertedBin when is_binary(ConvertedBin) -> ConvertedBin
+    end;
 ucs2_to_utf16(ShortMessage) ->
-    unicode:characters_to_binary(
-      ucs2_to_utf16_cp(ShortMessage, []), utf16, utf8).
+    CPList = ucs2_to_utf16_cp(ShortMessage, []),
+    io:format(user, "{~p,~p} ShortMessage ~w~n",
+              [?MODULE, ?LINE, ShortMessage]),
+    ucs2_to_utf16({cp, CPList}).
 
 ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
+% Erlang DOC: An integer in the range 16#D800 to 16#DFFF (invalid range
+%  reserved for UTF-16 surrogate pairs)
+ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
+    ucs2_to_utf16_cp(
+      Rest, lists:reverse(
+              lists:flatten(
+                [$\\, $u,
+                 io_lib:format("~2.16.0B~2.16.0B", [A,B])]
+               )) ++ Result);
 ucs2_to_utf16_cp([A,B|Rest], Result) ->
     ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
