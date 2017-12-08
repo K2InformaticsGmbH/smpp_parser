@@ -68,33 +68,42 @@ ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
 ucs2_to_utf16_cp([A,B|Rest], Result) ->
     ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
+b2a(<<"password">>) -> password;
+b2a(<<"addr_npi">>) -> addr_npi;
+b2a(<<"addr_ton">>) -> addr_ton;
+b2a(<<"esm_class">>) -> esm_class;
+b2a(<<"sm_length">>) -> sm_length;
+b2a(<<"system_id">>) -> system_id;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
+b2a(<<"error_code">>) -> error_code;
+b2a(<<"final_date">>) -> final_date;
 b2a(<<"data_coding">>) -> data_coding;
+b2a(<<"system_type">>) -> system_type;
+b2a(<<"source_addr">>) -> source_addr;
+b2a(<<"protocol_id">>) -> protocol_id;
+b2a(<<"service_type">>) -> service_type;
 b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
 b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
-b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
-b2a(<<"destination_addr">>) -> destination_addr;
-b2a(<<"esm_class">>) -> esm_class;
-b2a(<<"priority_flag">>) -> priority_flag;
-b2a(<<"protocol_id">>) -> protocol_id;
-b2a(<<"registered_delivery">>) -> registered_delivery;
-b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
-b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
-b2a(<<"sequence_number">>) -> sequence_number;
-b2a(<<"service_type">>) -> service_type;
 b2a(<<"short_message">>) -> short_message;
-b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
-b2a(<<"source_addr">>) -> source_addr;
+b2a(<<"message_state">>) -> message_state;
+b2a(<<"address_range">>) -> address_range;
+b2a(<<"priority_flag">>) -> priority_flag;
+b2a(<<"command_status">>) -> command_status;
+b2a(<<"sequence_number">>) -> sequence_number;
 b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;
-b2a(<<"command_status">>) -> command_status;
-b2a(<<"sm_length">>) -> sm_length;
+b2a(<<"validity_period">>) -> validity_period;
 b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
+b2a(<<"destination_addr">>) -> destination_addr;
+b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
+b2a(<<"interface_version">>) -> interface_version;
+b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
-b2a(<<"validity_period">>) -> validity_period.
-
+b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
+b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag.
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
@@ -402,13 +411,12 @@ int_to_hex_str(Int) ->
   "32 2E 32 35 34 2E 32 35 34 2E 31 37 00 03 01 31 34 38 2E 32 34 37 2E 31 35 "
   "37 2E 32 35 00 03 00 00 00 00 00 00 00 00 00 02 05 00 01 04 02 04 00 02 00 "
   "03 04 26 00 01 01"},
- %% FIXME : Currently failing
- %% {"submit_multi",
- %%  "00 00 00 6D 00 00 00 21 00 00 00 00 00 00 00 01 74 65 73 74 00 01 01 31 32 "
- %%  "2E 35 34 2E 32 36 2E 32 38 00 02 01 00 00 00 01 01 01 31 32 2E 32 34 2E 32 "
- %%  "35 2E 36 33 00 CB 40 03 31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 "
- %%  "31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 17 00 0A 06 0C 74 65 73 "
- %%  "74 20 6D 65 73 73 61 67 65"},
+ {"submit_multi",
+  "00 00 00 6D 00 00 00 21 00 00 00 00 00 00 00 01 74 65 73 74 00 01 01 31 32 "
+  "2E 35 34 2E 32 36 2E 32 38 00 02 01 00 00 00 01 01 01 31 32 2E 32 34 2E 32 "
+  "35 2E 36 33 00 CB 40 03 31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 "
+  "31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 17 00 0A 06 0C 74 65 73 "
+  "74 20 6D 65 73 73 61 67 65"},
  {"data_sm",
   "00 00 00 3D 00 00 01 03 00 00 00 00 00 00 00 01 34 31 31 35 00 03 08 31 32 "
   "35 2E 31 32 35 2E 31 32 34 2E 32 34 35 00 01 01 31 32 34 2E 31 34 37 35 2E "
@@ -433,7 +441,7 @@ packunpack_test_() ->
             SMPP = unpack_map(Bin),
             JSON = internal2json(SMPP),
             ?debugFmt("~s~n~p~n~s~n",
-                      [T, SMPP, jsx:prettify(imem_json:encode(JSON))]),
+                      [T, SMPP, jsx:prettify(jsx:encode(JSON))]),
             {ok, NewBin} = pack(SMPP),
             if Bin /= NewBin ->
                    ?debugFmt("~nExpected : ~p~nGot      : ~p", [Bin, NewBin]);
@@ -442,6 +450,57 @@ packunpack_test_() ->
             ?assertEqual(Bin, NewBin)
           end}
       || {T,L} <- ?TESTS]
+    }.
+
+-define(PDU(_Id,_Extra), <<"{\"command_id\":",(integer_to_binary(_Id))/binary,
+                           ",\"command_status\":0,\"sequence_number\":0",
+                           _Extra,"}">>).
+-define(PDU(_Id), ?PDU(_Id, "")).
+-define(PDU_SYSID(_Id), ?PDU(_Id, ",\"system_id\":\"\"")).
+-define(PDU_DSTADDR(_Id), ?PDU(_Id, ",\"destination_addr\":\"\"")).
+
+json_pack_test_() ->
+    {inparallel,
+        [{T,
+            fun() ->
+                I = json2internal(jsx:decode(J, [return_maps])),
+                case pack(I) of
+                    {error, _ , Error, _} ->
+                        ?assertEqual(ok, err(Error));
+                    {ok, Bin} ->
+                        ?assertMatch(<<_:32/integer,C:32/integer,_/binary>>, Bin),
+                        % 2nd pass (complete PDU support test)
+                        J1 = jsx:encode(internal2json(unpack_map(Bin))),
+                        json2internal(jsx:decode(J1, [return_maps]))
+                end
+            end}
+        || {T,C,J} <-
+            [% requests
+             {"bind_receiver",          16#00000001,  ?PDU_SYSID(16#00000001)},
+             {"bind_transmitter",       16#00000002,  ?PDU_SYSID(16#00000002)},
+             {"query_sm",               16#00000003,  ?PDU_DSTADDR(16#00000003)},
+             {"submit_sm",              16#00000004,  ?PDU_DSTADDR(16#00000004)},
+             {"deliver_sm",             16#00000005,  ?PDU_DSTADDR(16#00000005)},
+             {"unbind",                 16#00000006,  ?PDU_DSTADDR(16#00000006)},
+             {"replace_sm",             16#00000007,  ?PDU_DSTADDR(16#00000007)},
+             {"cancel_sm",              16#00000008,  ?PDU_DSTADDR(16#00000008)},
+             {"bind_transceiver",       16#00000009,  ?PDU_SYSID(16#00000009)},
+             {"outbind",                16#0000000B,  ?PDU_SYSID(16#0000000B)},
+             {"enquire_link",           16#00000015,  ?PDU(16#000000015)},
+
+             % responses
+             {"bind_receiver_resp",     16#80000001,  ?PDU_SYSID(16#80000001)},
+             {"bind_transmitter_resp",  16#80000002,  ?PDU_SYSID(16#80000002)},
+             {"query_sm_resp",          16#80000003,  ?PDU(16#80000003)},
+             {"submit_sm_resp",         16#80000004,  ?PDU(16#80000004)},
+             {"deliver_sm_resp",        16#80000005,  ?PDU(16#80000005)},
+             {"unbind_resp",            16#80000006,  ?PDU(16#80000006)},
+             {"replace_sm_resp",        16#80000007,  ?PDU(16#80000007)},
+             {"cancel_sm_resp",         16#80000008,  ?PDU(16#80000008)},
+             {"bind_transceiver_resp",  16#80000009,  ?PDU_SYSID(16#80000009)},
+             {"enquire_link_resp",      16#80000015,  ?PDU(16#80000015)}
+             ]
+        ]
     }.
 
 -endif.
