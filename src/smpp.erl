@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1]).
+         internal2json/1, encode/1, decode/1]).
 -export([err/1,cmd/1,cmdstr/1]).
 
 json2internal(SMPP) when is_map(SMPP) ->
@@ -112,20 +112,19 @@ pack({CmdId, Status, SeqNum, Body} = SMPP)
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
 unpack(Bin, Opts) ->
-    {ok, SMPP} = case smpp_operation:unpack(Bin) of
-                     {error, _, S, _} = Error ->
-                         io:format("Unpack error ~p~n", [err(S)]),
-                         Error;
-                     Ok -> Ok
-                 end,
-    {CmdId, Status, SeqNum, Body} = SMPP,
-    case lists:member(return_maps, Opts) of
-        true ->
-            SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
-            SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
-        _ ->
-            Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
-            Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
+    case smpp_operation:unpack(Bin) of
+        {error, _, S, _} = Error ->
+            io:format("Unpack error ~p~n", [err(S)]),
+            Error;
+        {ok, {CmdId, Status, SeqNum, Body}} ->
+            case lists:member(return_maps, Opts) of
+                true ->
+                    SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
+                    SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
+                _ ->
+                    Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
+                    Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
+            end
     end.
 
 list_to_map({K, V}, Acc) when is_tuple(V) ->
@@ -338,6 +337,37 @@ cmd(query_broadcast_sm_resp)    -> ?COMMAND_ID_QUERY_BROADCAST_SM_RESP;
 cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
+
+-spec(encode(PDU :: map()) -> {ok, HEX_STRING :: string()} | {error, string()}).
+encode(PDU) when is_map(PDU) ->
+    case pack(json2internal(PDU)) of
+        {ok, Bin} ->
+            lists:flatten(lists:join(" ", [int_to_hex_str(B) || B <- binary_to_list(Bin)]));
+        {error, _, S, _} ->
+            {error, element(3, err(S))}
+    end;
+encode(_) ->
+    {error, "Input to encode should be map"}.
+
+-spec(decode(HEX_STRING :: string()) -> {ok, PDU :: map()} | {error, string()}).
+decode(HexStr) when is_list(HexStr) ->
+    Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(HexStr, " ")]),
+    case unpack_map(Bin) of
+        {error, _, S, _} ->
+            {error, element(3, err(S))};
+        PDU ->
+            {ok, internal2json(PDU)}
+    end;
+decode(_) ->
+    {error, "Input to decode should be Hex String"}.
+
+int_to_hex_str(0) ->
+    [$0,$0];
+int_to_hex_str(Int) when Int < 16 ->
+    [I] = integer_to_list(Int, 16),
+    [$0,I];
+int_to_hex_str(Int) ->
+    integer_to_list(Int, 16).
 
 %% ===================================================================
 %% TESTS
