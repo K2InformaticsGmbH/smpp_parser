@@ -121,20 +121,19 @@ pack({CmdId, Status, SeqNum, Body} = SMPP)
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
 unpack(Bin, Opts) ->
-    {ok, SMPP} = case smpp_operation:unpack(Bin) of
-                     {error, _, S, _} = Error ->
-                         io:format("Unpack error ~p~n", [err(S)]),
-                         Error;
-                     Ok -> Ok
-                 end,
-    {CmdId, Status, SeqNum, Body} = SMPP,
-    case lists:member(return_maps, Opts) of
-        true ->
-            SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
-            SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
-        _ ->
-            Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
-            Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
+    case smpp_operation:unpack(Bin) of
+        {error, _, S, _} = Error ->
+            io:format("Unpack error ~p~n", [err(S)]),
+            Error;
+        {ok, {CmdId, Status, SeqNum, Body}} ->
+            case lists:member(return_maps, Opts) of
+                true ->
+                    SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
+                    SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
+                _ ->
+                    Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
+                    Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
+            end
     end.
 
 list_to_map({K, V}, Acc) when is_tuple(V) ->
