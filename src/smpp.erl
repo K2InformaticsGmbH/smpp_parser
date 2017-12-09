@@ -342,32 +342,35 @@ cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 encode(PDU) when is_map(PDU) ->
     case pack(json2internal(PDU)) of
         {ok, Bin} ->
-            lists:flatten(lists:join(" ", [int_to_hex_str(B) || B <- binary_to_list(Bin)]));
+            lists:flatten(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "));
         {error, _, S, _} ->
             {error, element(3, err(S))}
     end;
 encode(_) ->
     {error, "Input to encode should be map"}.
 
--spec(decode(HEX_STRING :: string()) -> {ok, PDU :: map()} | {error, string()}).
+-spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, string()}).
 decode(HexStr) when is_list(HexStr) ->
-    Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(HexStr, " ")]),
+    HexBin = re:replace(HexStr, " ", "", [global, {return, binary}]),
+    decode(HexBin);
+decode(HexBin) when is_binary(HexBin) ->
+    Bin = list_to_binary(bin_to_int_list(HexBin)),
     case unpack_map(Bin) of
         {error, _, S, _} ->
             {error, element(3, err(S))};
         PDU ->
             {ok, internal2json(PDU)}
-    end;
+    end;    
 decode(_) ->
     {error, "Input to decode should be Hex String"}.
 
-int_to_hex_str(0) ->
-    [$0,$0];
-int_to_hex_str(Int) when Int < 16 ->
-    [I] = integer_to_list(Int, 16),
-    [$0,I];
-int_to_hex_str(Int) ->
-    integer_to_list(Int, 16).
+bin_to_int_list(Bin) ->
+    bin_to_int_list(Bin, []).
+
+bin_to_int_list(<<>>, Acc) ->
+    lists:reverse(Acc);
+bin_to_int_list(<<H:16/integer, Rest/binary>>, Acc) ->
+    bin_to_int_list(Rest, [H|Acc]).
 
 %% ===================================================================
 %% TESTS
