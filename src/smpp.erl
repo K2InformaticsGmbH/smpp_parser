@@ -121,19 +121,20 @@ pack({CmdId, Status, SeqNum, Body} = SMPP)
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
 unpack(Bin, Opts) ->
-    case smpp_operation:unpack(Bin) of
-        {error, _, S, _} = Error ->
-            io:format("Unpack error ~p~n", [err(S)]),
-            Error;
-        {ok, {CmdId, Status, SeqNum, Body}} ->
-            case lists:member(return_maps, Opts) of
-                true ->
-                    SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
-                    SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
-                _ ->
-                    Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
-                    Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
-            end
+    {ok, SMPP} = case smpp_operation:unpack(Bin) of
+                     {error, _, S, _} = Error ->
+                         io:format("Unpack error ~p~n", [err(S)]),
+                         Error;
+                     Ok -> Ok
+                 end,
+    {CmdId, Status, SeqNum, Body} = SMPP,
+    case lists:member(return_maps, Opts) of
+        true ->
+            SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
+            SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
+        _ ->
+            Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
+            Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
     end.
 
 list_to_map({K, V}, Acc) when is_tuple(V) ->
@@ -351,7 +352,8 @@ cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 encode(PDU) when is_map(PDU) ->
     case pack(json2internal(PDU)) of
         {ok, Bin} ->
-            lists:flatten(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "));
+            {ok, 
+                lists:flatten(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
         {error, _, S, _} ->
             {error, element(3, err(S))}
     end;
@@ -363,7 +365,8 @@ decode(HexStr) when is_list(HexStr) ->
     HexBin = re:replace(HexStr, " ", "", [global, {return, binary}]),
     decode(HexBin);
 decode(HexBin) when is_binary(HexBin) ->
-    Bin = list_to_binary(bin_to_int_list(HexBin)),
+    ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
+    Bin = list_to_binary(bin_to_int_list(ModBin)),
     case unpack_map(Bin) of
         {error, _, S, _} ->
             {error, element(3, err(S))};
@@ -378,8 +381,8 @@ bin_to_int_list(Bin) ->
 
 bin_to_int_list(<<>>, Acc) ->
     lists:reverse(Acc);
-bin_to_int_list(<<H:16/integer, Rest/binary>>, Acc) ->
-    bin_to_int_list(Rest, [H|Acc]).
+bin_to_int_list(<<H:2/bytes, Rest/bytes>>, Acc) ->
+    bin_to_int_list(Rest, [binary_to_integer(H, 16)|Acc]).
 
 %% ===================================================================
 %% TESTS
@@ -514,7 +517,7 @@ encode_decode_test_() ->
                 ?assertEqual(true, is_map(D)),
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,list}]))),
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,binary}]))),
-                {ok, E} = encode(D),
+                {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
                 ?assertEqual(true, is_list(E)),
                 ?assertEqual({ok, D}, decode(E))
             end}
