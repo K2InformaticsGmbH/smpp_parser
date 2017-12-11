@@ -101,7 +101,10 @@ b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
+b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag.
 
@@ -520,7 +523,11 @@ encode_decode_test_() ->
                 ?assertEqual(true, is_list(E)),
                 ?assertEqual({ok, D}, decode(E))
             end}
-            || {T,P} <- ?TESTS] ++
+            || {T,P} <- ?TESTS]
+    }.
+
+encode_decode_1_test_() ->
+    {inparallel,
         [{T,
             fun() ->
                 I = json2internal(jsx:decode(J, [return_maps])),
