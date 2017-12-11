@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1]).
+         internal2json/1]).
 -export([err/1,cmd/1,cmdstr/1]).
 
 json2internal(SMPP) when is_map(SMPP) ->
@@ -347,42 +347,6 @@ cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 
--spec(encode(PDU :: map()) -> {ok, HEX_STRING :: string()} | {error, string()}).
-encode(PDU) when is_map(PDU) ->
-    case pack(json2internal(PDU)) of
-        {ok, Bin} ->
-            {ok, 
-                lists:flatten(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
-        {error, _, S, _} ->
-            {error, element(3, err(S))}
-    end;
-encode(_) ->
-    {error, "Input to encode should be map"}.
-
--spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, string()}).
-decode(HexStr) when is_list(HexStr) ->
-    HexBin = re:replace(HexStr, " ", "", [global, {return, binary}]),
-    decode(HexBin);
-decode(HexBin) when is_binary(HexBin) ->
-    ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
-    Bin = list_to_binary(bin_to_int_list(ModBin)),
-    case unpack_map(Bin) of
-        {error, _, S, _} ->
-            {error, element(3, err(S))};
-        PDU ->
-            {ok, internal2json(PDU)}
-    end;    
-decode(_) ->
-    {error, "Input to decode should be Hex String"}.
-
-bin_to_int_list(Bin) ->
-    bin_to_int_list(Bin, []).
-
-bin_to_int_list(<<>>, Acc) ->
-    lists:reverse(Acc);
-bin_to_int_list(<<H:2/bytes, Rest/bytes>>, Acc) ->
-    bin_to_int_list(Rest, [binary_to_integer(H, 16)|Acc]).
-
 %% ===================================================================
 %% TESTS
 %% ===================================================================
@@ -463,32 +427,6 @@ packunpack_test_() ->
 -define(PDU(_Id), ?PDU(_Id, "")).
 -define(PDU_SYSID(_Id), ?PDU(_Id, ",\"system_id\":\"\"")).
 -define(PDU_DSTADDR(_Id), ?PDU(_Id, ",\"destination_addr\":\"\"")).
--define(TESTS2,
-[% requests
-{"bind_receiver",          16#00000001,  ?PDU_SYSID(16#00000001)},
-{"bind_transmitter",       16#00000002,  ?PDU_SYSID(16#00000002)},
-{"query_sm",               16#00000003,  ?PDU_DSTADDR(16#00000003)},
-{"submit_sm",              16#00000004,  ?PDU_DSTADDR(16#00000004)},
-{"deliver_sm",             16#00000005,  ?PDU_DSTADDR(16#00000005)},
-{"unbind",                 16#00000006,  ?PDU_DSTADDR(16#00000006)},
-{"replace_sm",             16#00000007,  ?PDU_DSTADDR(16#00000007)},
-{"cancel_sm",              16#00000008,  ?PDU_DSTADDR(16#00000008)},
-{"bind_transceiver",       16#00000009,  ?PDU_SYSID(16#00000009)},
-{"outbind",                16#0000000B,  ?PDU_SYSID(16#0000000B)},
-{"enquire_link",           16#00000015,  ?PDU(16#000000015)},
-
-% responses
-{"bind_receiver_resp",     16#80000001,  ?PDU_SYSID(16#80000001)},
-{"bind_transmitter_resp",  16#80000002,  ?PDU_SYSID(16#80000002)},
-{"query_sm_resp",          16#80000003,  ?PDU(16#80000003)},
-{"submit_sm_resp",         16#80000004,  ?PDU(16#80000004)},
-{"deliver_sm_resp",        16#80000005,  ?PDU(16#80000005)},
-{"unbind_resp",            16#80000006,  ?PDU(16#80000006)},
-{"replace_sm_resp",        16#80000007,  ?PDU(16#80000007)},
-{"cancel_sm_resp",         16#80000008,  ?PDU(16#80000008)},
-{"bind_transceiver_resp",  16#80000009,  ?PDU_SYSID(16#80000009)},
-{"enquire_link_resp",      16#80000015,  ?PDU(16#80000015)}
-]).
 
 json_pack_test_() ->
     {inparallel,
@@ -505,39 +443,33 @@ json_pack_test_() ->
                         json2internal(jsx:decode(J1, [return_maps]))
                 end
             end}
-        || {T,C,J} <- ?TESTS2]
-    }.
+        || {T,C,J} <-
+            [% requests
+             {"bind_receiver",          16#00000001,  ?PDU_SYSID(16#00000001)},
+             {"bind_transmitter",       16#00000002,  ?PDU_SYSID(16#00000002)},
+             {"query_sm",               16#00000003,  ?PDU_DSTADDR(16#00000003)},
+             {"submit_sm",              16#00000004,  ?PDU_DSTADDR(16#00000004)},
+             {"deliver_sm",             16#00000005,  ?PDU_DSTADDR(16#00000005)},
+             {"unbind",                 16#00000006,  ?PDU_DSTADDR(16#00000006)},
+             {"replace_sm",             16#00000007,  ?PDU_DSTADDR(16#00000007)},
+             {"cancel_sm",              16#00000008,  ?PDU_DSTADDR(16#00000008)},
+             {"bind_transceiver",       16#00000009,  ?PDU_SYSID(16#00000009)},
+             {"outbind",                16#0000000B,  ?PDU_SYSID(16#0000000B)},
+             {"enquire_link",           16#00000015,  ?PDU(16#000000015)},
 
-encode_decode_test_() ->
-    {inparallel,
-        [{T,
-            fun() ->
-                {ok, D} = decode(P),
-                ?assertEqual(true, is_map(D)),
-                ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,list}]))),
-                ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,binary}]))),
-                {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
-                ?assertEqual(true, is_list(E)),
-                ?assertEqual({ok, D}, decode(E))
-            end}
-            || {T,P} <- ?TESTS] ++
-        [{T,
-            fun() ->
-                I = json2internal(jsx:decode(J, [return_maps])),
-                case pack(I) of
-                    {error, _ , Error, _} ->
-                        ?assertEqual(ok, err(Error));
-                    {ok, Bin} ->
-                        ?assertMatch(<<_:32/integer,C:32/integer,_/binary>>, Bin),
-                        {ok, D} = decode(
-                                    <<<<(list_to_binary(
-                                            string:right(
-                                                integer_to_list(B,16),2,$0)
-                                        ))/binary>>||<<B>><=Bin>>),
-                        ?assertEqual(true, is_map(D))                
-                end
-            end}
-        || {T,C,J} <- ?TESTS2]
+             % responses
+             {"bind_receiver_resp",     16#80000001,  ?PDU_SYSID(16#80000001)},
+             {"bind_transmitter_resp",  16#80000002,  ?PDU_SYSID(16#80000002)},
+             {"query_sm_resp",          16#80000003,  ?PDU(16#80000003)},
+             {"submit_sm_resp",         16#80000004,  ?PDU(16#80000004)},
+             {"deliver_sm_resp",        16#80000005,  ?PDU(16#80000005)},
+             {"unbind_resp",            16#80000006,  ?PDU(16#80000006)},
+             {"replace_sm_resp",        16#80000007,  ?PDU(16#80000007)},
+             {"cancel_sm_resp",         16#80000008,  ?PDU(16#80000008)},
+             {"bind_transceiver_resp",  16#80000009,  ?PDU_SYSID(16#80000009)},
+             {"enquire_link_resp",      16#80000015,  ?PDU(16#80000015)}
+            ]
+        ]
     }.
 
 -endif.
