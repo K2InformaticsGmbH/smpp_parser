@@ -468,7 +468,7 @@ json_pack_test_() ->
              {"cancel_sm_resp",         16#80000008,  ?PDU(16#80000008)},
              {"bind_transceiver_resp",  16#80000009,  ?PDU_SYSID(16#80000009)},
              {"enquire_link_resp",      16#80000015,  ?PDU(16#80000015)}
-            ]
+             ]
         ]
     }.
 
