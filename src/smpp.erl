@@ -348,41 +348,32 @@ cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 
--spec(encode(PDU :: map()) -> {ok, HEX_STRING :: string()} | {error, string()}).
+-spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
 encode(PDU) when is_map(PDU) ->
     case pack(json2internal(PDU)) of
         {ok, Bin} ->
             {ok, 
-                lists:flatten(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
+                list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
         {error, _, S, _} ->
-            {error, element(3, err(S))}
+            {error, list_to_binary(element(3, err(S)))}
     end;
 encode(_) ->
-    {error, "Input to encode should be map"}.
+    {error, <<"Input to encode should be map">>}.
 
--spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, string()}).
+-spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, binary()}).
 decode(HexStr) when is_list(HexStr) ->
-    HexBin = re:replace(HexStr, " ", "", [global, {return, binary}]),
-    decode(HexBin);
+    decode(list_to_binary(HexStr));
 decode(HexBin) when is_binary(HexBin) ->
     ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
-    Bin = list_to_binary(bin_to_int_list(ModBin)),
+    Bin = list_to_binary([binary_to_integer(B, 16) || <<B:2/binary>> <= ModBin]),
     case unpack_map(Bin) of
         {error, _, S, _} ->
-            {error, element(3, err(S))};
+            {error, list_to_binary(element(3, err(S)))};
         PDU ->
             {ok, internal2json(PDU)}
     end;    
 decode(_) ->
-    {error, "Input to decode should be Hex String"}.
-
-bin_to_int_list(Bin) ->
-    bin_to_int_list(Bin, []).
-
-bin_to_int_list(<<>>, Acc) ->
-    lists:reverse(Acc);
-bin_to_int_list(<<H:2/bytes, Rest/bytes>>, Acc) ->
-    bin_to_int_list(Rest, [binary_to_integer(H, 16)|Acc]).
+    {error, <<"Input to decode should be Hex String">>}.
 
 %% ===================================================================
 %% TESTS
