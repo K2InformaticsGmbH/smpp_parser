@@ -2,8 +2,9 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1]).
--export([err/1,cmd/1,cmdstr/1]).
+         internal2json/1, encode/1, decode/1, encode_msg/1]).
+
+-export([err/1, cmd/1, cmdstr/1]).
 
 json2internal(SMPP) when is_map(SMPP) ->
     maps:fold(fun(K,V,M) when is_binary(K) ->
@@ -23,24 +24,20 @@ json2internal(SMPP) when is_map(SMPP) ->
               end, #{}, SMPP).
 
 internal2json(SMPP) when is_map(SMPP) ->
-    maps:map(
-        fun(_, V) when is_list(V) -> list_to_binary(V);
-           (_, V) -> V
-        end,
-        case SMPP of
-            #{data_coding := DC, short_message := SM}
-              when DC == ?ENCODING_SCHEME_LATIN_1;
-                   DC == ?ENCODING_SCHEME_IA5_ASCII;
-                   DC == ?ENCODING_SCHEME_MC_SPECIFIC ->
-                SMPP#{data_coding => <<"utf8_compact">>,
-                      short_message => unicode:characters_to_binary(SM)};
-            #{data_coding := ?ENCODING_SCHEME_UCS2, short_message := SM} ->
-                SMPP#{data_coding => <<"utf8">>,
-                      short_message => ucs2_to_utf16(SM)};
-            #{data_coding := _, short_message := SM} ->
-                SMPP#{short_message => base64:encode(list_to_binary(SM))};
-            SMPP -> SMPP
-        end).
+    maps:map(fun internal2json/2, SMPP).
+internal2json(_, V) when is_list(V) -> list_to_binary(V);
+internal2json(_, V) -> V.
+
+encode_msg(#{data_coding := DC, short_message := SM} = SMPP)
+    when DC == ?ENCODING_SCHEME_LATIN_1; DC == ?ENCODING_SCHEME_IA5_ASCII;
+         DC == ?ENCODING_SCHEME_MC_SPECIFIC ->
+    SMPP#{short_message => unicode:characters_to_binary(SM)};
+encode_msg(#{data_coding := ?ENCODING_SCHEME_UCS2,
+                 short_message := SM} = SMPP) ->
+    SMPP#{short_message => ucs2_to_utf16(SM)};
+encode_msg(#{short_message := SM} = SMPP) ->
+    SMPP#{short_message => base64:encode(list_to_binary(SM))};
+encode_msg(SMPP) -> SMPP.
 
 ucs2_to_utf16({cp, CPList}) ->
     case unicode:characters_to_binary(CPList, utf16, utf8) of
