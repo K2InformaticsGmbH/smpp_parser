@@ -508,7 +508,7 @@ encode_decode_test_() ->
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,list}]))),
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,binary}]))),
                 {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
-                ?assertEqual(true, is_list(E)),
+                ?assertEqual(true, is_binary(E)),
                 ?assertEqual({ok, D}, decode(E))
             end}
             || {T,P} <- ?TESTS]
