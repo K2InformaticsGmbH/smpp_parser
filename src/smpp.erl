@@ -4,7 +4,7 @@
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
          internal2json/1, encode/1, decode/1, encode_msg/1]).
 
--export([err/1, cmd/1, cmdstr/1]).
+-export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
 json2internal(SMPP) when is_map(SMPP) ->
     maps:fold(fun(K,V,M) when is_binary(K) ->
@@ -64,46 +64,6 @@ ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
                )) ++ Result);
 ucs2_to_utf16_cp([A,B|Rest], Result) ->
     ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
-
-b2a(<<"password">>) -> password;
-b2a(<<"addr_npi">>) -> addr_npi;
-b2a(<<"addr_ton">>) -> addr_ton;
-b2a(<<"esm_class">>) -> esm_class;
-b2a(<<"sm_length">>) -> sm_length;
-b2a(<<"system_id">>) -> system_id;
-b2a(<<"message_id">>) -> message_id;
-b2a(<<"command_id">>) -> command_id;
-b2a(<<"error_code">>) -> error_code;
-b2a(<<"final_date">>) -> final_date;
-b2a(<<"data_coding">>) -> data_coding;
-b2a(<<"system_type">>) -> system_type;
-b2a(<<"source_addr">>) -> source_addr;
-b2a(<<"protocol_id">>) -> protocol_id;
-b2a(<<"service_type">>) -> service_type;
-b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
-b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
-b2a(<<"short_message">>) -> short_message;
-b2a(<<"message_state">>) -> message_state;
-b2a(<<"address_range">>) -> address_range;
-b2a(<<"priority_flag">>) -> priority_flag;
-b2a(<<"command_status">>) -> command_status;
-b2a(<<"sequence_number">>) -> sequence_number;
-b2a(<<"source_addr_npi">>) -> source_addr_npi;
-b2a(<<"source_addr_ton">>) -> source_addr_ton;
-b2a(<<"validity_period">>) -> validity_period;
-b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
-b2a(<<"destination_addr">>) -> destination_addr;
-b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
-b2a(<<"interface_version">>) -> interface_version;
-b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
-b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
-b2a(<<"sar_total_segments">>) -> sar_total_segments;
-b2a(<<"user_response_code">>) -> user_response_code;
-b2a(<<"registered_delivery">>) -> registered_delivery;
-b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
-b2a(<<"user_message_reference">>) -> user_message_reference;
-b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
-b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag.
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
@@ -182,79 +142,6 @@ map_to_rec(Type, Map) when is_map(Map) ->
     io:format("map to rec : ~p~n", [list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]])]),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
 
-err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
-err(?ESME_RINVMSGLEN)->          {'ESME_RINVMSGLEN',            "ESME_RINVMSGLEN",          "Message Length is invalid"};
-err(?ESME_RINVCMDLEN)->          {'ESME_RINVCMDLEN',            "ESME_RINVCMDLEN",          "Command Length is invalid"};
-err(?ESME_RINVCMDID)->           {'ESME_RINVCMDID',             "ESME_RINVCMDID",           "Invalid Command ID"};
-err(?ESME_RINVBNDSTS)->          {'ESME_RINVBNDSTS',            "ESME_RINVBNDSTS",          "Incorrect BIND Status for given command"};
-err(?ESME_RALYBND)->             {'ESME_RALYBND',               "ESME_RALYBND",             "ESME Already in Bound State"};
-err(?ESME_RINVPRTFLG)->          {'ESME_RINVPRTFLG',            "ESME_RINVPRTFLG",          "Invalid Priority Flag"};
-err(?ESME_RINVREGDLVFLG)->       {'ESME_RINVREGDLVFLG',         "ESME_RINVREGDLVFLG",       "Invalid Registered Delivery Flag"};
-err(?ESME_RSYSERR)->             {'ESME_RSYSERR',               "ESME_RSYSERR",             "System Error"};
-err(?ESME_RINVSRCADR)->          {'ESME_RINVSRCADR',            "ESME_RINVSRCADR",          "Invalid Source Address"};
-err(?ESME_RINVDSTADR)->          {'ESME_RINVDSTADR',            "ESME_RINVDSTADR",          "Invalid Dest Addr"};
-err(?ESME_RINVMSGID)->           {'ESME_RINVMSGID',             "ESME_RINVMSGID",           "Message ID is invalid"};
-err(?ESME_RBINDFAIL)->           {'ESME_RBINDFAIL',             "ESME_RBINDFAIL",           "Bind Failed"};
-err(?ESME_RINVPASWD)->           {'ESME_RINVPASWD',             "ESME_RINVPASWD",           "Invalid Password"};
-err(?ESME_RINVSYSID)->           {'ESME_RINVSYSID',             "ESME_RINVSYSID",           "Invalid System ID"};
-err(?ESME_RCANCELFAIL)->         {'ESME_RCANCELFAIL',           "ESME_RCANCELFAIL",         "Cancel SM Failed"};
-err(?ESME_RREPLACEFAIL)->        {'ESME_RREPLACEFAIL',          "ESME_RREPLACEFAIL",        "Replace SM Failed"};
-err(?ESME_RMSGQFUL)->            {'ESME_RMSGQFUL',              "ESME_RMSGQFUL",            "Message Queue Full"};
-err(?ESME_RINVSERTYP)->          {'ESME_RINVSERTYP',            "ESME_RINVSERTYP",          "Invalid Service Type"};
-err(?ESME_RINVNUMDESTS)->        {'ESME_RINVNUMDESTS',          "ESME_RINVNUMDESTS",        "Invalid destinations number"};
-err(?ESME_RINVDLNAME)->          {'ESME_RINVDLNAME',            "ESME_RINVDLNAME",          "Invalid Distribution List name"};
-err(?ESME_RINVDESTFLAG)->        {'ESME_RINVDESTFLAG',          "ESME_RINVDESTFLAG",        "Invalid Destination flag (submit_multi)"};
-err(?ESME_RINVSUBREP)->          {'ESME_RINVSUBREP',            "ESME_RINVSUBREP",          "Invalid submit with replace"};
-err(?ESME_RINVESMCLASS)->        {'ESME_RINVESMCLASS',          "ESME_RINVESMCLASS",        "Invalid esm_class field data"};
-err(?ESME_RCNTSUBDL)->           {'ESME_RCNTSUBDL',             "ESME_RCNTSUBDL",           "Cannot Submit to Distribution List"};
-err(?ESME_RSUBMITFAIL)->         {'ESME_RSUBMITFAIL',           "ESME_RSUBMITFAIL",         "submit_sm or submit_multi failed"};
-err(?ESME_RINVSRCTON)->          {'ESME_RINVSRCTON',            "ESME_RINVSRCTON",          "Invalid Source address TON"};
-err(?ESME_RINVSRCNPI)->          {'ESME_RINVSRCNPI',            "ESME_RINVSRCNPI",          "Invalid Source address NPI"};
-err(?ESME_RINVDSTTON)->          {'ESME_RINVDSTTON',            "ESME_RINVDSTTON",          "Invalid Destination addr TON"};
-err(?ESME_RINVDSTNPI)->          {'ESME_RINVDSTNPI',            "ESME_RINVDSTNPI",          "Invalid Destination addr NPI"};
-err(?ESME_RINVSYSTYP)->          {'ESME_RINVSYSTYP',            "ESME_RINVSYSTYP",          "Invalid system_type field"};
-err(?ESME_RINVREPFLAG)->         {'ESME_RINVREPFLAG',           "ESME_RINVREPFLAG",         "Invalid replace_if_present Flag"};
-err(?ESME_RINVNUMMSGS)->         {'ESME_RINVNUMMSGS',           "ESME_RINVNUMMSGS",         "Invalid number of messages"};
-err(?ESME_RTHROTTLED)->          {'ESME_RTHROTTLED',            "ESME_RTHROTTLED",          "Throttling error (ESME has exceeded allowed msg limits)"};
-err(?ESME_RINVSCHED)->           {'ESME_RINVSCHED',             "ESME_RINVSCHED",           "Invalid Scheduled Delivery Time"};
-err(?ESME_RINVEXPIRY)->          {'ESME_RINVEXPIRY',            "ESME_RINVEXPIRY",          "Invalid message validity period (Expiry time)"};
-err(?ESME_RINVDFTMSGID)->        {'ESME_RINVDFTMSGID',          "ESME_RINVDFTMSGID",        "Predefined Message Invalid or Not Found"};
-err(?ESME_RX_T_APPN)->           {'ESME_RX_T_APPN',             "ESME_RX_T_APPN",           "ESME Receiver Temporary App Err"};
-err(?ESME_RX_P_APPN)->           {'ESME_RX_P_APPN',             "ESME_RX_P_APPN",           "ESME Receiver Permanent App Err"};
-err(?ESME_RX_R_APPN)->           {'ESME_RX_R_APPN',             "ESME_RX_R_APPN",           "ESME Receiver Reject Message"};
-err(?ESME_RQUERYFAIL)->          {'ESME_RQUERYFAIL',            "ESME_RQUERYFAIL",          "query_sm request failed"};
-err(?ESME_RINVTLVSTREAM)->       {'ESME_RINVTLVSTREAM',         "ESME_RINVTLVSTREAM",       "Error in the optional part of the PDU Body"};
-err(?ESME_RTLVNOTALLWD)->        {'ESME_RTLVNOTALLWD',          "ESME_RTLVNOTALLWD",        "TLV not allowed"};
-err(?ESME_RINVTLVLEN)->          {'ESME_RINVTLVLEN',            "ESME_RINVTLVLEN",          "Invalid Parameter Length"};
-err(?ESME_RMISSINGTLV)->         {'ESME_RMISSINGTLV',           "ESME_RMISSINGTLV",         "Expected TLV missing"};
-err(?ESME_RINVTLVVAL)->          {'ESME_RINVTLVVAL',            "ESME_RINVTLVVAL",          "Invalid TLV Value"};
-err(?ESME_RDELIVERYFAILURE)->    {'ESME_RDELIVERYFAILURE',      "ESME_RDELIVERYFAILURE",    "Transaction Delivery Failure"};
-err(?ESME_RUNKNOWNERR)->         {'ESME_RUNKNOWNERR',           "ESME_RUNKNOWNERR",         "Unknown Error"};
-err(?ESME_RSERTYPUNAUTH)->       {'ESME_RSERTYPUNAUTH',         "ESME_RSERTYPUNAUTH",       "ESME Not authorised to use specified service_type"};
-err(?ESME_RPROHIBITED)->         {'ESME_RPROHIBITED',           "ESME_RPROHIBITED",         "ESME Prohibited from using specified operation"};
-err(?ESME_RSERTYPUNAVAIL)->      {'ESME_RSERTYPUNAVAIL',        "ESME_RSERTYPUNAVAIL",      "Specified service_type is unavailable"};
-err(?ESME_RSERTYPDENIED)->       {'ESME_RSERTYPDENIED',         "ESME_RSERTYPDENIED",       "Specified service_type denied"};
-err(?ESME_RINVDCS)->             {'ESME_RINVDCS',               "ESME_RINVDCS",             "Invalid Data Coding Scheme"};
-err(?ESME_RINVSRCADDRSUBUNIT)->  {'ESME_RINVSRCADDRSUBUNIT',    "ESME_RINVSRCADDRSUBUNIT",  "Source Address Sub unit is invalid"};
-err(?ESME_RINVDSTADDRSUBUNIT)->  {'ESME_RINVDSTADDRSUBUNIT',    "ESME_RINVDSTADDRSUBUNIT",  "Destination Address Sub unit is invalid"};
-err(?ESME_RINVBCASTFREQINT)->    {'ESME_RINVBCASTFREQINT',      "ESME_RINVBCASTFREQINT",    "Broadcast Frequency Interval is invalid"};
-err(?ESME_RINVBCASTALIAS_NAME)-> {'ESME_RINVBCASTALIAS_NAME',   "ESME_RINVBCASTALIAS_NAME", "Invalid Broadcast Alias Name"};
-err(?ESME_RINVBCASTAREAFMT)->    {'ESME_RINVBCASTAREAFMT',      "ESME_RINVBCASTAREAFMT",    "Invalid Broadcast Area Format"};
-err(?ESME_RINVNUMBCAST_AREAS)->  {'ESME_RINVNUMBCAST_AREAS',    "ESME_RINVNUMBCAST_AREAS",  "Number of Broadcast Areas is invalid"};
-err(?ESME_RINVBCASTCNTTYPE)->    {'ESME_RINVBCASTCNTTYPE',      "ESME_RINVBCASTCNTTYPE",    "Invalid Broadcast Content Type"};
-err(?ESME_RINVBCASTMSGCLASS)->   {'ESME_RINVBCASTMSGCLASS',     "ESME_RINVBCASTMSGCLASS",   "Broadcast Message Class is invalid"};
-err(?ESME_RBCASTFAIL)->          {'ESME_RBCASTFAIL',            "ESME_RBCASTFAIL",          "broadcast_sm operation failed"};
-err(?ESME_RBCASTQUERYFAIL)->     {'ESME_RBCASTQUERYFAIL',       "ESME_RBCASTQUERYFAIL",     "query_broadcast_sm failed"};
-err(?ESME_RBCASTCANCELFAIL)->    {'ESME_RBCASTCANCELFAIL',      "ESME_RBCASTCANCELFAIL",    "cancel_broadcast_sm failed"};
-err(?ESME_RINVBCAST_REP)->       {'ESME_RINVBCAST_REP',         "ESME_RINVBCAST_REP",       "Number of Repeated Broadcasts is invalid"};
-err(?ESME_RINVBCASTSRVGRP)->     {'ESME_RINVBCASTSRVGRP',       "ESME_RINVBCASTSRVGRP",     "Broadcast Service Group is invalid"};
-err(?ESME_RINVBCASTCHANIND)->    {'ESME_RINVBCASTCHANIND',      "ESME_RINVBCASTCHANIND",    "Broadcast Channel Indicator is invalid"}.
-%err(?ESME_RINVOPTPARSTREAM)->    {'ESME_RINVOPTPARSTREAM',      "ESME_RINVOPTPARSTREAM",    "Error in the optional part of the PDU Body"};
-%err(?ESME_ROPTPARNOTALLWD)->     {'ESME_ROPTPARNOTALLWD',       "ESME_ROPTPARNOTALLWD",     "Optional Parameter not allowed"};
-%err(?ESME_RINVPARLEN)->          {'ESME_RINVPARLEN',            "ESME_RINVPARLEN",          "Invalid Parameter Length"};
-%err(?ESME_RMISSINGOPTPARAM)->    {'ESME_RMISSINGOPTPARAM',      "ESME_RMISSINGOPTPARAM",    "Expected Optional Parameter missing"};
-%err(?ESME_RINVOPTPARAMVAL)->     {'ESME_RINVOPTPARAMVAL',       "ESME_RINVOPTPARAMVAL",     "Invalid Optional Parameter Value"}.
-
 rec_info(telematics_id) ->
     record_info(fields, telematics_id);
 rec_info(callback_num) ->
@@ -275,8 +162,173 @@ rec_type(source_telematics_id) -> telematics_id;
 rec_type(Type) -> Type.
 
 cmdstr(Cmd) when is_integer(Cmd) -> atom_to_binary(cmd(Cmd),utf8).
+cmdval(Cmd) when is_binary(Cmd) -> cmd(binary_to_existing_atom(Cmd,utf8)).
 
--compile({inline,[cmd/1]}).
+statusstr(Status) when is_integer(Status) ->
+    {_, StatusStr, _} = err(Status),
+    list_to_binary(StatusStr).
+
+-spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
+encode(PDU) when is_map(PDU) ->
+    case pack(json2internal(PDU)) of
+        {ok, Bin} ->
+            {ok, 
+                list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
+        {error, _, S, _} ->
+            {error, list_to_binary(element(3, err(S)))}
+    end;
+encode(_) ->
+    {error, <<"Input to encode should be map">>}.
+
+-spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, binary()}).
+decode(HexStr) when is_list(HexStr) ->
+    decode(list_to_binary(HexStr));
+decode(HexBin) when is_binary(HexBin) ->
+    ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
+    Bin = list_to_binary([binary_to_integer(B, 16) || <<B:2/binary>> <= ModBin]),
+    case unpack_map(Bin) of
+        {error, _, S, _} ->
+            {error, list_to_binary(element(3, err(S)))};
+        PDU ->
+            {ok, internal2json(PDU)}
+    end;    
+decode(_) ->
+    {error, <<"Input to decode should be Hex String">>}.
+
+to_enum(SMPP) when is_map(SMPP) ->
+    maps:fold(
+        fun(K, V, M) ->
+            M#{K => to_enum(K, V)}
+        end, #{}, SMPP).
+to_enum(<<"command_id">>,       V) -> cmdstr(V);
+to_enum(<<"command_status">>,   V) -> statusstr(V);
+to_enum(<<"addr_ton">>,         V) -> ton(V);
+to_enum(<<"source_addr_ton">>,  V) -> ton(V);
+to_enum(<<"dest_addr_ton">>,    V) -> ton(V);
+to_enum(<<"esme_addr_ton">>,    V) -> ton(V);
+to_enum(<<"addr_npi">>,         V) -> npi(V);
+to_enum(<<"source_addr_npi">>,  V) -> npi(V);
+to_enum(<<"dest_addr_npi">>,    V) -> npi(V);
+to_enum(<<"esme_addr_npi">>,    V) -> npi(V);
+to_enum(<<"data_coding">>,      V) -> enc(V);
+to_enum(<<"message_state">>,    V) -> msgstate(V);
+to_enum(_,                      V) -> V.
+
+from_enum(SMPP) when is_map(SMPP) ->
+    maps:fold(
+        fun(K, V, M) ->
+            M#{K => from_enum(K, V)}
+        end, #{}, SMPP).
+from_enum(<<"command_id">>,         V) -> cmdval(V);
+from_enum(<<"command_status">>,     V) -> err(V);
+from_enum(<<"addr_ton">>,           V) -> ton(V);
+from_enum(<<"source_addr_ton">>,    V) -> ton(V);
+from_enum(<<"dest_addr_ton">>,      V) -> ton(V);
+from_enum(<<"esme_addr_ton">>,      V) -> ton(V);
+from_enum(<<"addr_npi">>,           V) -> npi(V);
+from_enum(<<"source_addr_npi">>,    V) -> npi(V);
+from_enum(<<"dest_addr_npi">>,      V) -> npi(V);
+from_enum(<<"esme_addr_npi">>,      V) -> npi(V);
+from_enum(<<"data_coding">>,        V) -> enc(V);
+from_enum(<<"message_state">>,      V) -> msgstate(V);
+from_enum(_,                        V) -> V.
+
+%% ===================================================================
+%% Mapping functions
+%% ===================================================================
+
+ton(?TON_UNKNOWN)               -> <<"Unknown">>;
+ton(?TON_NATIONAL)              -> <<"National">>;
+ton(?TON_ABBREVIATED)           -> <<"Abbreviated">>;
+ton(?TON_ALPHANUMERIC)          -> <<"Alphanumeric">>;
+ton(?TON_INTERNATIONAL)         -> <<"International">>;
+ton(?TON_NETWORK_SPECIFIC)      -> <<"Network Specific">>;
+ton(?TON_SUBSCRIBER_NUMBER)     -> <<"Subscriber Number">>;
+ton(Ton) when is_integer(Ton)   -> integer_to_binary(Ton);
+ton(<<"Unknown">>)              -> ?TON_UNKNOWN;
+ton(<<"National">>)             -> ?TON_NATIONAL;
+ton(<<"Abbreviated">>)          -> ?TON_ABBREVIATED;
+ton(<<"Alphanumeric">>)         -> ?TON_ALPHANUMERIC;
+ton(<<"International">>)        -> ?TON_INTERNATIONAL;
+ton(<<"Network Specific">>)     -> ?TON_NETWORK_SPECIFIC;
+ton(<<"Subscriber Number">>)    -> ?TON_SUBSCRIBER_NUMBER;
+ton(Ton) when is_binary(Ton)    -> binary_to_integer(Ton).
+
+npi(?NPI_ERMES)                 -> <<"ERMES">>;
+npi(?NPI_UNKNOWN)               -> <<"Unknown">>;
+npi(?NPI_PRIVATE)               -> <<"Private">>;
+npi(?NPI_NATIONAL)              -> <<"National">>;
+npi(?NPI_DATA)                  -> <<"Data (X.121)">>;
+npi(?NPI_TELEX)                 -> <<"Telex (F.69)">>;
+npi(?NPI_INTERNET)              -> <<"Internet (IP)">>;
+npi(?NPI_WAP_CLIENT_ID)         -> <<"WAP Client Id">>;
+npi(?NPI_ISDN)                  -> <<"ISDN (E163/E164)">>;
+npi(?NPI_LAND_MOBILE)           -> <<"Land Mobile (E.212)">>;
+npi(Npi) when is_integer(Npi)   -> integer_to_binary(Npi);
+npi(<<"ISDN (E163/E164)">>)     -> ?NPI_ISDN;
+npi(<<"Data (X.121)">>)         -> ?NPI_DATA;
+npi(<<"Telex (F.69)">>)         -> ?NPI_TELEX;
+npi(<<"ERMES">>)                -> ?NPI_ERMES;
+npi(<<"Private">>)              -> ?NPI_PRIVATE;
+npi(<<"Unknown">>)              -> ?NPI_UNKNOWN;
+npi(<<"National">>)             -> ?NPI_NATIONAL;
+npi(<<"Internet (IP)">>)        -> ?NPI_INTERNET;
+npi(<<"Land Mobile (E.212)">>)  -> ?NPI_LAND_MOBILE;
+npi(<<"WAP Client Id">>)        -> ?NPI_WAP_CLIENT_ID;
+npi(Npi) when is_binary(Npi)    -> binary_to_integer(Npi).
+
+enc(?ENCODING_SCHEME_KS_C_5601)                 -> <<"KS C 5601">>;
+enc(?ENCODING_SCHEME_MC_SPECIFIC)               -> <<"MC Specific">>;
+enc(?ENCODING_SCHEME_JIS)                       -> <<"JIS (X 0208-1990)">>;
+enc(?ENCODING_SCHEME_PICTOGRAM)                 -> <<"Pictogram Encoding">>;
+enc(?ENCODING_SCHEME_UCS2)                      -> <<"UCS2 (ISO/IEC-10646)">>;
+enc(?ENCODING_SCHEME_LATIN_1)                   -> <<"Latin 1 (ISO-8859-1)">>;
+enc(?ENCODING_SCHEME_CYRILLIC)                  -> <<"Cyrillic (ISO-8859-5)">>;
+enc(?ENCODING_SCHEME_ISO_2022_JP)               -> <<"ISO-2022-JP (Music Codes)">>;
+enc(?ENCODING_SCHEME_LATIN_HEBREW)              -> <<"Latin/Hebrew (ISO-8859-8)">>;
+enc(?ENCODING_SCHEME_BINARY)                    -> <<"Octet unspecified (8-bit binary)">>;
+enc(?ENCODING_SCHEME_OCTET)                     -> <<"Octet unspecified (8-bit binary)">>;
+enc(?ENCODING_SCHEME_KANJI_JIS)                 -> <<"Extended Kanji JIS (X 0212-1990)">>;
+enc(?ENCODING_SCHEME_IA5_ASCII)                 -> <<"IA5 (CCITT T.50)/ASCII (ANSI X3.4)">>;
+enc(E) when is_integer(E)                       -> integer_to_binary(E);
+enc(<<"JIS (X 0208-1990)">>)                    -> ?ENCODING_SCHEME_JIS;
+enc(<<"UCS2 (ISO/IEC-10646)">>)                 -> ?ENCODING_SCHEME_UCS2;
+enc(<<"Octet unspecified (8-bit octect)">>)     -> ?ENCODING_SCHEME_OCTET;
+enc(<<"Octet unspecified (8-bit binary)">>)     -> ?ENCODING_SCHEME_BINARY;
+enc(<<"Latin 1 (ISO-8859-1)">>)                 -> ?ENCODING_SCHEME_LATIN_1;
+enc(<<"Cyrillic (ISO-8859-5)">>)                -> ?ENCODING_SCHEME_CYRILLIC;
+enc(<<"Extended Kanji JIS (X 0212-1990)">>)     -> ?ENCODING_SCHEME_KANJI_JIS;
+enc(<<"IA5 (CCITT T.50)/ASCII (ANSI X3.4)">>)   -> ?ENCODING_SCHEME_IA5_ASCII;
+enc(<<"Pictogram Encoding">>)                   -> ?ENCODING_SCHEME_PICTOGRAM;
+enc(<<"KS C 5601">>)                            -> ?ENCODING_SCHEME_KS_C_5601;
+enc(<<"ISO-2022-JP (Music Codes)">>)            -> ?ENCODING_SCHEME_ISO_2022_JP;
+enc(<<"MC Specific">>)                          -> ?ENCODING_SCHEME_MC_SPECIFIC;
+enc(<<"Latin/Hebrew (ISO-8859-8)">>)            -> ?ENCODING_SCHEME_LATIN_HEBREW;
+enc(E) when is_binary(E)                        -> binary_to_integer(E).
+
+msgstate(?MESSAGE_STATE_ENROUTE)        -> <<"ENROUTE">>;
+msgstate(?MESSAGE_STATE_EXPIRED)        -> <<"EXPIRED">>;
+msgstate(?MESSAGE_STATE_DELETED)        -> <<"DELETED">>;
+msgstate(?MESSAGE_STATE_UNKNOWN)        -> <<"UNKNOWN">>;
+msgstate(?MESSAGE_STATE_SKIPPED)        -> <<"SKIPPED">>;
+msgstate(?MESSAGE_STATE_REJECTED)       -> <<"REJECTED">>;
+msgstate(?MESSAGE_STATE_ACCEPTED)       -> <<"ACCEPTED">>;
+msgstate(?MESSAGE_STATE_SCHEDULED)      -> <<"SCHEDULED">>;
+msgstate(?MESSAGE_STATE_DELIVERED)      -> <<"DELIVERED">>;
+msgstate(?MESSAGE_STATE_UNDELIVERABLE)  -> <<"UNDELIVERABLE">>;
+msgstate(E) when is_integer(E)          -> integer_to_binary(E);
+msgstate(<<"ENROUTE">>)                 -> ?MESSAGE_STATE_ENROUTE;
+msgstate(<<"EXPIRED">>)                 -> ?MESSAGE_STATE_EXPIRED;
+msgstate(<<"DELETED">>)                 -> ?MESSAGE_STATE_DELETED;
+msgstate(<<"UNKNOWN">>)                 -> ?MESSAGE_STATE_UNKNOWN;
+msgstate(<<"SKIPPED">>)                 -> ?MESSAGE_STATE_SKIPPED;
+msgstate(<<"REJECTED">>)                -> ?MESSAGE_STATE_REJECTED;
+msgstate(<<"ACCEPTED">>)                -> ?MESSAGE_STATE_ACCEPTED;
+msgstate(<<"SCHEDULED">>)               -> ?MESSAGE_STATE_SCHEDULED;
+msgstate(<<"DELIVERED">>)               -> ?MESSAGE_STATE_DELIVERED;
+msgstate(<<"UNDELIVERABLE">>)           -> ?MESSAGE_STATE_UNDELIVERABLE;
+msgstate(E) when is_binary(E)           -> binary_to_integer(E).
+
 cmd(?COMMAND_ID_UNBIND)                     -> unbind;
 cmd(?COMMAND_ID_OUTBIND)                    -> outbind;
 cmd(?COMMAND_ID_DATA_SM)                    -> data_sm;
@@ -347,32 +399,190 @@ cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 
--spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
-encode(PDU) when is_map(PDU) ->
-    case pack(json2internal(PDU)) of
-        {ok, Bin} ->
-            {ok, 
-                list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
-        {error, _, S, _} ->
-            {error, list_to_binary(element(3, err(S)))}
-    end;
-encode(_) ->
-    {error, <<"Input to encode should be map">>}.
+b2a(<<"password">>) -> password;
+b2a(<<"addr_npi">>) -> addr_npi;
+b2a(<<"addr_ton">>) -> addr_ton;
+b2a(<<"esm_class">>) -> esm_class;
+b2a(<<"sm_length">>) -> sm_length;
+b2a(<<"system_id">>) -> system_id;
+b2a(<<"message_id">>) -> message_id;
+b2a(<<"command_id">>) -> command_id;
+b2a(<<"error_code">>) -> error_code;
+b2a(<<"final_date">>) -> final_date;
+b2a(<<"data_coding">>) -> data_coding;
+b2a(<<"system_type">>) -> system_type;
+b2a(<<"source_addr">>) -> source_addr;
+b2a(<<"protocol_id">>) -> protocol_id;
+b2a(<<"service_type">>) -> service_type;
+b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
+b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
+b2a(<<"short_message">>) -> short_message;
+b2a(<<"message_state">>) -> message_state;
+b2a(<<"address_range">>) -> address_range;
+b2a(<<"priority_flag">>) -> priority_flag;
+b2a(<<"command_status">>) -> command_status;
+b2a(<<"sequence_number">>) -> sequence_number;
+b2a(<<"source_addr_npi">>) -> source_addr_npi;
+b2a(<<"source_addr_ton">>) -> source_addr_ton;
+b2a(<<"validity_period">>) -> validity_period;
+b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
+b2a(<<"destination_addr">>) -> destination_addr;
+b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
+b2a(<<"interface_version">>) -> interface_version;
+b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
+b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
+b2a(<<"sar_total_segments">>) -> sar_total_segments;
+b2a(<<"user_response_code">>) -> user_response_code;
+b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"user_message_reference">>) -> user_message_reference;
+b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
+b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag.
 
--spec(decode(HEX_STRING :: string() | binary()) -> {ok, PDU :: map()} | {error, binary()}).
-decode(HexStr) when is_list(HexStr) ->
-    decode(list_to_binary(HexStr));
-decode(HexBin) when is_binary(HexBin) ->
-    ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
-    Bin = list_to_binary([binary_to_integer(B, 16) || <<B:2/binary>> <= ModBin]),
-    case unpack_map(Bin) of
-        {error, _, S, _} ->
-            {error, list_to_binary(element(3, err(S)))};
-        PDU ->
-            {ok, internal2json(PDU)}
-    end;    
-decode(_) ->
-    {error, <<"Input to decode should be Hex String">>}.
+err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
+err(?ESME_RINVMSGLEN)->          {'ESME_RINVMSGLEN',            "ESME_RINVMSGLEN",          "Message Length is invalid"};
+err(?ESME_RINVCMDLEN)->          {'ESME_RINVCMDLEN',            "ESME_RINVCMDLEN",          "Command Length is invalid"};
+err(?ESME_RINVCMDID)->           {'ESME_RINVCMDID',             "ESME_RINVCMDID",           "Invalid Command ID"};
+err(?ESME_RINVBNDSTS)->          {'ESME_RINVBNDSTS',            "ESME_RINVBNDSTS",          "Incorrect BIND Status for given command"};
+err(?ESME_RALYBND)->             {'ESME_RALYBND',               "ESME_RALYBND",             "ESME Already in Bound State"};
+err(?ESME_RINVPRTFLG)->          {'ESME_RINVPRTFLG',            "ESME_RINVPRTFLG",          "Invalid Priority Flag"};
+err(?ESME_RINVREGDLVFLG)->       {'ESME_RINVREGDLVFLG',         "ESME_RINVREGDLVFLG",       "Invalid Registered Delivery Flag"};
+err(?ESME_RSYSERR)->             {'ESME_RSYSERR',               "ESME_RSYSERR",             "System Error"};
+err(?ESME_RINVSRCADR)->          {'ESME_RINVSRCADR',            "ESME_RINVSRCADR",          "Invalid Source Address"};
+err(?ESME_RINVDSTADR)->          {'ESME_RINVDSTADR',            "ESME_RINVDSTADR",          "Invalid Dest Addr"};
+err(?ESME_RINVMSGID)->           {'ESME_RINVMSGID',             "ESME_RINVMSGID",           "Message ID is invalid"};
+err(?ESME_RBINDFAIL)->           {'ESME_RBINDFAIL',             "ESME_RBINDFAIL",           "Bind Failed"};
+err(?ESME_RINVPASWD)->           {'ESME_RINVPASWD',             "ESME_RINVPASWD",           "Invalid Password"};
+err(?ESME_RINVSYSID)->           {'ESME_RINVSYSID',             "ESME_RINVSYSID",           "Invalid System ID"};
+err(?ESME_RCANCELFAIL)->         {'ESME_RCANCELFAIL',           "ESME_RCANCELFAIL",         "Cancel SM Failed"};
+err(?ESME_RREPLACEFAIL)->        {'ESME_RREPLACEFAIL',          "ESME_RREPLACEFAIL",        "Replace SM Failed"};
+err(?ESME_RMSGQFUL)->            {'ESME_RMSGQFUL',              "ESME_RMSGQFUL",            "Message Queue Full"};
+err(?ESME_RINVSERTYP)->          {'ESME_RINVSERTYP',            "ESME_RINVSERTYP",          "Invalid Service Type"};
+err(?ESME_RINVNUMDESTS)->        {'ESME_RINVNUMDESTS',          "ESME_RINVNUMDESTS",        "Invalid destinations number"};
+err(?ESME_RINVDLNAME)->          {'ESME_RINVDLNAME',            "ESME_RINVDLNAME",          "Invalid Distribution List name"};
+err(?ESME_RINVDESTFLAG)->        {'ESME_RINVDESTFLAG',          "ESME_RINVDESTFLAG",        "Invalid Destination flag (submit_multi)"};
+err(?ESME_RINVSUBREP)->          {'ESME_RINVSUBREP',            "ESME_RINVSUBREP",          "Invalid submit with replace"};
+err(?ESME_RINVESMCLASS)->        {'ESME_RINVESMCLASS',          "ESME_RINVESMCLASS",        "Invalid esm_class field data"};
+err(?ESME_RCNTSUBDL)->           {'ESME_RCNTSUBDL',             "ESME_RCNTSUBDL",           "Cannot Submit to Distribution List"};
+err(?ESME_RSUBMITFAIL)->         {'ESME_RSUBMITFAIL',           "ESME_RSUBMITFAIL",         "submit_sm or submit_multi failed"};
+err(?ESME_RINVSRCTON)->          {'ESME_RINVSRCTON',            "ESME_RINVSRCTON",          "Invalid Source address TON"};
+err(?ESME_RINVSRCNPI)->          {'ESME_RINVSRCNPI',            "ESME_RINVSRCNPI",          "Invalid Source address NPI"};
+err(?ESME_RINVDSTTON)->          {'ESME_RINVDSTTON',            "ESME_RINVDSTTON",          "Invalid Destination addr TON"};
+err(?ESME_RINVDSTNPI)->          {'ESME_RINVDSTNPI',            "ESME_RINVDSTNPI",          "Invalid Destination addr NPI"};
+err(?ESME_RINVSYSTYP)->          {'ESME_RINVSYSTYP',            "ESME_RINVSYSTYP",          "Invalid system_type field"};
+err(?ESME_RINVREPFLAG)->         {'ESME_RINVREPFLAG',           "ESME_RINVREPFLAG",         "Invalid replace_if_present Flag"};
+err(?ESME_RINVNUMMSGS)->         {'ESME_RINVNUMMSGS',           "ESME_RINVNUMMSGS",         "Invalid number of messages"};
+err(?ESME_RTHROTTLED)->          {'ESME_RTHROTTLED',            "ESME_RTHROTTLED",          "Throttling error (ESME has exceeded allowed msg limits)"};
+err(?ESME_RINVSCHED)->           {'ESME_RINVSCHED',             "ESME_RINVSCHED",           "Invalid Scheduled Delivery Time"};
+err(?ESME_RINVEXPIRY)->          {'ESME_RINVEXPIRY',            "ESME_RINVEXPIRY",          "Invalid message validity period (Expiry time)"};
+err(?ESME_RINVDFTMSGID)->        {'ESME_RINVDFTMSGID',          "ESME_RINVDFTMSGID",        "Predefined Message Invalid or Not Found"};
+err(?ESME_RX_T_APPN)->           {'ESME_RX_T_APPN',             "ESME_RX_T_APPN",           "ESME Receiver Temporary App Err"};
+err(?ESME_RX_P_APPN)->           {'ESME_RX_P_APPN',             "ESME_RX_P_APPN",           "ESME Receiver Permanent App Err"};
+err(?ESME_RX_R_APPN)->           {'ESME_RX_R_APPN',             "ESME_RX_R_APPN",           "ESME Receiver Reject Message"};
+err(?ESME_RQUERYFAIL)->          {'ESME_RQUERYFAIL',            "ESME_RQUERYFAIL",          "query_sm request failed"};
+err(?ESME_RINVTLVSTREAM)->       {'ESME_RINVTLVSTREAM',         "ESME_RINVTLVSTREAM",       "Error in the optional part of the PDU Body"};
+err(?ESME_RTLVNOTALLWD)->        {'ESME_RTLVNOTALLWD',          "ESME_RTLVNOTALLWD",        "TLV not allowed"};
+err(?ESME_RINVTLVLEN)->          {'ESME_RINVTLVLEN',            "ESME_RINVTLVLEN",          "Invalid Parameter Length"};
+err(?ESME_RMISSINGTLV)->         {'ESME_RMISSINGTLV',           "ESME_RMISSINGTLV",         "Expected TLV missing"};
+err(?ESME_RINVTLVVAL)->          {'ESME_RINVTLVVAL',            "ESME_RINVTLVVAL",          "Invalid TLV Value"};
+err(?ESME_RDELIVERYFAILURE)->    {'ESME_RDELIVERYFAILURE',      "ESME_RDELIVERYFAILURE",    "Transaction Delivery Failure"};
+err(?ESME_RUNKNOWNERR)->         {'ESME_RUNKNOWNERR',           "ESME_RUNKNOWNERR",         "Unknown Error"};
+err(?ESME_RSERTYPUNAUTH)->       {'ESME_RSERTYPUNAUTH',         "ESME_RSERTYPUNAUTH",       "ESME Not authorised to use specified service_type"};
+err(?ESME_RPROHIBITED)->         {'ESME_RPROHIBITED',           "ESME_RPROHIBITED",         "ESME Prohibited from using specified operation"};
+err(?ESME_RSERTYPUNAVAIL)->      {'ESME_RSERTYPUNAVAIL',        "ESME_RSERTYPUNAVAIL",      "Specified service_type is unavailable"};
+err(?ESME_RSERTYPDENIED)->       {'ESME_RSERTYPDENIED',         "ESME_RSERTYPDENIED",       "Specified service_type denied"};
+err(?ESME_RINVDCS)->             {'ESME_RINVDCS',               "ESME_RINVDCS",             "Invalid Data Coding Scheme"};
+err(?ESME_RINVSRCADDRSUBUNIT)->  {'ESME_RINVSRCADDRSUBUNIT',    "ESME_RINVSRCADDRSUBUNIT",  "Source Address Sub unit is invalid"};
+err(?ESME_RINVDSTADDRSUBUNIT)->  {'ESME_RINVDSTADDRSUBUNIT',    "ESME_RINVDSTADDRSUBUNIT",  "Destination Address Sub unit is invalid"};
+err(?ESME_RINVBCASTFREQINT)->    {'ESME_RINVBCASTFREQINT',      "ESME_RINVBCASTFREQINT",    "Broadcast Frequency Interval is invalid"};
+err(?ESME_RINVBCASTALIAS_NAME)-> {'ESME_RINVBCASTALIAS_NAME',   "ESME_RINVBCASTALIAS_NAME", "Invalid Broadcast Alias Name"};
+err(?ESME_RINVBCASTAREAFMT)->    {'ESME_RINVBCASTAREAFMT',      "ESME_RINVBCASTAREAFMT",    "Invalid Broadcast Area Format"};
+err(?ESME_RINVNUMBCAST_AREAS)->  {'ESME_RINVNUMBCAST_AREAS',    "ESME_RINVNUMBCAST_AREAS",  "Number of Broadcast Areas is invalid"};
+err(?ESME_RINVBCASTCNTTYPE)->    {'ESME_RINVBCASTCNTTYPE',      "ESME_RINVBCASTCNTTYPE",    "Invalid Broadcast Content Type"};
+err(?ESME_RINVBCASTMSGCLASS)->   {'ESME_RINVBCASTMSGCLASS',     "ESME_RINVBCASTMSGCLASS",   "Broadcast Message Class is invalid"};
+err(?ESME_RBCASTFAIL)->          {'ESME_RBCASTFAIL',            "ESME_RBCASTFAIL",          "broadcast_sm operation failed"};
+err(?ESME_RBCASTQUERYFAIL)->     {'ESME_RBCASTQUERYFAIL',       "ESME_RBCASTQUERYFAIL",     "query_broadcast_sm failed"};
+err(?ESME_RBCASTCANCELFAIL)->    {'ESME_RBCASTCANCELFAIL',      "ESME_RBCASTCANCELFAIL",    "cancel_broadcast_sm failed"};
+err(?ESME_RINVBCAST_REP)->       {'ESME_RINVBCAST_REP',         "ESME_RINVBCAST_REP",       "Number of Repeated Broadcasts is invalid"};
+err(?ESME_RINVBCASTSRVGRP)->     {'ESME_RINVBCASTSRVGRP',       "ESME_RINVBCASTSRVGRP",     "Broadcast Service Group is invalid"};
+err(?ESME_RINVBCASTCHANIND)->    {'ESME_RINVBCASTCHANIND',      "ESME_RINVBCASTCHANIND",    "Broadcast Channel Indicator is invalid"};
+%err(?ESME_RINVOPTPARSTREAM)->    {'ESME_RINVOPTPARSTREAM',      "ESME_RINVOPTPARSTREAM",    "Error in the optional part of the PDU Body"};
+%err(?ESME_ROPTPARNOTALLWD)->     {'ESME_ROPTPARNOTALLWD',       "ESME_ROPTPARNOTALLWD",     "Optional Parameter not allowed"};
+%err(?ESME_RINVPARLEN)->          {'ESME_RINVPARLEN',            "ESME_RINVPARLEN",          "Invalid Parameter Length"};
+%err(?ESME_RMISSINGOPTPARAM)->    {'ESME_RMISSINGOPTPARAM',      "ESME_RMISSINGOPTPARAM",    "Expected Optional Parameter missing"};
+%err(?ESME_RINVOPTPARAMVAL)->     {'ESME_RINVOPTPARAMVAL',       "ESME_RINVOPTPARAMVAL",     "Invalid Optional Parameter Value"}.
+err(<<"ESME_ROK">>)                 -> ?ESME_ROK;
+err(<<"ESME_RINVMSGLEN">>)          -> ?ESME_RINVMSGLEN;
+err(<<"ESME_RINVCMDLEN">>)          -> ?ESME_RINVCMDLEN;
+err(<<"ESME_RINVCMDID">>)           -> ?ESME_RINVCMDID;
+err(<<"ESME_RINVBNDSTS">>)          -> ?ESME_RINVBNDSTS;
+err(<<"ESME_RALYBND">>)             -> ?ESME_RALYBND;
+err(<<"ESME_RINVPRTFLG">>)          -> ?ESME_RINVPRTFLG;
+err(<<"ESME_RINVREGDLVFLG">>)       -> ?ESME_RINVREGDLVFLG;
+err(<<"ESME_RSYSERR">>)             -> ?ESME_RSYSERR;
+err(<<"ESME_RINVSRCADR">>)          -> ?ESME_RINVSRCADR;
+err(<<"ESME_RINVDSTADR">>)          -> ?ESME_RINVDSTADR;
+err(<<"ESME_RINVMSGID">>)           -> ?ESME_RINVMSGID;
+err(<<"ESME_RBINDFAIL">>)           -> ?ESME_RBINDFAIL;
+err(<<"ESME_RINVPASWD">>)           -> ?ESME_RINVPASWD;
+err(<<"ESME_RINVSYSID">>)           -> ?ESME_RINVSYSID;
+err(<<"ESME_RCANCELFAIL">>)         -> ?ESME_RCANCELFAIL;
+err(<<"ESME_RREPLACEFAIL">>)        -> ?ESME_RREPLACEFAIL;
+err(<<"ESME_RMSGQFUL">>)            -> ?ESME_RMSGQFUL;
+err(<<"ESME_RINVSERTYP">>)          -> ?ESME_RINVSERTYP;
+err(<<"ESME_RINVNUMDESTS">>)        -> ?ESME_RINVNUMDESTS;
+err(<<"ESME_RINVDLNAME">>)          -> ?ESME_RINVDLNAME;
+err(<<"ESME_RINVDESTFLAG">>)        -> ?ESME_RINVDESTFLAG;
+err(<<"ESME_RINVSUBREP">>)          -> ?ESME_RINVSUBREP;
+err(<<"ESME_RINVESMCLASS">>)        -> ?ESME_RINVESMCLASS;
+err(<<"ESME_RCNTSUBDL">>)           -> ?ESME_RCNTSUBDL;
+err(<<"ESME_RSUBMITFAIL">>)         -> ?ESME_RSUBMITFAIL;
+err(<<"ESME_RINVSRCTON">>)          -> ?ESME_RINVSRCTON;
+err(<<"ESME_RINVSRCNPI">>)          -> ?ESME_RINVSRCNPI;
+err(<<"ESME_RINVDSTTON">>)          -> ?ESME_RINVDSTTON;
+err(<<"ESME_RINVDSTNPI">>)          -> ?ESME_RINVDSTNPI;
+err(<<"ESME_RINVSYSTYP">>)          -> ?ESME_RINVSYSTYP;
+err(<<"ESME_RINVREPFLAG">>)         -> ?ESME_RINVREPFLAG;
+err(<<"ESME_RINVNUMMSGS">>)         -> ?ESME_RINVNUMMSGS;
+err(<<"ESME_RTHROTTLED">>)          -> ?ESME_RTHROTTLED;
+err(<<"ESME_RINVSCHED">>)           -> ?ESME_RINVSCHED;
+err(<<"ESME_RINVEXPIRY">>)          -> ?ESME_RINVEXPIRY;
+err(<<"ESME_RINVDFTMSGID">>)        -> ?ESME_RINVDFTMSGID;
+err(<<"ESME_RX_T_APPN">>)           -> ?ESME_RX_T_APPN;
+err(<<"ESME_RX_P_APPN">>)           -> ?ESME_RX_P_APPN;
+err(<<"ESME_RX_R_APPN">>)           -> ?ESME_RX_R_APPN;
+err(<<"ESME_RQUERYFAIL">>)          -> ?ESME_RQUERYFAIL;
+err(<<"ESME_RINVTLVSTREAM">>)       -> ?ESME_RINVTLVSTREAM;
+err(<<"ESME_RTLVNOTALLWD">>)        -> ?ESME_RTLVNOTALLWD;
+err(<<"ESME_RINVTLVLEN">>)          -> ?ESME_RINVTLVLEN;
+err(<<"ESME_RMISSINGTLV">>)         -> ?ESME_RMISSINGTLV;
+err(<<"ESME_RINVTLVVAL">>)          -> ?ESME_RINVTLVVAL;
+err(<<"ESME_RDELIVERYFAILURE">>)    -> ?ESME_RDELIVERYFAILURE;
+err(<<"ESME_RUNKNOWNERR">>)         -> ?ESME_RUNKNOWNERR;
+err(<<"ESME_RSERTYPUNAUTH">>)       -> ?ESME_RSERTYPUNAUTH;
+err(<<"ESME_RPROHIBITED">>)         -> ?ESME_RPROHIBITED;
+err(<<"ESME_RSERTYPUNAVAIL">>)      -> ?ESME_RSERTYPUNAVAIL;
+err(<<"ESME_RSERTYPDENIED">>)       -> ?ESME_RSERTYPDENIED;
+err(<<"ESME_RINVDCS">>)             -> ?ESME_RINVDCS;
+err(<<"ESME_RINVSRCADDRSUBUNIT">>)  -> ?ESME_RINVSRCADDRSUBUNIT;
+err(<<"ESME_RINVDSTADDRSUBUNIT">>)  -> ?ESME_RINVDSTADDRSUBUNIT;
+err(<<"ESME_RINVBCASTFREQINT">>)    -> ?ESME_RINVBCASTFREQINT;
+err(<<"ESME_RINVBCASTALIAS_NAME">>) -> ?ESME_RINVBCASTALIAS_NAME;
+err(<<"ESME_RINVBCASTAREAFMT">>)    -> ?ESME_RINVBCASTAREAFMT;
+err(<<"ESME_RINVNUMBCAST_AREAS">>)  -> ?ESME_RINVNUMBCAST_AREAS;
+err(<<"ESME_RINVBCASTCNTTYPE">>)    -> ?ESME_RINVBCASTCNTTYPE;
+err(<<"ESME_RINVBCASTMSGCLASS">>)   -> ?ESME_RINVBCASTMSGCLASS;
+err(<<"ESME_RBCASTFAIL">>)          -> ?ESME_RBCASTFAIL;
+err(<<"ESME_RBCASTQUERYFAIL">>)     -> ?ESME_RBCASTQUERYFAIL;
+err(<<"ESME_RBCASTCANCELFAIL">>)    -> ?ESME_RBCASTCANCELFAIL;
+err(<<"ESME_RINVBCAST_REP">>)       -> ?ESME_RINVBCAST_REP;
+err(<<"ESME_RINVBCASTSRVGRP">>)     -> ?ESME_RINVBCASTSRVGRP;
+err(<<"ESME_RINVBCASTCHANIND">>)    -> ?ESME_RINVBCASTCHANIND;
+err(<<"ESME_RINVOPTPARSTREAM">>)    -> ?ESME_RINVOPTPARSTREAM;
+err(<<"ESME_ROPTPARNOTALLWD">>)     -> ?ESME_ROPTPARNOTALLWD;
+err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
+err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
+err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
 
 %% ===================================================================
 %% TESTS
@@ -511,7 +721,7 @@ encode_decode_test_() ->
                 ?assertEqual(true, is_binary(E)),
                 ?assertEqual({ok, D}, decode(E))
             end}
-            || {T,P} <- ?TESTS]
+        || {T,P} <- ?TESTS]
     }.
 
 encode_decode_1_test_() ->
@@ -531,6 +741,26 @@ encode_decode_1_test_() ->
                                         ))/binary>>||<<B>><=Bin>>),
                         ?assertEqual(true, is_map(D))                
                 end
+            end}
+        || {T,C,J} <- ?TESTS2]
+    }.
+
+enum_test_() ->
+    {inparallel,
+        [{T,
+            fun() ->
+                I = json2internal(jsx:decode(J, [return_maps])),
+                {ok, Bin} = pack(I),
+                {ok, #{} = D} = decode(
+                    <<<<(list_to_binary(
+                        string:right(integer_to_list(B,16),2,$0)))/binary>>
+                    || <<B>> <= Bin>>),
+                S = jsx:decode(jsx:encode(D), [return_maps]),
+                #{<<"command_id">> := CmdId,
+                  <<"command_status">> := CommandStatus} = S1 = to_enum(S),
+                ?assertEqual(true, is_binary(CmdId)),
+                ?assertEqual(true, is_binary(CommandStatus)),
+                ?assertEqual(S, from_enum(S1))
             end}
         || {T,C,J} <- ?TESTS2]
     }.
