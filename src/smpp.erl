@@ -100,7 +100,7 @@ list_to_map({K, V}, Acc) when is_tuple(V) ->
     Acc#{K => rec_to_map(V)};
 list_to_map({K, V}, Acc) when is_list(V) ->
     case V of
-        [H|_T] when is_tuple(H) -> 
+        [H|_T] when is_tuple(H) ->
             Acc#{K => [rec_to_map(R) || R <- V]};
         _ -> Acc#{K => V}
     end;
@@ -111,7 +111,7 @@ list_to_pl({K, V}, Acc) when is_tuple(V) ->
     [{K, rec_to_pl(V)} | Acc];
 list_to_pl({K, V}, Acc) when is_list(V) ->
     case V of
-        [H|_T] when is_tuple(H) -> 
+        [H|_T] when is_tuple(H) ->
             [{K, [rec_to_pl(R) || R <- V]} | Acc];
         _ -> [{K, V} | Acc]
     end;
@@ -122,14 +122,14 @@ map_to_pl(K, V, Acc) when is_map(V) ->
     [{K, map_to_rec(K, V)} | Acc];
 map_to_pl(K, V, Acc) when is_list(V) ->
     case V of
-        [H|_T] when is_map(H) -> 
+        [H|_T] when is_map(H) ->
             [{K, [map_to_rec(K, M) || M <- V]} | Acc];
         _ ->
             [{K, V} | Acc]
     end;
 map_to_pl(K, V, Acc) ->
     [{K, V} | Acc].
-     
+
 rec_to_map(Rec) ->
     maps:from_list(rec_to_pl(Rec)).
 
@@ -152,7 +152,7 @@ rec_info(ms_validity_absolute) ->
     record_info(fields, ms_validity_absolute);
 rec_info(callback_num_atag) ->
     record_info(fields, callback_num_atag);
-rec_info(Type) -> 
+rec_info(Type) ->
     io:format("Rec info not defined for type : ~p~n", [Type]),
     [].
 
@@ -172,7 +172,7 @@ statusstr(Status) when is_integer(Status) ->
 encode(PDU) when is_map(PDU) ->
     case pack(json2internal(PDU)) of
         {ok, Bin} ->
-            {ok, 
+            {ok,
                 list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))}
@@ -191,7 +191,7 @@ decode(HexBin) when is_binary(HexBin) ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
             {ok, internal2json(PDU)}
-    end;    
+    end;
 decode(_) ->
     {error, <<"Input to decode should be Hex String">>}.
 
@@ -739,7 +739,7 @@ encode_decode_1_test_() ->
                                             string:right(
                                                 integer_to_list(B,16),2,$0)
                                         ))/binary>>||<<B>><=Bin>>),
-                        ?assertEqual(true, is_map(D))                
+                        ?assertEqual(true, is_map(D))
                 end
             end}
         || {T,C,J} <- ?TESTS2]
