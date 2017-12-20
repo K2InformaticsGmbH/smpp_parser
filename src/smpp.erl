@@ -200,19 +200,19 @@ to_enum(SMPP) when is_map(SMPP) ->
         fun(K, V, M) ->
             M#{K => to_enum(K, V)}
         end, #{}, SMPP).
-to_enum(<<"command_id">>,       V) -> cmdstr(V);
-to_enum(<<"command_status">>,   V) -> statusstr(V);
-to_enum(<<"addr_ton">>,         V) -> ton(V);
-to_enum(<<"source_addr_ton">>,  V) -> ton(V);
-to_enum(<<"dest_addr_ton">>,    V) -> ton(V);
-to_enum(<<"esme_addr_ton">>,    V) -> ton(V);
-to_enum(<<"addr_npi">>,         V) -> npi(V);
-to_enum(<<"source_addr_npi">>,  V) -> npi(V);
-to_enum(<<"dest_addr_npi">>,    V) -> npi(V);
-to_enum(<<"esme_addr_npi">>,    V) -> npi(V);
-to_enum(<<"data_coding">>,      V) -> enc(V);
-to_enum(<<"message_state">>,    V) -> msgstate(V);
-to_enum(_,                      V) -> V.
+to_enum(K, V) when K == <<"command_id">>; K == command_id -> cmdstr(V);
+to_enum(K, V) when K == <<"command_status">>; K == command_status -> statusstr(V);
+to_enum(K, V) when K == <<"addr_ton">>; K == addr_ton -> ton(V);
+to_enum(K, V) when K == <<"source_addr_ton">>; K == source_addr_ton -> ton(V);
+to_enum(K, V) when K == <<"dest_addr_ton">>; K == dest_addr_ton -> ton(V);
+to_enum(K, V) when K == <<"esme_addr_ton">>; K == esme_addr_ton -> ton(V);
+to_enum(K, V) when K == <<"addr_npi">>; K == addr_npi -> npi(V);
+to_enum(K, V) when K == <<"source_addr_npi">>; K == source_addr_npi -> npi(V);
+to_enum(K, V) when K == <<"dest_addr_npi">>; K == dest_addr_npi -> npi(V);
+to_enum(K, V) when K == <<"esme_addr_npi">>; K == esme_addr_npi -> npi(V);
+to_enum(K, V) when K == <<"data_coding">>; K == data_coding -> enc(V);
+to_enum(K, V) when K == <<"message_state">>; K == message_state -> msgstate(V);
+to_enum(_, V) -> V.
 
 from_enum(SMPP) when is_map(SMPP) ->
     maps:fold(
