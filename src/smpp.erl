@@ -162,7 +162,9 @@ rec_type(source_telematics_id) -> telematics_id;
 rec_type(Type) -> Type.
 
 cmdstr(Cmd) when is_integer(Cmd) -> atom_to_binary(cmd(Cmd),utf8).
-cmdval(Cmd) when is_binary(Cmd) -> cmd(binary_to_existing_atom(Cmd,utf8)).
+
+cmdval(Cmd) when is_binary(Cmd) -> cmd(binary_to_existing_atom(Cmd,utf8));
+cmdval(Cmd) -> Cmd.
 
 statusstr(Status) when is_integer(Status) ->
     {_, StatusStr, _} = err(Status),
@@ -185,12 +187,13 @@ decode(HexStr) when is_list(HexStr) ->
     decode(list_to_binary(HexStr));
 decode(HexBin) when is_binary(HexBin) ->
     ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
+    CmdLen = byte_size(ModBin),
     Bin = list_to_binary([binary_to_integer(B, 16) || <<B:2/binary>> <= ModBin]),
     case unpack_map(Bin) of
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, internal2json(PDU)}
+            {ok, internal2json(PDU#{command_length => CmdLen})}
     end;
 decode(_) ->
     {error, <<"Input to decode should be Hex String">>}.
@@ -200,18 +203,18 @@ to_enum(SMPP) when is_map(SMPP) ->
         fun(K, V, M) ->
             M#{K => to_enum(K, V)}
         end, #{}, SMPP).
-to_enum(K, V) when K == <<"command_id">>; K == command_id -> cmdstr(V);
-to_enum(K, V) when K == <<"command_status">>; K == command_status -> statusstr(V);
-to_enum(K, V) when K == <<"addr_ton">>; K == addr_ton -> ton(V);
-to_enum(K, V) when K == <<"source_addr_ton">>; K == source_addr_ton -> ton(V);
-to_enum(K, V) when K == <<"dest_addr_ton">>; K == dest_addr_ton -> ton(V);
-to_enum(K, V) when K == <<"esme_addr_ton">>; K == esme_addr_ton -> ton(V);
-to_enum(K, V) when K == <<"addr_npi">>; K == addr_npi -> npi(V);
-to_enum(K, V) when K == <<"source_addr_npi">>; K == source_addr_npi -> npi(V);
-to_enum(K, V) when K == <<"dest_addr_npi">>; K == dest_addr_npi -> npi(V);
-to_enum(K, V) when K == <<"esme_addr_npi">>; K == esme_addr_npi -> npi(V);
-to_enum(K, V) when K == <<"data_coding">>; K == data_coding -> enc(V);
-to_enum(K, V) when K == <<"message_state">>; K == message_state -> msgstate(V);
+to_enum(K, V) when K == <<"command_id">>;       K == command_id         -> cmdstr(V);
+to_enum(K, V) when K == <<"command_status">>;   K == command_status     -> statusstr(V);
+to_enum(K, V) when K == <<"addr_ton">>;         K == addr_ton           -> ton(V);
+to_enum(K, V) when K == <<"source_addr_ton">>;  K == source_addr_ton    -> ton(V);
+to_enum(K, V) when K == <<"dest_addr_ton">>;    K == dest_addr_ton      -> ton(V);
+to_enum(K, V) when K == <<"esme_addr_ton">>;    K == esme_addr_ton      -> ton(V);
+to_enum(K, V) when K == <<"addr_npi">>;         K == addr_npi           -> npi(V);
+to_enum(K, V) when K == <<"source_addr_npi">>;  K == source_addr_npi    -> npi(V);
+to_enum(K, V) when K == <<"dest_addr_npi">>;    K == dest_addr_npi      -> npi(V);
+to_enum(K, V) when K == <<"esme_addr_npi">>;    K == esme_addr_npi      -> npi(V);
+to_enum(K, V) when K == <<"data_coding">>;      K == data_coding        -> enc(V);
+to_enum(K, V) when K == <<"message_state">>;    K == message_state      -> msgstate(V);
 to_enum(_, V) -> V.
 
 from_enum(SMPP) when is_map(SMPP) ->
@@ -219,19 +222,20 @@ from_enum(SMPP) when is_map(SMPP) ->
         fun(K, V, M) ->
             M#{K => from_enum(K, V)}
         end, #{}, SMPP).
-from_enum(<<"command_id">>,         V) -> cmdval(V);
-from_enum(<<"command_status">>,     V) -> err(V);
-from_enum(<<"addr_ton">>,           V) -> ton(V);
-from_enum(<<"source_addr_ton">>,    V) -> ton(V);
-from_enum(<<"dest_addr_ton">>,      V) -> ton(V);
-from_enum(<<"esme_addr_ton">>,      V) -> ton(V);
-from_enum(<<"addr_npi">>,           V) -> npi(V);
-from_enum(<<"source_addr_npi">>,    V) -> npi(V);
-from_enum(<<"dest_addr_npi">>,      V) -> npi(V);
-from_enum(<<"esme_addr_npi">>,      V) -> npi(V);
-from_enum(<<"data_coding">>,        V) -> enc(V);
-from_enum(<<"message_state">>,      V) -> msgstate(V);
-from_enum(_,                        V) -> V.
+from_enum(K, V) when K == <<"command_id">>;       K == command_id       -> cmdval(V);
+from_enum(K, V) when (K == <<"command_status">> orelse K == command_status) andalso is_integer(V) -> V;
+from_enum(K, V) when K == <<"command_status">>;   K == command_status   -> err(V);
+from_enum(K, V) when K == <<"addr_ton">>;         K == addr_ton         -> ton(V);
+from_enum(K, V) when K == <<"source_addr_ton">>;  K == source_addr_ton  -> ton(V);
+from_enum(K, V) when K == <<"dest_addr_ton">>;    K == dest_addr_ton    -> ton(V);
+from_enum(K, V) when K == <<"esme_addr_ton">>;    K == esme_addr_ton    -> ton(V);
+from_enum(K, V) when K == <<"addr_npi">>;         K == addr_npi         -> npi(V);
+from_enum(K, V) when K == <<"source_addr_npi">>;  K == source_addr_npi  -> npi(V);
+from_enum(K, V) when K == <<"dest_addr_npi">>;    K == dest_addr_npi    -> npi(V);
+from_enum(K, V) when K == <<"esme_addr_npi">>;    K == esme_addr_npi    -> npi(V);
+from_enum(K, V) when K == <<"data_coding">>;      K == data_coding      -> enc(V);
+from_enum(K, V) when K == <<"message_state">>;    K == message_state    -> msgstate(V);
+from_enum(_, V) -> V.
 
 %% ===================================================================
 %% Mapping functions
@@ -421,6 +425,7 @@ b2a(<<"message_state">>) -> message_state;
 b2a(<<"address_range">>) -> address_range;
 b2a(<<"priority_flag">>) -> priority_flag;
 b2a(<<"command_status">>) -> command_status;
+b2a(<<"command_length">>) -> command_length;
 b2a(<<"sequence_number">>) -> sequence_number;
 b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;
@@ -762,7 +767,7 @@ enum_test_() ->
                 ?assertEqual(true, is_binary(CommandStatus)),
                 ?assertEqual(S, from_enum(S1))
             end}
-        || {T,C,J} <- ?TESTS2]
+        || {T,_,J} <- ?TESTS2]
     }.
 
 -endif.
