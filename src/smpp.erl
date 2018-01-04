@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1, encode_msg/1]).
+         internal2json/1, encode/1, decode/1, encode_msg/1, templates/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
@@ -589,6 +589,34 @@ err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
 err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
 err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
 
+-define(BASE(_Id),
+        #{command_id => _Id, command_status => 0, sequence_number => 0}).
+-define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => ""}).
+-define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
+templates() ->
+    #{unbind                => ?BASE(cmd(unbind)),
+      query_sm              => ?BASE(cmd(query_sm)),
+      replace_sm            => ?BASE(cmd(replace_sm)),
+      outbind               => ?M_SYS_ID(cmd(outbind)),
+      enquire_link          => ?BASE(cmd(enquire_link)),
+      cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
+      submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
+      deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
+      bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
+      bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
+      bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
+
+      unbind_resp           => ?BASE(cmd(unbind_resp)),
+      query_sm_resp         => ?BASE(cmd(query_sm_resp)),
+      submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
+      cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
+      deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
+      replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
+      enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
+      bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
+      bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
+      bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))}.
+
 %% ===================================================================
 %% TESTS
 %% ===================================================================
@@ -768,6 +796,22 @@ enum_test_() ->
                 ?assertEqual(S, from_enum(S1))
             end}
         || {T,_,J} <- ?TESTS2]
+    }.
+
+
+templates_test_() ->
+    {inparallel,
+        maps:fold(
+            fun(T, Pdu, Acc) ->
+                [{atom_to_list(T),
+                  fun() ->
+                    case pack(Pdu) of
+                        {error, _ , Error, _} ->
+                            ?assertEqual(ok, err(Error));
+                        {ok, _} -> ok
+                    end                    
+                  end} | Acc]
+            end, [], templates())
     }.
 
 -endif.
