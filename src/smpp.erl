@@ -442,7 +442,8 @@ b2a(<<"registered_delivery">>) -> registered_delivery;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
-b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag.
+b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
+b2a(Field) when is_atom(Field) -> Field.
 
 err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
 err(?ESME_RINVMSGLEN)->          {'ESME_RINVMSGLEN',            "ESME_RINVMSGLEN",          "Message Length is invalid"};
@@ -809,7 +810,7 @@ templates_test_() ->
                         {error, _ , Error, _} ->
                             ?assertEqual(ok, err(Error));
                         {ok, _} -> ok
-                    end                    
+                    end
                   end} | Acc]
             end, [], templates())
     }.
