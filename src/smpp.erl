@@ -139,7 +139,6 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
 
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
-    io:format("map to rec : ~p~n", [list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]])]),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
 
 rec_info(telematics_id) ->
@@ -152,6 +151,8 @@ rec_info(ms_validity_absolute) ->
     record_info(fields, ms_validity_absolute);
 rec_info(callback_num_atag) ->
     record_info(fields, callback_num_atag);
+rec_info(network_error_code) ->
+    record_info(fields, network_error_code);
 rec_info(Type) ->
     io:format("Rec info not defined for type : ~p~n", [Type]),
     [].
