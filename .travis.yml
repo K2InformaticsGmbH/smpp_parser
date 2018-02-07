@@ -8,7 +8,6 @@ before_script:
  - kerl list installations
 script:
   - ./rebar3 compile
-  - ./rebar3 ct
   - ./rebar3 eunit
   - ./rebar3 cover
   - ./rebar3 as test coveralls send
