@@ -1,13 +1,5 @@
-.eunit
-deps
-*.swp
-*.o
-*.plt
-erl_crash.dump
-rel/example_project
-.concrete/DEV_MODE
-.rebar
 _build/
+erl_crash.dump
 rebar.lock
 rebar3.crashdump
 tmp
