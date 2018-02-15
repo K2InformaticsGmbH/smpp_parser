@@ -6,6 +6,8 @@
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
+-safe([unpack_map/1]).
+
 json2internal(SMPP) when is_map(SMPP) ->
     maps:fold(fun(K,V,M) when is_binary(K) ->
                       AK = b2a(K),
