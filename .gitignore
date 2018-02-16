@@ -3,3 +3,5 @@ erl_crash.dump
 rebar.lock
 rebar3.crashdump
 tmp
+*.swp
+.rebar
