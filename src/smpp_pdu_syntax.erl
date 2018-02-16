@@ -177,6 +177,7 @@ pack_opts(Body, [Type | Types], Acc) ->
 unpack_body(BinBody, P) ->
     case unpack_stds(BinBody, P#pdu.std_types) of
         {ok, StdValues, BinTlvs} ->
+io:format("~p,~p) P#pdu.tlv_types ~p Pdu ~p~n", [?MODULE, ?LINE, P#pdu.tlv_types, P]),
             case unpack_tlvs(BinTlvs, P#pdu.tlv_types) of
                 {ok, TlvValues, BinOpts} ->
                     case unpack_opts(BinOpts, P#pdu.opt_types) of
