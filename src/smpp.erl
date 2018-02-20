@@ -27,6 +27,7 @@ json2internal(SMPP) when is_map(SMPP) ->
 
 internal2json(SMPP) when is_map(SMPP) ->
     maps:map(fun internal2json/2, SMPP).
+internal2json(tlvs, V) -> V;
 internal2json(_, V) when is_list(V) -> list_to_binary(V);
 internal2json(_, V) -> V.
 
@@ -107,8 +108,10 @@ list_to_map({K, V}, Acc) when is_list(V) ->
         _ -> Acc#{K => V}
     end;
 list_to_map({K, V}, Acc) ->
-    Acc#{K => V}.
-
+    Acc#{K => V};
+list_to_map({T, L, V}, Acc) ->
+    Acc#{tlvs => [#{tag => T, len => L, val => V} | maps:get(tlvs, Acc, [])]}.
+    
 list_to_pl({K, V}, Acc) when is_tuple(V) ->
     [{K, rec_to_pl(V)} | Acc];
 list_to_pl({K, V}, Acc) when is_list(V) ->
@@ -128,7 +131,7 @@ map_to_pl(K, V, Acc) when is_list(V) ->
             [{K, [map_to_rec(K, M) || M <- V]} | Acc];
         _ ->
             [{K, V} | Acc]
-    end;
+  end;
 map_to_pl(K, V, Acc) ->
     [{K, V} | Acc].
 
@@ -139,6 +142,9 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
 
+map_to_rec(tlvs, Map) when is_map(Map) ->
+    #{tag := T, len := L, val := V} = Map,
+    {T, L, V};
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
@@ -406,6 +412,10 @@ cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 
+b2a(<<"len">>) -> len;
+b2a(<<"tag">>) -> tag;
+b2a(<<"val">>) -> val;
+b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
@@ -816,6 +826,54 @@ templates_test_() ->
                     end
                   end} | Acc]
             end, [], templates())
+    }.
+
+-define(IGNORE_FIELDS,
+    [schedule_delivery_time, service_type, short_message, sm_default_msg_id,
+     source_addr, source_addr_npi, source_addr_ton, validity_period,
+     data_coding, dest_addr_npi, dest_addr_ton, destination_addr, esm_class,
+     priority_flag, protocol_id, registered_delivery, replace_if_present_flag,
+     command_length, command_status, sequence_number]).
+
+vendor_tlv_test_() ->
+    {inparallel,
+        [{T,
+            fun() ->
+                 {ok, #{tlvs := Tlvs} = D0} = decode(I),
+                 D = D0#{tlvs => lists:usort(Tlvs)},
+                 ?assertEqual(O, maps:without(?IGNORE_FIELDS, D)),
+                 {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
+                 ?assertEqual(true, is_binary(E)),
+                 {ok, #{tlvs := Tlvs1} = D00} = decode(E),
+                 D1 = D00#{tlvs => lists:usort(Tlvs1)},
+                 ?assertEqual(O, maps:without(?IGNORE_FIELDS, D1))
+            end
+         } || {T,I,O} <-
+            [
+                {"submit_sm",
+                 "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+                 "02 04 00 01 01 " % user_message_reference
+                 "14 00 00 01 02 "
+                 "14 01 00 02 03 04",
+                 #{command_id => 4,
+                   user_message_reference => 16#01,
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
+                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                  }
+                },
+                {"submit_sm-1",
+                 "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+                 "14 01 00 02 03 04"
+                 "14 00 00 01 02 "
+                 "02 04 00 01 01 ", % user_message_reference
+                 #{command_id => 4,
+                   user_message_reference => 16#01,
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
+                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                  }
+                }
+            ]
+        ]
     }.
 
 -endif.

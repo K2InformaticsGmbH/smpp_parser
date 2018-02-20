@@ -160,8 +160,8 @@ pack_tlvs(Body, [Type | Types], Acc) ->
 pack_opts(Body, OptTypes) ->
     pack_opts(Body, OptTypes, []).
 
-pack_opts(_Body, [], Acc) ->
-    {ok, Acc};
+pack_opts(Body, [], Acc) ->
+    {ok, pack_opts_tlv(Body, Acc)};
 pack_opts(Body, [Type | Types], Acc) ->
     {Value, NewBody} = get_value(smpp_param_syntax:get_name(Type), Body),
     case smpp_param_syntax:encode(Value, Type) of
@@ -173,16 +173,24 @@ pack_opts(Body, [Type | Types], Acc) ->
             Error
     end.
 
+pack_opts_tlv(Body, Acc) ->
+    case proplists:get_value(tlvs, Body) of
+        undefine -> Acc;
+        Tlvs ->
+            lists:foldl(
+                fun({T, L, V}, A) ->
+                    [<<T:16, L:16, (list_to_binary(V))/binary>> | A]
+                end, Acc, Tlvs)
+    end.
 
 unpack_body(BinBody, P) ->
     case unpack_stds(BinBody, P#pdu.std_types) of
         {ok, StdValues, BinTlvs} ->
-io:format("~p,~p) P#pdu.tlv_types ~p Pdu ~p~n", [?MODULE, ?LINE, P#pdu.tlv_types, P]),
             case unpack_tlvs(BinTlvs, P#pdu.tlv_types) of
                 {ok, TlvValues, BinOpts} ->
                     case unpack_opts(BinOpts, P#pdu.opt_types) of
                         {ok, OptValues} ->
-                            {ok, StdValues ++ TlvValues ++ OptValues};
+                           {ok, StdValues ++ TlvValues ++ OptValues};
                         OptError ->
                             OptError
                     end;
@@ -249,8 +257,8 @@ unpack_opts(<<>>, _OptTypes, Acc) ->
     {ok, Acc};
 unpack_opts(UnusedOpts, [], Acc) ->
     case smpp_param_syntax:chop_tlv(UnusedOpts) of
-        {ok, _Tlv, RestUnusedOpts} ->
-            unpack_opts(RestUnusedOpts, [], Acc);
+        {ok, <<T:16/integer, L:16/integer, V/binary>>, RestUnusedOpts} ->
+            unpack_opts(RestUnusedOpts, [], [{T,L,V} | Acc]);
         _Error ->  % Malformed TLV
             {error, ?ESME_RINVTLVSTREAM}
     end;
@@ -264,4 +272,3 @@ unpack_opts(BinOpts, [Type | Types], Acc) ->
         Error ->
             Error
     end.
-

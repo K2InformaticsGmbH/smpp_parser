@@ -108,7 +108,6 @@ decode_tlv(<<T:16, L:16, Bin/binary>>, #tlv{tag = T} = TlvType, Values, Acc) ->
     % The Tag matches, try to decode the TLV
     case Bin of
         <<V:L/binary-unit:8, Rest/binary>> ->
-io:format("~p) T ~p, V ~p, L ~p, Rest ~p~n", [?LINE, T, V, L, Rest]),
             % The domain is updated to fit the Length (L) of the value (V)
             % of the TLV.  Fit never enlarges the size, see base_syntax:fit/2.
             Domain = smpp_base_syntax:fit(TlvType#tlv.domain, L),
@@ -132,7 +131,6 @@ decode_tlv(<<T:16, L:16, Bin/binary>>, TlvType, Values, Acc) ->
     % The Tag doesn't match, move the TLV to Acc and keep on searching.
     case Bin of
         <<V:L/binary-unit:8, Rest/binary>> ->
-io:format("~p) T ~p, V ~p, L ~p, Rest ~p~n", [?LINE, T, V, L, Rest]),
             Tlv = <<T:16, L:16, V:L/binary-unit:8>>,
             decode_tlv(Rest, TlvType, Values, [Tlv|Acc]);
         _TruncatedVal ->
