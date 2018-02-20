@@ -175,7 +175,7 @@ pack_opts(Body, [Type | Types], Acc) ->
 
 pack_opts_tlv(Body, Acc) ->
     case proplists:get_value(tlvs, Body) of
-        undefine -> Acc;
+        undefined -> Acc;
         Tlvs ->
             lists:foldl(
                 fun({T, L, V}, A) ->
