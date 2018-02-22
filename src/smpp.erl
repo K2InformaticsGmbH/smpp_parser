@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1, encode_msg/1, templates/0]).
+         internal2json/1, encode/1, decode/1, templates/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
@@ -29,43 +29,6 @@ internal2json(SMPP) when is_map(SMPP) ->
     maps:map(fun internal2json/2, SMPP).
 internal2json(_, V) when is_list(V) -> list_to_binary(V);
 internal2json(_, V) -> V.
-
-encode_msg(#{data_coding := DC, short_message := SM} = SMPP)
-    when DC == ?ENCODING_SCHEME_LATIN_1; DC == ?ENCODING_SCHEME_IA5_ASCII;
-         DC == ?ENCODING_SCHEME_MC_SPECIFIC ->
-    SMPP#{short_message => unicode:characters_to_binary(SM)};
-encode_msg(#{data_coding := ?ENCODING_SCHEME_UCS2,
-                 short_message := SM} = SMPP) ->
-    SMPP#{short_message => ucs2_to_utf16(SM)};
-encode_msg(#{short_message := SM} = SMPP) ->
-    SMPP#{short_message => base64:encode(list_to_binary(SM))};
-encode_msg(SMPP) -> SMPP.
-
-ucs2_to_utf16({cp, CPList}) ->
-    case unicode:characters_to_binary(CPList, utf16, utf8) of
-        {error, ConvertedBin, [[Failed]|Rest]} ->
-            <<ConvertedBin/binary, (Failed bsr 8), (Failed band 16#00FF),
-              (ucs2_to_utf16({cp, Rest}))/binary>>;
-        ConvertedBin when is_binary(ConvertedBin) -> ConvertedBin
-    end;
-ucs2_to_utf16(ShortMessage) ->
-    CPList = ucs2_to_utf16_cp(ShortMessage, []),
-    io:format(user, "{~p,~p} ShortMessage ~w~n",
-              [?MODULE, ?LINE, ShortMessage]),
-    ucs2_to_utf16({cp, CPList}).
-
-ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
-% Erlang DOC: An integer in the range 16#D800 to 16#DFFF (invalid range
-%  reserved for UTF-16 surrogate pairs)
-ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
-    ucs2_to_utf16_cp(
-      Rest, lists:reverse(
-              lists:flatten(
-                [$\\, $u,
-                 io_lib:format("~2.16.0B~2.16.0B", [A,B])]
-               )) ++ Result);
-ucs2_to_utf16_cp([A,B|Rest], Result) ->
-    ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
