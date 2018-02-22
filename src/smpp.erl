@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1, encode_msg/1, templates/0]).
+         internal2json/1, encode/1, decode/1, encode_msg/1, info/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
@@ -607,29 +607,76 @@ err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
         #{command_id => _Id, command_status => 0, sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => ""}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
-templates() ->
-    #{unbind                => ?BASE(cmd(unbind)),
-      query_sm              => ?BASE(cmd(query_sm)),
-      replace_sm            => ?BASE(cmd(replace_sm)),
-      outbind               => ?M_SYS_ID(cmd(outbind)),
-      enquire_link          => ?BASE(cmd(enquire_link)),
-      cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
-      submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
-      deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
-      bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
-      bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
-      bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
+info() ->
+    #{templates =>
+        #{unbind                => ?BASE(cmd(unbind)),
+          query_sm              => ?BASE(cmd(query_sm)),
+          replace_sm            => ?BASE(cmd(replace_sm)),
+          outbind               => ?M_SYS_ID(cmd(outbind)),
+          enquire_link          => ?BASE(cmd(enquire_link)),
+          cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
+          submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
+          deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
+          bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
+          bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
+          bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
 
-      unbind_resp           => ?BASE(cmd(unbind_resp)),
-      query_sm_resp         => ?BASE(cmd(query_sm_resp)),
-      submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
-      cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
-      deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
-      replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
-      enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
-      bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
-      bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
-      bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))}.
+          unbind_resp           => ?BASE(cmd(unbind_resp)),
+          query_sm_resp         => ?BASE(cmd(query_sm_resp)),
+          submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
+          cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
+          deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
+          replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
+          enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
+          bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
+          bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
+          bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))},
+      schema => schema()}.
+
+-include("smpp_pdu.hrl").
+
+-define(BINLIST(__R,__T,__F),
+        [atom_to_binary(N, utf8) || #__R{name = N} <- ?__T#pdu.__F]).
+-define(SPEC(__T),
+    #{props => ?BINLIST(standard,__T,std_types),
+      tlvs  => ?BINLIST(tlv,__T,tlv_types),
+      opts  => [#{tag => 16#1400, len => 0, val => <<>>}
+                | ?BINLIST(tlv,__T,opt_types)]}
+).
+schema() ->
+    #{bind_transmitter         => ?SPEC(BIND_TRANSMITTER),
+      bind_transmitter_resp    => ?SPEC(BIND_TRANSMITTER_RESP),
+      bind_receiver            => ?SPEC(BIND_RECEIVER),
+      bind_receiver_resp       => ?SPEC(BIND_RECEIVER_RESP),
+      bind_transceiver         => ?SPEC(BIND_TRANSCEIVER),
+      bind_transceiver_resp    => ?SPEC(BIND_TRANSCEIVER_RESP),
+      outbind                  => ?SPEC(OUTBIND),
+      unbind                   => ?SPEC(UNBIND),
+      unbind_resp              => ?SPEC(UNBIND_RESP),
+      enquire_link             => ?SPEC(ENQUIRE_LINK),
+      enquire_link_resp        => ?SPEC(ENQUIRE_LINK_RESP),
+      alert_notification       => ?SPEC(ALERT_NOTIFICATION),
+      generic_nack             => ?SPEC(GENERIC_NACK),
+      submit_sm                => ?SPEC(SUBMIT_SM),
+      submit_sm_resp           => ?SPEC(SUBMIT_SM_RESP),
+      data_sm                  => ?SPEC(DATA_SM),
+      data_sm_resp             => ?SPEC(DATA_SM_RESP),
+      submit_multi             => ?SPEC(SUBMIT_MULTI),
+      submit_multi_resp        => ?SPEC(SUBMIT_MULTI_RESP),
+      deliver_sm               => ?SPEC(DELIVER_SM),
+      deliver_sm_resp          => ?SPEC(DELIVER_SM_RESP),
+      broadcast_sm             => ?SPEC(BROADCAST_SM),
+      broadcast_sm_resp        => ?SPEC(BROADCAST_SM_RESP),
+      cancel_sm                => ?SPEC(CANCEL_SM),
+      cancel_sm_resp           => ?SPEC(CANCEL_SM_RESP),
+      query_sm                 => ?SPEC(QUERY_SM),
+      query_sm_resp            => ?SPEC(QUERY_SM_RESP),
+      replace_sm               => ?SPEC(REPLACE_SM),
+      replace_sm_resp          => ?SPEC(REPLACE_SM_RESP),
+      query_broadcast_sm       => ?SPEC(QUERY_BROADCAST_SM),
+      query_broadcast_sm_resp  => ?SPEC(QUERY_BROADCAST_SM_RESP),
+      cancel_broadcast_sm      => ?SPEC(CANCEL_BROADCAST_SM),
+      cancel_broadcast_sm_resp => ?SPEC(CANCEL_BROADCAST_SM_RESP)}.
 
 %% ===================================================================
 %% TESTS
@@ -814,6 +861,7 @@ enum_test_() ->
 
 
 templates_test_() ->
+    #{templates := Templates} = info(),
     {inparallel,
         maps:fold(
             fun(T, Pdu, Acc) ->
@@ -825,7 +873,7 @@ templates_test_() ->
                         {ok, _} -> ok
                     end
                   end} | Acc]
-            end, [], templates())
+            end, [], Templates)
     }.
 
 -define(IGNORE_FIELDS,
@@ -875,5 +923,9 @@ vendor_tlv_test_() ->
             ]
         ]
     }.
+
+schema_test() ->
+    #{schema := Schema} = info(),
+    ?assertEqual(true, is_binary(jsx:encode(Schema))).
 
 -endif.
