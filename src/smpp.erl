@@ -25,11 +25,10 @@ json2internal(SMPP) when is_map(SMPP) ->
                                end}
               end, #{}, SMPP).
 
-internal2json(SMPP) when is_map(SMPP) ->
-    maps:map(fun internal2json/2, SMPP).
-internal2json(tlvs, V) -> V;
-internal2json(_, V) when is_list(V) -> list_to_binary(V);
-internal2json(_, V) -> V.
+internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
+internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
+internal2json(_, V) when is_list(V)   -> list_to_binary(V);
+internal2json(_, V)                   -> V.
 
 encode_msg(#{data_coding := DC, short_message := SM} = SMPP)
     when DC == ?ENCODING_SCHEME_LATIN_1; DC == ?ENCODING_SCHEME_IA5_ASCII;
@@ -77,9 +76,21 @@ pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum}
         Error -> Error
     end;
 pack({CmdId, Status, SeqNum, Body} = SMPP)
-  when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
-       is_list(Body) ->
-  smpp_operation:pack(SMPP).
+    when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
+         is_list(Body) ->
+    smpp_operation:pack(SMPP);
+pack([{_,_}|_] = SMPP) ->
+    CmdId = proplists:get_value(command_id, SMPP, '$notfound'),
+    Status = proplists:get_value(command_status, SMPP, '$notfound'),
+    SeqNum = proplists:get_value(sequence_number, SMPP, '$notfound'),
+    if CmdId == '$notfound' orelse Status == '$notfound'
+       orelse SeqNum == '$notfound' -> error(badpdu);
+        true -> ok
+    end,
+    Body1 = proplists:delete(command_id, SMPP),
+    Body2 = proplists:delete(command_status, Body1),
+    Body = proplists:delete(sequence_number, Body2),
+    pack({CmdId, Status, SeqNum, Body}).
 
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
@@ -99,6 +110,9 @@ unpack(Bin, Opts) ->
             end
     end.
 
+list_to_map({tlvs, TLVs}, Acc) ->
+    TLVMaps = [#{tag => T, len => L, val => V} || {T, L, V} <- TLVs],
+    Acc#{tlvs => TLVMaps ++ maps:get(tlvs, Acc, [])};
 list_to_map({K, V}, Acc) when is_tuple(V) ->
     Acc#{K => rec_to_map(V)};
 list_to_map({K, V}, Acc) when is_list(V) ->
@@ -108,10 +122,10 @@ list_to_map({K, V}, Acc) when is_list(V) ->
         _ -> Acc#{K => V}
     end;
 list_to_map({K, V}, Acc) ->
-    Acc#{K => V};
-list_to_map({T, L, V}, Acc) ->
-    Acc#{tlvs => [#{tag => T, len => L, val => V} | maps:get(tlvs, Acc, [])]}.
+    Acc#{K => V}.
     
+list_to_pl({tlvs, TLVs}, Acc) ->
+    [{tlvs, TLVs} | Acc];
 list_to_pl({K, V}, Acc) when is_tuple(V) ->
     [{K, rec_to_pl(V)} | Acc];
 list_to_pl({K, V}, Acc) when is_list(V) ->
@@ -162,7 +176,7 @@ rec_info(callback_num_atag) ->
 rec_info(network_error_code) ->
     record_info(fields, network_error_code);
 rec_info(Type) ->
-    io:format("Rec info not defined for type : ~p~n", [Type]),
+    io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
 rec_type(ms_validity) -> ms_validity_absolute;

@@ -257,8 +257,16 @@ unpack_opts(<<>>, _OptTypes, Acc) ->
     {ok, Acc};
 unpack_opts(UnusedOpts, [], Acc) ->
     case smpp_param_syntax:chop_tlv(UnusedOpts) of
-        {ok, <<T:16/integer, L:16/integer, V/binary>>, RestUnusedOpts} ->
-            unpack_opts(RestUnusedOpts, [], [{T,L,V} | Acc]);
+        {ok, <<T:16/integer, L:16/integer, VBin/binary>>, RestUnusedOpts} ->
+            V = binary_to_list(VBin),
+            unpack_opts(
+                RestUnusedOpts, [],
+                case lists:keytake(tlvs, 1, Acc) of
+                    {value, {tlvs, TLVs}, Acc1} ->
+                        [{tlvs, [{T,L,V} | TLVs]} | Acc1];
+                    false ->
+                        [{tlvs, [{T,L,V}]} | Acc]
+                end);
         _Error ->  % Malformed TLV
             {error, ?ESME_RINVTLVSTREAM}
     end;
