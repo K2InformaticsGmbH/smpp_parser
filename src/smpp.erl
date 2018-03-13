@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1, templates/0]).
+         internal2json/1, encode/1, decode/1, info/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
@@ -25,10 +25,10 @@ json2internal(SMPP) when is_map(SMPP) ->
                                end}
               end, #{}, SMPP).
 
-internal2json(SMPP) when is_map(SMPP) ->
-    maps:map(fun internal2json/2, SMPP).
-internal2json(_, V) when is_list(V) -> list_to_binary(V);
-internal2json(_, V) -> V.
+internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
+internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
+internal2json(_, V) when is_list(V)   -> list_to_binary(V);
+internal2json(_, V)                   -> V.
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
@@ -39,9 +39,21 @@ pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum}
         Error -> Error
     end;
 pack({CmdId, Status, SeqNum, Body} = SMPP)
-  when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
-       is_list(Body) ->
-  smpp_operation:pack(SMPP).
+    when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
+         is_list(Body) ->
+    smpp_operation:pack(SMPP);
+pack([{_,_}|_] = SMPP) ->
+    CmdId = proplists:get_value(command_id, SMPP, '$notfound'),
+    Status = proplists:get_value(command_status, SMPP, '$notfound'),
+    SeqNum = proplists:get_value(sequence_number, SMPP, '$notfound'),
+    if CmdId == '$notfound' orelse Status == '$notfound'
+       orelse SeqNum == '$notfound' -> error(badpdu);
+        true -> ok
+    end,
+    Body1 = proplists:delete(command_id, SMPP),
+    Body2 = proplists:delete(command_status, Body1),
+    Body = proplists:delete(sequence_number, Body2),
+    pack({CmdId, Status, SeqNum, Body}).
 
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
@@ -61,6 +73,9 @@ unpack(Bin, Opts) ->
             end
     end.
 
+list_to_map({tlvs, TLVs}, Acc) ->
+    TLVMaps = [#{tag => T, len => L, val => V} || {T, L, V} <- TLVs],
+    Acc#{tlvs => TLVMaps ++ maps:get(tlvs, Acc, [])};
 list_to_map({K, V}, Acc) when is_tuple(V) ->
     Acc#{K => rec_to_map(V)};
 list_to_map({K, V}, Acc) when is_list(V) ->
@@ -71,7 +86,9 @@ list_to_map({K, V}, Acc) when is_list(V) ->
     end;
 list_to_map({K, V}, Acc) ->
     Acc#{K => V}.
-
+    
+list_to_pl({tlvs, TLVs}, Acc) ->
+    [{tlvs, TLVs} | Acc];
 list_to_pl({K, V}, Acc) when is_tuple(V) ->
     [{K, rec_to_pl(V)} | Acc];
 list_to_pl({K, V}, Acc) when is_list(V) ->
@@ -91,7 +108,7 @@ map_to_pl(K, V, Acc) when is_list(V) ->
             [{K, [map_to_rec(K, M) || M <- V]} | Acc];
         _ ->
             [{K, V} | Acc]
-    end;
+  end;
 map_to_pl(K, V, Acc) ->
     [{K, V} | Acc].
 
@@ -102,6 +119,9 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
 
+map_to_rec(tlvs, Map) when is_map(Map) ->
+    #{tag := T, len := L, val := V} = Map,
+    {T, L, V};
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
@@ -119,7 +139,7 @@ rec_info(callback_num_atag) ->
 rec_info(network_error_code) ->
     record_info(fields, network_error_code);
 rec_info(Type) ->
-    io:format("Rec info not defined for type : ~p~n", [Type]),
+    io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
 rec_type(ms_validity) -> ms_validity_absolute;
@@ -369,6 +389,10 @@ cmd(cancel_broadcast_sm_resp)   -> ?COMMAND_ID_CANCEL_BROADCAST_SM_RESP;
 
 cmd({Cmd,S,SN,B}) -> {cmd(Cmd),S,SN,B}.
 
+b2a(<<"len">>) -> len;
+b2a(<<"tag">>) -> tag;
+b2a(<<"val">>) -> val;
+b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
@@ -560,29 +584,76 @@ err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
         #{command_id => _Id, command_status => 0, sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => ""}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
-templates() ->
-    #{unbind                => ?BASE(cmd(unbind)),
-      query_sm              => ?BASE(cmd(query_sm)),
-      replace_sm            => ?BASE(cmd(replace_sm)),
-      outbind               => ?M_SYS_ID(cmd(outbind)),
-      enquire_link          => ?BASE(cmd(enquire_link)),
-      cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
-      submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
-      deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
-      bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
-      bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
-      bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
+info() ->
+    #{templates =>
+        #{unbind                => ?BASE(cmd(unbind)),
+          query_sm              => ?BASE(cmd(query_sm)),
+          replace_sm            => ?BASE(cmd(replace_sm)),
+          outbind               => ?M_SYS_ID(cmd(outbind)),
+          enquire_link          => ?BASE(cmd(enquire_link)),
+          cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
+          submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
+          deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
+          bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
+          bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
+          bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
 
-      unbind_resp           => ?BASE(cmd(unbind_resp)),
-      query_sm_resp         => ?BASE(cmd(query_sm_resp)),
-      submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
-      cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
-      deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
-      replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
-      enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
-      bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
-      bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
-      bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))}.
+          unbind_resp           => ?BASE(cmd(unbind_resp)),
+          query_sm_resp         => ?BASE(cmd(query_sm_resp)),
+          submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
+          cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
+          deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
+          replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
+          enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
+          bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
+          bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
+          bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))},
+      schema => schema()}.
+
+-include("smpp_pdu.hrl").
+
+-define(BINLIST(__R,__T,__F),
+        [atom_to_binary(N, utf8) || #__R{name = N} <- ?__T#pdu.__F]).
+-define(SPEC(__T),
+    #{props => ?BINLIST(standard,__T,std_types),
+      tlvs  => ?BINLIST(tlv,__T,tlv_types),
+      opts  => [#{tag => 16#1400, len => 0, val => <<>>}
+                | ?BINLIST(tlv,__T,opt_types)]}
+).
+schema() ->
+    #{bind_transmitter         => ?SPEC(BIND_TRANSMITTER),
+      bind_transmitter_resp    => ?SPEC(BIND_TRANSMITTER_RESP),
+      bind_receiver            => ?SPEC(BIND_RECEIVER),
+      bind_receiver_resp       => ?SPEC(BIND_RECEIVER_RESP),
+      bind_transceiver         => ?SPEC(BIND_TRANSCEIVER),
+      bind_transceiver_resp    => ?SPEC(BIND_TRANSCEIVER_RESP),
+      outbind                  => ?SPEC(OUTBIND),
+      unbind                   => ?SPEC(UNBIND),
+      unbind_resp              => ?SPEC(UNBIND_RESP),
+      enquire_link             => ?SPEC(ENQUIRE_LINK),
+      enquire_link_resp        => ?SPEC(ENQUIRE_LINK_RESP),
+      alert_notification       => ?SPEC(ALERT_NOTIFICATION),
+      generic_nack             => ?SPEC(GENERIC_NACK),
+      submit_sm                => ?SPEC(SUBMIT_SM),
+      submit_sm_resp           => ?SPEC(SUBMIT_SM_RESP),
+      data_sm                  => ?SPEC(DATA_SM),
+      data_sm_resp             => ?SPEC(DATA_SM_RESP),
+      submit_multi             => ?SPEC(SUBMIT_MULTI),
+      submit_multi_resp        => ?SPEC(SUBMIT_MULTI_RESP),
+      deliver_sm               => ?SPEC(DELIVER_SM),
+      deliver_sm_resp          => ?SPEC(DELIVER_SM_RESP),
+      broadcast_sm             => ?SPEC(BROADCAST_SM),
+      broadcast_sm_resp        => ?SPEC(BROADCAST_SM_RESP),
+      cancel_sm                => ?SPEC(CANCEL_SM),
+      cancel_sm_resp           => ?SPEC(CANCEL_SM_RESP),
+      query_sm                 => ?SPEC(QUERY_SM),
+      query_sm_resp            => ?SPEC(QUERY_SM_RESP),
+      replace_sm               => ?SPEC(REPLACE_SM),
+      replace_sm_resp          => ?SPEC(REPLACE_SM_RESP),
+      query_broadcast_sm       => ?SPEC(QUERY_BROADCAST_SM),
+      query_broadcast_sm_resp  => ?SPEC(QUERY_BROADCAST_SM_RESP),
+      cancel_broadcast_sm      => ?SPEC(CANCEL_BROADCAST_SM),
+      cancel_broadcast_sm_resp => ?SPEC(CANCEL_BROADCAST_SM_RESP)}.
 
 %% ===================================================================
 %% TESTS
@@ -767,6 +838,7 @@ enum_test_() ->
 
 
 templates_test_() ->
+    #{templates := Templates} = info(),
     {inparallel,
         maps:fold(
             fun(T, Pdu, Acc) ->
@@ -778,7 +850,59 @@ templates_test_() ->
                         {ok, _} -> ok
                     end
                   end} | Acc]
-            end, [], templates())
+            end, [], Templates)
     }.
+
+-define(IGNORE_FIELDS,
+    [schedule_delivery_time, service_type, short_message, sm_default_msg_id,
+     source_addr, source_addr_npi, source_addr_ton, validity_period,
+     data_coding, dest_addr_npi, dest_addr_ton, destination_addr, esm_class,
+     priority_flag, protocol_id, registered_delivery, replace_if_present_flag,
+     command_length, command_status, sequence_number]).
+
+vendor_tlv_test_() ->
+    {inparallel,
+        [{T,
+            fun() ->
+                 {ok, #{tlvs := Tlvs} = D0} = decode(I),
+                 D = D0#{tlvs => lists:usort(Tlvs)},
+                 ?assertEqual(O, maps:without(?IGNORE_FIELDS, D)),
+                 {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
+                 ?assertEqual(true, is_binary(E)),
+                 {ok, #{tlvs := Tlvs1} = D00} = decode(E),
+                 D1 = D00#{tlvs => lists:usort(Tlvs1)},
+                 ?assertEqual(O, maps:without(?IGNORE_FIELDS, D1))
+            end
+         } || {T,I,O} <-
+            [
+                {"submit_sm",
+                 "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+                 "02 04 00 01 01 " % user_message_reference
+                 "14 00 00 01 02 "
+                 "14 01 00 02 03 04",
+                 #{command_id => 4,
+                   user_message_reference => 16#01,
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
+                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                  }
+                },
+                {"submit_sm-1",
+                 "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+                 "14 01 00 02 03 04"
+                 "14 00 00 01 02 "
+                 "02 04 00 01 01 ", % user_message_reference
+                 #{command_id => 4,
+                   user_message_reference => 16#01,
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
+                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                  }
+                }
+            ]
+        ]
+    }.
+
+schema_test() ->
+    #{schema := Schema} = info(),
+    ?assertEqual(true, is_binary(jsx:encode(Schema))).
 
 -endif.
