@@ -396,6 +396,7 @@ b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
+b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
@@ -407,13 +408,17 @@ b2a(<<"data_coding">>) -> data_coding;
 b2a(<<"system_type">>) -> system_type;
 b2a(<<"source_addr">>) -> source_addr;
 b2a(<<"protocol_id">>) -> protocol_id;
+b2a(<<"dest_address">>) -> dest_address;
 b2a(<<"service_type">>) -> service_type;
 b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
 b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
+b2a(<<"esme_addr_npi">>) -> esme_addr_npi;
+b2a(<<"esme_addr_ton">>) -> esme_addr_ton;
 b2a(<<"short_message">>) -> short_message;
 b2a(<<"message_state">>) -> message_state;
 b2a(<<"address_range">>) -> address_range;
 b2a(<<"priority_flag">>) -> priority_flag;
+b2a(<<"unsuccess_sme">>) -> unsuccess_sme;
 b2a(<<"command_status">>) -> command_status;
 b2a(<<"command_length">>) -> command_length;
 b2a(<<"sequence_number">>) -> sequence_number;
@@ -586,28 +591,40 @@ err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
 info() ->
     #{templates =>
-        #{unbind                => ?BASE(cmd(unbind)),
-          query_sm              => ?BASE(cmd(query_sm)),
-          replace_sm            => ?BASE(cmd(replace_sm)),
-          outbind               => ?M_SYS_ID(cmd(outbind)),
-          enquire_link          => ?BASE(cmd(enquire_link)),
-          cancel_sm             => ?M_DST_ADDR(cmd(cancel_sm)),
-          submit_sm             => ?M_DST_ADDR(cmd(submit_sm)),
-          deliver_sm            => ?M_DST_ADDR(cmd(deliver_sm)),
-          bind_receiver         => ?M_SYS_ID(cmd(bind_receiver)),
-          bind_transmitter      => ?M_SYS_ID(cmd(bind_transmitter)),
-          bind_transceiver      => ?M_SYS_ID(cmd(bind_transceiver)),
+        #{unbind                    => ?BASE(cmd(unbind)),
+          query_sm                  => ?BASE(cmd(query_sm)),
+          replace_sm                => ?BASE(cmd(replace_sm)),
+          outbind                   => ?M_SYS_ID(cmd(outbind)),
+          enquire_link              => ?BASE(cmd(enquire_link)),
+          data_sm                   => ?M_DST_ADDR(cmd(data_sm)),
+          cancel_sm                 => ?M_DST_ADDR(cmd(cancel_sm)),
+          submit_sm                 => ?M_DST_ADDR(cmd(submit_sm)),
+          deliver_sm                => ?M_DST_ADDR(cmd(deliver_sm)),
+          bind_receiver             => ?M_SYS_ID(cmd(bind_receiver)),
+          alert_notification        => ?BASE(cmd(alert_notification)),
+          query_broadcast_sm        => ?BASE(cmd(query_broadcast_sm)),
+          cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),   
+          bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
+          bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
+          submit_multi              => ?BASE(cmd(submit_multi))
+                                                    #{dest_address => []},
 
-          unbind_resp           => ?BASE(cmd(unbind_resp)),
-          query_sm_resp         => ?BASE(cmd(query_sm_resp)),
-          submit_sm_resp        => ?BASE(cmd(submit_sm_resp)),
-          cancel_sm_resp        => ?BASE(cmd(cancel_sm_resp)),
-          deliver_sm_resp       => ?BASE(cmd(deliver_sm_resp)),
-          replace_sm_resp       => ?BASE(cmd(replace_sm_resp)),
-          enquire_link_resp     => ?BASE(cmd(enquire_link_resp)),
-          bind_receiver_resp    => ?M_SYS_ID(cmd(bind_receiver_resp)),
-          bind_transceiver_resp => ?M_SYS_ID(cmd(bind_transceiver_resp)),
-          bind_transmitter_resp => ?M_SYS_ID(cmd(bind_transmitter_resp))},
+          unbind_resp               => ?BASE(cmd(unbind_resp)),
+          data_sm_resp              => ?BASE(cmd(data_sm_resp)),
+          generic_nack              => ?BASE(cmd(generic_nack)),
+          query_sm_resp             => ?BASE(cmd(query_sm_resp)),
+          submit_sm_resp            => ?BASE(cmd(submit_sm_resp)),
+          cancel_sm_resp            => ?BASE(cmd(cancel_sm_resp)),
+          deliver_sm_resp           => ?BASE(cmd(deliver_sm_resp)),
+          replace_sm_resp           => ?BASE(cmd(replace_sm_resp)),
+          broadcast_sm_resp         => ?BASE(cmd(broadcast_sm_resp)),
+          enquire_link_resp         => ?BASE(cmd(enquire_link_resp)),
+          bind_receiver_resp        => ?M_SYS_ID(cmd(bind_receiver_resp)),
+          cancel_broadcast_sm_resp  => ?BASE(cmd(cancel_broadcast_sm_resp)),
+          bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
+          bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
+          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
+                                                       #{unsuccess_sme => []}},
       schema => schema()}.
 
 -include("smpp_pdu.hrl").
