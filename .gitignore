@@ -5,3 +5,5 @@ rebar3.crashdump
 tmp
 *.swp
 .rebar
+ebin/
+.rebar3/
