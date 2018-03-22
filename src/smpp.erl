@@ -606,7 +606,8 @@ info() ->
           cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),   
           bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
           bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
-          submit_multi              => ?BASE(cmd(submit_multi))#{dest_address => []},
+          submit_multi              => ?BASE(cmd(submit_multi))
+                                                    #{dest_address => []},
 
           unbind_resp               => ?BASE(cmd(unbind_resp)),
           data_sm_resp              => ?BASE(cmd(data_sm_resp)),
@@ -622,7 +623,8 @@ info() ->
           cancel_broadcast_sm_resp  => ?BASE(cmd(cancel_broadcast_sm_resp)),
           bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
           bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
-          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))#{unsuccess_sme => <<>>}},
+          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
+                                                       #{unsuccess_sme => []}},
       schema => schema()}.
 
 -include("smpp_pdu.hrl").
