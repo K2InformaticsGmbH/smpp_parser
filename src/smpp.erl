@@ -434,6 +434,7 @@ b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
@@ -750,7 +751,7 @@ packunpack_test_() ->
                            ",\"command_status\":0,\"sequence_number\":0",
                            _Extra,"}">>).
 -define(PDU(_Id), ?PDU(_Id, "")).
--define(PDU_SYSID(_Id), ?PDU(_Id, ",\"system_id\":\"\"")).
+-define(PDU_SYSID(_Id), ?PDU(_Id, ",\"system_id\":\"\",\"sc_interface_version\":80")).
 -define(PDU_DSTADDR(_Id), ?PDU(_Id, ",\"destination_addr\":\"\"")).
 -define(TESTS2,
 [% requests
@@ -864,7 +865,9 @@ templates_test_() ->
                     case pack(Pdu) of
                         {error, _ , Error, _} ->
                             ?assertEqual(ok, err(Error));
-                        {ok, _} -> ok
+                        {ok, Bin} ->
+                            Pdu2 = unpack_map(Bin),
+                            ?assertEqual(0, length(maps:keys(Pdu) -- maps:keys(Pdu2)))
                     end
                   end} | Acc]
             end, [], Templates)
