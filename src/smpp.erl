@@ -2,7 +2,7 @@
 -include("smpp_globals.hrl").
 
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
-         internal2json/1, encode/1, decode/1, info/0]).
+         internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
@@ -158,7 +158,7 @@ statusstr(Status) when is_integer(Status) ->
 
 -spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
 encode(PDU) when is_map(PDU) ->
-    case pack(json2internal(PDU)) of
+    case pack(json2internal(from_enum(PDU))) of
         {ok, Bin} ->
             {ok,
                 list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
@@ -173,16 +173,20 @@ decode(HexStr) when is_list(HexStr) ->
     decode(list_to_binary(HexStr));
 decode(HexBin) when is_binary(HexBin) ->
     ModBin = binary:replace(HexBin, <<" ">>, <<>>, [global]),
-    CmdLen = byte_size(ModBin),
     Bin = list_to_binary([binary_to_integer(B, 16) || <<B:2/binary>> <= ModBin]),
+    decode_bin(Bin);
+decode(_) ->
+    {error, <<"Input to decode should be Hex String">>}.
+
+-spec(decode_bin(binary()) -> {ok, PDU :: map()} | {error, binary()}).
+decode_bin(Bin) when is_binary(Bin) ->
     case unpack_map(Bin) of
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, internal2json(PDU#{command_length => CmdLen})}
-    end;
-decode(_) ->
-    {error, <<"Input to decode should be Hex String">>}.
+            {ok, internal2json(to_enum(PDU#{command_length => byte_size(Bin)}))}
+    end.
+
 
 to_enum(SMPP) when is_map(SMPP) ->
     maps:fold(
@@ -590,42 +594,43 @@ err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
         #{command_id => _Id, command_status => 0, sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => ""}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
+-define(ENUM_JSON(__Template), internal2json(to_enum(__Template))).
 info() ->
     #{templates =>
-        #{unbind                    => ?BASE(cmd(unbind)),
-          query_sm                  => ?BASE(cmd(query_sm)),
-          replace_sm                => ?BASE(cmd(replace_sm)),
-          outbind                   => ?M_SYS_ID(cmd(outbind)),
-          enquire_link              => ?BASE(cmd(enquire_link)),
-          data_sm                   => ?M_DST_ADDR(cmd(data_sm)),
-          cancel_sm                 => ?M_DST_ADDR(cmd(cancel_sm)),
-          submit_sm                 => ?M_DST_ADDR(cmd(submit_sm)),
-          deliver_sm                => ?M_DST_ADDR(cmd(deliver_sm)),
-          bind_receiver             => ?M_SYS_ID(cmd(bind_receiver)),
-          alert_notification        => ?BASE(cmd(alert_notification)),
-          query_broadcast_sm        => ?BASE(cmd(query_broadcast_sm)),
-          cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),   
-          bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
-          bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
-          submit_multi              => ?BASE(cmd(submit_multi))
-                                                    #{dest_address => []},
+        #{unbind                    => ?ENUM_JSON(?BASE(cmd(unbind))),
+          query_sm                  => ?ENUM_JSON(?BASE(cmd(query_sm))),
+          replace_sm                => ?ENUM_JSON(?BASE(cmd(replace_sm))),
+          outbind                   => ?ENUM_JSON(?M_SYS_ID(cmd(outbind))),
+          enquire_link              => ?ENUM_JSON(?BASE(cmd(enquire_link))),
+          data_sm                   => ?ENUM_JSON(?M_DST_ADDR(cmd(data_sm))),
+          cancel_sm                 => ?ENUM_JSON(?M_DST_ADDR(cmd(cancel_sm))),
+          submit_sm                 => ?ENUM_JSON(?M_DST_ADDR(cmd(submit_sm))),
+          deliver_sm                => ?ENUM_JSON(?M_DST_ADDR(cmd(deliver_sm))),
+          bind_receiver             => ?ENUM_JSON(?M_SYS_ID(cmd(bind_receiver))),
+          alert_notification        => ?ENUM_JSON(?BASE(cmd(alert_notification))),
+          query_broadcast_sm        => ?ENUM_JSON(?BASE(cmd(query_broadcast_sm))),
+          cancel_broadcast_sm       => ?ENUM_JSON(?BASE(cmd(cancel_broadcast_sm))),
+          bind_transmitter          => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transmitter))),
+          bind_transceiver          => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transceiver))),
+          submit_multi              => ?ENUM_JSON(?BASE(cmd(submit_multi))
+                                                    #{dest_address => []}),
 
-          unbind_resp               => ?BASE(cmd(unbind_resp)),
-          data_sm_resp              => ?BASE(cmd(data_sm_resp)),
-          generic_nack              => ?BASE(cmd(generic_nack)),
-          query_sm_resp             => ?BASE(cmd(query_sm_resp)),
-          submit_sm_resp            => ?BASE(cmd(submit_sm_resp)),
-          cancel_sm_resp            => ?BASE(cmd(cancel_sm_resp)),
-          deliver_sm_resp           => ?BASE(cmd(deliver_sm_resp)),
-          replace_sm_resp           => ?BASE(cmd(replace_sm_resp)),
-          broadcast_sm_resp         => ?BASE(cmd(broadcast_sm_resp)),
-          enquire_link_resp         => ?BASE(cmd(enquire_link_resp)),
-          bind_receiver_resp        => ?M_SYS_ID(cmd(bind_receiver_resp)),
-          cancel_broadcast_sm_resp  => ?BASE(cmd(cancel_broadcast_sm_resp)),
-          bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
-          bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
-          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
-                                                       #{unsuccess_sme => []}},
+          unbind_resp               => ?ENUM_JSON(?BASE(cmd(unbind_resp))),
+          data_sm_resp              => ?ENUM_JSON(?BASE(cmd(data_sm_resp))),
+          generic_nack              => ?ENUM_JSON(?BASE(cmd(generic_nack))),
+          query_sm_resp             => ?ENUM_JSON(?BASE(cmd(query_sm_resp))),
+          submit_sm_resp            => ?ENUM_JSON(?BASE(cmd(submit_sm_resp))),
+          cancel_sm_resp            => ?ENUM_JSON(?BASE(cmd(cancel_sm_resp))),
+          deliver_sm_resp           => ?ENUM_JSON(?BASE(cmd(deliver_sm_resp))),
+          replace_sm_resp           => ?ENUM_JSON(?BASE(cmd(replace_sm_resp))),
+          broadcast_sm_resp         => ?ENUM_JSON(?BASE(cmd(broadcast_sm_resp))),
+          enquire_link_resp         => ?ENUM_JSON(?BASE(cmd(enquire_link_resp))),
+          bind_receiver_resp        => ?ENUM_JSON(?M_SYS_ID(cmd(bind_receiver_resp))),
+          cancel_broadcast_sm_resp  => ?ENUM_JSON(?BASE(cmd(cancel_broadcast_sm_resp))),
+          bind_transceiver_resp     => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transceiver_resp))),
+          bind_transmitter_resp     => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transmitter_resp))),
+          submit_multi_resp         => ?ENUM_JSON(?BASE(cmd(submit_multi_resp))
+                                                       #{unsuccess_sme => []})},
       schema => schema()}.
 
 -include("smpp_pdu.hrl").
@@ -840,10 +845,7 @@ enum_test_() ->
             fun() ->
                 I = json2internal(jsx:decode(J, [return_maps])),
                 {ok, Bin} = pack(I),
-                {ok, #{} = D} = decode(
-                    <<<<(list_to_binary(
-                        string:right(integer_to_list(B,16),2,$0)))/binary>>
-                    || <<B>> <= Bin>>),
+                #{} = D = unpack_map(Bin),
                 S = jsx:decode(jsx:encode(D), [return_maps]),
                 #{<<"command_id">> := CmdId,
                   <<"command_status">> := CommandStatus} = S1 = to_enum(S),
@@ -862,11 +864,11 @@ templates_test_() ->
             fun(T, Pdu, Acc) ->
                 [{atom_to_list(T),
                   fun() ->
-                    case pack(Pdu) of
+                    case encode(Pdu) of
                         {error, _ , Error, _} ->
                             ?assertEqual(ok, err(Error));
                         {ok, Bin} ->
-                            Pdu2 = unpack_map(Bin),
+                            {ok, Pdu2} = decode(Bin),
                             ?assertEqual(0, length(maps:keys(Pdu) -- maps:keys(Pdu2)))
                     end
                   end} | Acc]
@@ -900,10 +902,10 @@ vendor_tlv_test_() ->
                  "02 04 00 01 01 " % user_message_reference
                  "14 00 00 01 02 "
                  "14 01 00 02 03 04",
-                 #{command_id => 4,
-                   user_message_reference => 16#01,
-                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
-                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                 #{command_id => <<"submit_sm">>,
+                   user_message_reference => 1,
+                   tlvs => [#{tag => 5120, len => 1, val => <<2>>},
+                            #{tag => 5121, len => 2, val => <<3,4>>}]
                   }
                 },
                 {"submit_sm-1",
@@ -911,10 +913,10 @@ vendor_tlv_test_() ->
                  "14 01 00 02 03 04"
                  "14 00 00 01 02 "
                  "02 04 00 01 01 ", % user_message_reference
-                 #{command_id => 4,
-                   user_message_reference => 16#01,
-                   tlvs => [#{tag => 16#1400, len => 1, val => <<16#02>>},
-                            #{tag => 16#1401, len => 2, val => <<16#03, 16#04>>}]
+                 #{command_id => <<"submit_sm">>,
+                   user_message_reference => 1,
+                   tlvs => [#{tag => 5120, len => 1, val => <<2>>},
+                            #{tag => 5121, len => 2, val => <<3,4>>}]
                   }
                 }
             ]
