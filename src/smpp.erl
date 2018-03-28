@@ -904,8 +904,8 @@ vendor_tlv_test_() ->
                  "14 01 00 02 03 04",
                  #{command_id => <<"submit_sm">>,
                    user_message_reference => 1,
-                   tlvs => [#{tag => 5120, len => 1, val => <<2>>},
-                            #{tag => 5121, len => 2, val => <<3,4>>}]
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<2>>},
+                            #{tag => 16#1401, len => 2, val => <<3,4>>}]
                   }
                 },
                 {"submit_sm-1",
@@ -915,8 +915,8 @@ vendor_tlv_test_() ->
                  "02 04 00 01 01 ", % user_message_reference
                  #{command_id => <<"submit_sm">>,
                    user_message_reference => 1,
-                   tlvs => [#{tag => 5120, len => 1, val => <<2>>},
-                            #{tag => 5121, len => 2, val => <<3,4>>}]
+                   tlvs => [#{tag => 16#1400, len => 1, val => <<2>>},
+                            #{tag => 16#1401, len => 2, val => <<3,4>>}]
                   }
                 }
             ]
