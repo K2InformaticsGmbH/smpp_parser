@@ -591,46 +591,45 @@ err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
 err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
 
 -define(BASE(_Id),
-        #{command_id => _Id, command_status => 0, sequence_number => 0}).
--define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => ""}).
--define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => ""}).
--define(ENUM_JSON(__Template), internal2json(to_enum(__Template))).
+        #{command_id => cmdstr(_Id), command_status => statusstr(?ESME_ROK), sequence_number => 0}).
+-define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => <<>>}).
+-define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => <<>>}).
 info() ->
     #{templates =>
-        #{unbind                    => ?ENUM_JSON(?BASE(cmd(unbind))),
-          query_sm                  => ?ENUM_JSON(?BASE(cmd(query_sm))),
-          replace_sm                => ?ENUM_JSON(?BASE(cmd(replace_sm))),
-          outbind                   => ?ENUM_JSON(?M_SYS_ID(cmd(outbind))),
-          enquire_link              => ?ENUM_JSON(?BASE(cmd(enquire_link))),
-          data_sm                   => ?ENUM_JSON(?M_DST_ADDR(cmd(data_sm))),
-          cancel_sm                 => ?ENUM_JSON(?M_DST_ADDR(cmd(cancel_sm))),
-          submit_sm                 => ?ENUM_JSON(?M_DST_ADDR(cmd(submit_sm))),
-          deliver_sm                => ?ENUM_JSON(?M_DST_ADDR(cmd(deliver_sm))),
-          bind_receiver             => ?ENUM_JSON(?M_SYS_ID(cmd(bind_receiver))),
-          alert_notification        => ?ENUM_JSON(?BASE(cmd(alert_notification))),
-          query_broadcast_sm        => ?ENUM_JSON(?BASE(cmd(query_broadcast_sm))),
-          cancel_broadcast_sm       => ?ENUM_JSON(?BASE(cmd(cancel_broadcast_sm))),
-          bind_transmitter          => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transmitter))),
-          bind_transceiver          => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transceiver))),
-          submit_multi              => ?ENUM_JSON(?BASE(cmd(submit_multi))
-                                                    #{dest_address => []}),
+        #{unbind                    => ?BASE(cmd(unbind)),
+          query_sm                  => ?BASE(cmd(query_sm)),
+          replace_sm                => ?BASE(cmd(replace_sm)),
+          outbind                   => ?M_SYS_ID(cmd(outbind)),
+          enquire_link              => ?BASE(cmd(enquire_link)),
+          data_sm                   => ?M_DST_ADDR(cmd(data_sm)),
+          cancel_sm                 => ?M_DST_ADDR(cmd(cancel_sm)),
+          submit_sm                 => ?M_DST_ADDR(cmd(submit_sm)),
+          deliver_sm                => ?M_DST_ADDR(cmd(deliver_sm)),
+          bind_receiver             => ?M_SYS_ID(cmd(bind_receiver)),
+          alert_notification        => ?BASE(cmd(alert_notification)),
+          query_broadcast_sm        => ?BASE(cmd(query_broadcast_sm)),
+          cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),
+          bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
+          bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
+          submit_multi              => ?BASE(cmd(submit_multi))
+                                                    #{dest_address => <<>>},
 
-          unbind_resp               => ?ENUM_JSON(?BASE(cmd(unbind_resp))),
-          data_sm_resp              => ?ENUM_JSON(?BASE(cmd(data_sm_resp))),
-          generic_nack              => ?ENUM_JSON(?BASE(cmd(generic_nack))),
-          query_sm_resp             => ?ENUM_JSON(?BASE(cmd(query_sm_resp))),
-          submit_sm_resp            => ?ENUM_JSON(?BASE(cmd(submit_sm_resp))),
-          cancel_sm_resp            => ?ENUM_JSON(?BASE(cmd(cancel_sm_resp))),
-          deliver_sm_resp           => ?ENUM_JSON(?BASE(cmd(deliver_sm_resp))),
-          replace_sm_resp           => ?ENUM_JSON(?BASE(cmd(replace_sm_resp))),
-          broadcast_sm_resp         => ?ENUM_JSON(?BASE(cmd(broadcast_sm_resp))),
-          enquire_link_resp         => ?ENUM_JSON(?BASE(cmd(enquire_link_resp))),
-          bind_receiver_resp        => ?ENUM_JSON(?M_SYS_ID(cmd(bind_receiver_resp))),
-          cancel_broadcast_sm_resp  => ?ENUM_JSON(?BASE(cmd(cancel_broadcast_sm_resp))),
-          bind_transceiver_resp     => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transceiver_resp))),
-          bind_transmitter_resp     => ?ENUM_JSON(?M_SYS_ID(cmd(bind_transmitter_resp))),
-          submit_multi_resp         => ?ENUM_JSON(?BASE(cmd(submit_multi_resp))
-                                                       #{unsuccess_sme => []})},
+          unbind_resp               => ?BASE(cmd(unbind_resp)),
+          data_sm_resp              => ?BASE(cmd(data_sm_resp)),
+          generic_nack              => ?BASE(cmd(generic_nack)),
+          query_sm_resp             => ?BASE(cmd(query_sm_resp)),
+          submit_sm_resp            => ?BASE(cmd(submit_sm_resp)),
+          cancel_sm_resp            => ?BASE(cmd(cancel_sm_resp)),
+          deliver_sm_resp           => ?BASE(cmd(deliver_sm_resp)),
+          replace_sm_resp           => ?BASE(cmd(replace_sm_resp)),
+          broadcast_sm_resp         => ?BASE(cmd(broadcast_sm_resp)),
+          enquire_link_resp         => ?BASE(cmd(enquire_link_resp)),
+          bind_receiver_resp        => ?M_SYS_ID(cmd(bind_receiver_resp)),
+          cancel_broadcast_sm_resp  => ?BASE(cmd(cancel_broadcast_sm_resp)),
+          bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
+          bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
+          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
+                                                       #{unsuccess_sme => <<>>}},
       schema => schema()}.
 
 -include("smpp_pdu.hrl").
