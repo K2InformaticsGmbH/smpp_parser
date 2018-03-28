@@ -590,8 +590,9 @@ err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
 err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
 err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
 
--define(BASE(_Id),
-        #{command_id => cmdstr(_Id), command_status => statusstr(?ESME_ROK), sequence_number => 0}).
+-define(BASE(_Id), #{command_id => cmdstr(_Id),
+                     command_status => statusstr(?ESME_ROK),
+                     sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => <<>>}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => <<>>}).
 info() ->
