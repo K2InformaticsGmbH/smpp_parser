@@ -1,5 +1,7 @@
 _build/
 erl_crash.dump
+test/generated
+*.log
 rebar.lock
 rebar3.crashdump
 tmp

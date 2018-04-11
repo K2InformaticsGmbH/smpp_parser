@@ -4,7 +4,7 @@
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
--export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
+-export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, list_to_map/2]).
 
 -safe([unpack_map/1]).
 
