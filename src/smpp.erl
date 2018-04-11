@@ -397,6 +397,8 @@ b2a(<<"len">>) -> len;
 b2a(<<"tag">>) -> tag;
 b2a(<<"val">>) -> val;
 b2a(<<"tlvs">>) -> tlvs;
+b2a(<<"type">>) -> type;
+b2a(<<"error">>) -> error;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
@@ -434,6 +436,7 @@ b2a(<<"destination_addr">>) -> destination_addr;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
+b2a(<<"network_error_code">>) -> network_error_code;
 b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
@@ -693,6 +696,9 @@ schema() ->
  {"bind_transmitter",
   "00 00 00 27 00 00 00 02 00 00 00 00 00 00 00 01 34 31 31 35 00 66 64 73 66 "
   "61 6A 66 6B 00 74 65 73 74 00 34 04 08 00"},
+ {"bind_transmitter_resp",
+  "00 00 00 1F 80 00 00 02 00 00 00 11 0A 36 8E 1F 53 4D 50 50 33 54 45 53 54 "
+  "00 02 10 00 01 19"},
  {"bind_receiver",
   "00 00 00 2A 00 00 00 01 00 00 00 00 00 00 00 01 34 31 31 35 00 66 64 67 61 "
   "73 72 67 73 00 74 65 73 74 69 6E 67 00 34 02 09 00"},
