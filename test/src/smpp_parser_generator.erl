@@ -27,6 +27,21 @@
     generate/0
 ]).
 
+-define(ALL_OPERATION, [
+    alert_notification,
+    bind_receiver,
+    bind_receiver_resp,
+    bind_transceiver,
+    bind_transceiver_resp,
+    bind_transmitter,
+    bind_transmitter_resp,
+    enquire_link,
+    enquire_link_resp,
+    outbind,
+    unbind,
+    unbind_resp
+]).
+
 -define(NODEBUG, true).
 
 -include("smpp_parser_generator.hrl").
@@ -102,8 +117,11 @@ create_code() ->
     create_code(addr_ton),
     create_code(address_range),
     create_code(command_status),
+    create_code(esme_addr),
     create_code(interface_version),
+    create_code(ms_availability_status),
     create_code(password),
+    create_code(source_addr),
     create_code(system_id),
     create_code(system_type),
 
@@ -125,13 +143,23 @@ create_code() ->
         " : ======================================================> create_code: Level 99   <===================~n",
         [])),
 
+    create_code(alert_notification),
+    create_code(bind_receiver),
+    create_code(bind_receiver_resp),
+    create_code(bind_transceiver),
+    create_code(bind_transceiver_resp),
     create_code(bind_transmitter),
     create_code(bind_transmitter_resp),
+    create_code(enquire_link),
+    create_code(enquire_link_resp),
+    create_code(outbind),
+    create_code(unbind),
+    create_code(unbind_resp),
 
     ok.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% addr_npi
+%% addr_npi                                                                4.7.2
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(addr_npi = Rule) ->
@@ -150,11 +178,12 @@ create_code(addr_npi = Rule) ->
             14,
             18
         ],
+
     store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% addr_ton
+%% addr_ton                                                                4.7.1
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(addr_ton = Rule) ->
@@ -170,11 +199,12 @@ create_code(addr_ton = Rule) ->
             5,
             6
         ],
+
     store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% address_range
+%% address_range                                                           4.7.3
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(address_range = Rule) ->
@@ -188,12 +218,210 @@ create_code(address_range = Rule) ->
             "^123456$",
             "[13579]$"
         ],
+
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Operation: bind_transmitter
+%% alert_notification                                          Operation 4.1.3.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(alert_notification = Rule) ->
+    ?CREATE_CODE_START,
+    [{addr_npi, Addr_Npi}] = ets:lookup(?CODE_TEMPLATES, addr_npi),
+    Addr_Npi_Length = length(Addr_Npi),
+    [{addr_ton, Addr_Ton}] = ets:lookup(?CODE_TEMPLATES, addr_ton),
+    Addr_Ton_Length = length(Addr_Ton),
+    [{esme_addr, Esme_Addr}] = ets:lookup(?CODE_TEMPLATES, esme_addr),
+    Esme_Addr_Length = length(Esme_Addr),
+    [{ms_availability_status, Ms_Availability_Status}] =
+        ets:lookup(?CODE_TEMPLATES, ms_availability_status),
+    Ms_Availability_Status_Length = length(Ms_Availability_Status),
+    [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
+    Source_Addr_Length = length(Source_Addr),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Source_Addr_Length), Source_Addr),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Esme_Addr_Length), Esme_Addr),
+                    lists:nth(rand:uniform(Ms_Availability_Status_Length),
+                        Ms_Availability_Status)
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bind_receiver                                               Operation 4.1.1.3
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(bind_receiver = Rule) ->
+    ?CREATE_CODE_START,
+    [{addr_npi, Addr_Npi}] = ets:lookup(?CODE_TEMPLATES, addr_npi),
+    Addr_Npi_Length = length(Addr_Npi),
+    [{addr_ton, Addr_Ton}] = ets:lookup(?CODE_TEMPLATES, addr_ton),
+    Addr_Ton_Length = length(Addr_Ton),
+    [{address_range, Address_Range}] =
+        ets:lookup(?CODE_TEMPLATES, address_range),
+    Address_Range_Length = length(Address_Range),
+    [{interface_version, Interface_Version}] =
+        ets:lookup(?CODE_TEMPLATES, interface_version),
+    Interface_Version_Length = length(Interface_Version),
+    [{password, Password}] = ets:lookup(?CODE_TEMPLATES, password),
+    Password_Length = length(Password),
+    [{system_id, System_Id}] = ets:lookup(?CODE_TEMPLATES, system_id),
+    System_Id_Length = length(System_Id),
+    [{system_type, System_Type}] = ets:lookup(?CODE_TEMPLATES, system_type),
+    System_Type_Length = length(System_Type),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(System_Id_Length), System_Id),
+                    lists:nth(rand:uniform(Password_Length), Password),
+                    lists:nth(rand:uniform(System_Type_Length), System_Type),
+                    lists:nth(rand:uniform(Interface_Version_Length),
+                        Interface_Version),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Address_Range_Length), Address_Range)
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bind_receiver_resp                                          Operation 4.1.1.4
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(bind_receiver_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+    [{sc_interface_version, Sc_Interface_Version}] =
+        ets:lookup(?CODE_TEMPLATES, sc_interface_version),
+    Sc_Interface_Version_Length = length(Sc_Interface_Version),
+    [{system_id, System_Id}] = ets:lookup(?CODE_TEMPLATES, system_id),
+    System_Id_Length = length(System_Id),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            lists:append(
+                [
+                    lists:nth(rand:uniform(System_Id_Length), System_Id),
+                    case rand:uniform(2) rem 2 of
+                        1 -> lists:nth(
+                            rand:uniform(Sc_Interface_Version_Length),
+                            Sc_Interface_Version);
+                        _ -> []
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bind_transceiver                                            Operation 4.1.1.5
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(bind_transceiver = Rule) ->
+    ?CREATE_CODE_START,
+    [{addr_npi, Addr_Npi}] = ets:lookup(?CODE_TEMPLATES, addr_npi),
+    Addr_Npi_Length = length(Addr_Npi),
+    [{addr_ton, Addr_Ton}] = ets:lookup(?CODE_TEMPLATES, addr_ton),
+    Addr_Ton_Length = length(Addr_Ton),
+    [{address_range, Address_Range}] =
+        ets:lookup(?CODE_TEMPLATES, address_range),
+    Address_Range_Length = length(Address_Range),
+    [{interface_version, Interface_Version}] =
+        ets:lookup(?CODE_TEMPLATES, interface_version),
+    Interface_Version_Length = length(Interface_Version),
+    [{password, Password}] = ets:lookup(?CODE_TEMPLATES, password),
+    Password_Length = length(Password),
+    [{system_id, System_Id}] = ets:lookup(?CODE_TEMPLATES, system_id),
+    System_Id_Length = length(System_Id),
+    [{system_type, System_Type}] = ets:lookup(?CODE_TEMPLATES, system_type),
+    System_Type_Length = length(System_Type),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(System_Id_Length), System_Id),
+                    lists:nth(rand:uniform(Password_Length), Password),
+                    lists:nth(rand:uniform(System_Type_Length), System_Type),
+                    lists:nth(rand:uniform(Interface_Version_Length),
+                        Interface_Version),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Address_Range_Length), Address_Range)
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bind_transceiver_resp                                       Operation 4.1.1.6
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(bind_transceiver_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+    [{sc_interface_version, Sc_Interface_Version}] =
+        ets:lookup(?CODE_TEMPLATES, sc_interface_version),
+    Sc_Interface_Version_Length = length(Sc_Interface_Version),
+    [{system_id, System_Id}] = ets:lookup(?CODE_TEMPLATES, system_id),
+    System_Id_Length = length(System_Id),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            lists:append(
+                [
+                    lists:nth(rand:uniform(System_Id_Length), System_Id),
+                    case rand:uniform(2) rem 2 of
+                        1 -> lists:nth(
+                            rand:uniform(Sc_Interface_Version_Length),
+                            Sc_Interface_Version);
+                        _ -> []
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% bind_transmitter                                            Operation 4.1.1.1
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(bind_transmitter = Rule) ->
@@ -223,22 +451,21 @@ create_code(bind_transmitter = Rule) ->
                 [
                     lists:nth(rand:uniform(System_Id_Length), System_Id),
                     lists:nth(rand:uniform(Password_Length), Password),
-                    lists:nth(rand:uniform(System_Type_Length),
-                        System_Type),
+                    lists:nth(rand:uniform(System_Type_Length), System_Type),
                     lists:nth(rand:uniform(Interface_Version_Length),
                         Interface_Version),
                     lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
                     lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
-                    lists:nth(rand:uniform(Address_Range_Length),
-                        Address_Range)
+                    lists:nth(rand:uniform(Address_Range_Length), Address_Range)
                 ])}
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
+
     store_code(Rule, Code, ?MAX_OPERATION, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Operation: bind_transmitter_resp
+%% bind_transmitter_resp                                       Operation 4.1.1.2
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(bind_transmitter_resp = Rule) ->
@@ -268,11 +495,12 @@ create_code(bind_transmitter_resp = Rule) ->
                 ])}
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
+
     store_code(Rule, Code, ?MAX_OPERATION, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% command_status
+%% command_status                                                          4.7.6
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(command_status = Rule) ->
@@ -290,11 +518,69 @@ create_code(command_status = Rule) ->
             1024,
             1279
         ],
+
     store_code(Rule, [integer_to_octet(C, 4) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% interface_version
+%% enquire_link                                                Operation 4.1.2.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(enquire_link = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            []}
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% enquire_link_resp                                           Operation 4.1.2.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(enquire_link_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            []}
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% esme_addr                                                              4.7.11
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(esme_addr = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "127.0.0.1",
+            "168.0.0.1",
+            "168.123.234.321",
+            "192.1.1.10",
+            "192.168.1.1"
+        ],
+
+    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% interface_version                                                      4.7.13
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(interface_version = Rule) ->
@@ -339,11 +625,55 @@ create_code(interface_version = Rule) ->
             34,
             50
         ],
+
     store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% password
+%% ms_availability_status                                           TLV 4.8.4.39
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(ms_availability_status = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+                "04220001" ++
+                integer_to_octet(I, 1)
+            || I <- [0, 1, 2]
+        ],
+
+    store_code(Rule, Code, ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% outbind                                                     Operation 4.1.1.7
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(outbind = Rule) ->
+    ?CREATE_CODE_START,
+    [{password, Password}] = ets:lookup(?CODE_TEMPLATES, password),
+    Password_Length = length(Password),
+    [{system_id, System_Id}] = ets:lookup(?CODE_TEMPLATES, system_id),
+    System_Id_Length = length(System_Id),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(System_Id_Length), System_Id),
+                    lists:nth(rand:uniform(Password_Length), Password)
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% password                                                               4.7.18
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(password = Rule) ->
@@ -353,12 +683,13 @@ create_code(password = Rule) ->
         [
             "secret08"
         ],
+
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% TLV: sc_interface_version
+%% sc_interface_version                                             TLV 4.8.4.51
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(sc_interface_version = Rule) ->
@@ -369,14 +700,37 @@ create_code(sc_interface_version = Rule) ->
 
     Code =
         [
-                "02100001" ++ lists:nth(rand:uniform(Interface_Version_Length),
-                Interface_Version)
+                "02100001" ++
+                lists:nth(rand:uniform(Interface_Version_Length),
+                    Interface_Version)
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
+
     store_code(Rule, Code, ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% system_id
+%% source_addr                                                            4.7.29
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(source_addr = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "127.0.0.1",
+            "168.0.0.1",
+            "168.123.234.321",
+            "192.1.1.10",
+            "192.168.1.1"
+        ],
+
+    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% system_id                                                              4.7.30
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(system_id = Rule) ->
@@ -386,12 +740,13 @@ create_code(system_id = Rule) ->
         [
             "SMPP3TEST"
         ],
+
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% system_type
+%% system_type                                                            4.7.31
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 create_code(system_type = Rule) ->
@@ -403,8 +758,46 @@ create_code(system_type = Rule) ->
             "SUBMIT1",
             "VMS"
         ],
+
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% unbind                                                      Operation 4.1.1.8
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(unbind = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            []}
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% unbind_resp                                                 Operation 4.1.1.9
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(unbind_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            []}
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
     ?CREATE_CODE_END.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -421,6 +814,7 @@ create_operation(Rule, CommandStatus, PDUBody) ->
             integer_to_octet(rand:uniform(4294967296), 4),
             PDUBody
         ]),
+
     ?assertEqual(0, length(PDU) rem 2, "PDU=" ++ PDU),
     create_byte_string(PDU, []).
 

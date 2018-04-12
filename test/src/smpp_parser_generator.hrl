@@ -29,11 +29,6 @@
 
 -define(ALIVE_COUNTER, 500).
 
--define(ALL_OPERATION, [
-    bind_transmitter,
-    bind_transmitter_resp
-]).
-
 -define(CODE_TEMPLATES, code_templates).
 -define(CREATE_CODE_END,
     [_CodeFirst | _] = Code,
