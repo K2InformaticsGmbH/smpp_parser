@@ -35,9 +35,14 @@
     bind_transceiver_resp,
     bind_transmitter,
     bind_transmitter_resp,
+    data_sm,
+    data_sm_resp,
     enquire_link,
     enquire_link_resp,
+    generic_nack,
     outbind,
+    submit_sm,
+    submit_sm_resp,
     unbind,
     unbind_resp
 ]).
@@ -88,6 +93,19 @@ generate() ->
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Add TLVs..
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+add_tlvs(Tlv, Tlv_Length, Number) ->
+    add_tlvs(Tlv, Tlv_Length, Number, []).
+
+add_tlvs(_Tlv, _Tlv_Length, 0, Acc) ->
+    Acc;
+add_tlvs(Tlv, Tlv_Length, Number, Acc) ->
+    add_tlvs(Tlv, Tlv_Length, Number - 1,
+        Acc ++ lists:nth(rand:uniform(Tlv_Length), Tlv)).
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create operation.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -113,15 +131,24 @@ create_code() ->
         " : ======================================================> create_code: Level 01   <===================~n",
         [])),
 
+    create_code(absolute_time),
     create_code(addr_npi),
     create_code(addr_ton),
     create_code(address_range),
     create_code(command_status),
-    create_code(esme_addr),
     create_code(interface_version),
+    create_code(ip_address),
+    create_code(message_id),
     create_code(ms_availability_status),
+    create_code(octet),
     create_code(password),
-    create_code(source_addr),
+    create_code(priority_flag),
+    create_code(protocol_id),
+    create_code(relative_time),
+    create_code(replace_if_present_flag),
+    create_code(service_type),
+    create_code(short_message),
+    create_code(sm_default_message_id),
     create_code(system_id),
     create_code(system_type),
 
@@ -150,13 +177,50 @@ create_code() ->
     create_code(bind_transceiver_resp),
     create_code(bind_transmitter),
     create_code(bind_transmitter_resp),
+    create_code(data_sm),
+    create_code(data_sm_resp),
     create_code(enquire_link),
     create_code(enquire_link_resp),
+    create_code(generic_nack),
     create_code(outbind),
+    create_code(submit_sm),
+    create_code(submit_sm_resp),
     create_code(unbind),
     create_code(unbind_resp),
 
     ok.
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% absolute_time
+%% -----------------------------------------------------------------------------
+%% schedule_delivery_time                                               4.7.23.1
+%% validity_period                                                      4.7.23.2
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(absolute_time = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "01",
+            "0207",
+            "030610",
+            "04051125",
+            "0504122431",
+            "060313233243",
+            "0702142233421",
+            "080115213441000"
+            "080115213441010+"
+            "080115213441020-"
+        ],
+
+    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    store_code(schedule_delivery_time,
+        [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC, false),
+    store_code(validity_period, [string_2_c_octet_string(C) || C <- Code],
+        ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% addr_npi                                                                4.7.2
@@ -523,6 +587,94 @@ create_code(command_status = Rule) ->
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% data_sm                                                     Operation 4.22.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(data_sm = Rule) ->
+    ?CREATE_CODE_START,
+    [{addr_npi, Addr_Npi}] = ets:lookup(?CODE_TEMPLATES, addr_npi),
+    Addr_Npi_Length = length(Addr_Npi),
+    [{addr_ton, Addr_Ton}] = ets:lookup(?CODE_TEMPLATES, addr_ton),
+    Addr_Ton_Length = length(Addr_Ton),
+    [{data_coding, Data_Coding}] = ets:lookup(?CODE_TEMPLATES, data_coding),
+    Data_Coding_Length = length(Data_Coding),
+    [{destination_addr, Destination_Addr}] =
+        ets:lookup(?CODE_TEMPLATES, destination_addr),
+    Destination_Addr_Length = length(Destination_Addr),
+    [{esm_class, Esm_Class}] = ets:lookup(?CODE_TEMPLATES, esm_class),
+    Esm_Class_Length = length(Esm_Class),
+    [{registered_delivery, Registered_Delivery}] =
+        ets:lookup(?CODE_TEMPLATES, registered_delivery),
+    Registered_Delivery_Length = length(Registered_Delivery),
+    [{service_type, Service_Type}] = ets:lookup(?CODE_TEMPLATES, service_type),
+    Service_Type_Length = length(Service_Type),
+    [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
+    Source_Addr_Length = length(Source_Addr),
+    [{tlv, Tlv}] = ets:lookup(?CODE_TEMPLATES, tlv),
+    Tlv_Length = length(Tlv),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(Service_Type_Length), Service_Type),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Source_Addr_Length), Source_Addr),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Destination_Addr_Length),
+                        Destination_Addr),
+                    lists:nth(rand:uniform(Esm_Class_Length), Esm_Class),
+                    lists:nth(rand:uniform(Registered_Delivery_Length),
+                        Registered_Delivery),
+                    lists:nth(rand:uniform(Data_Coding_Length), Data_Coding),
+                    case rand:uniform(6) rem 6 of
+                        0 -> [];
+                        Reminder -> add_tlvs(Tlv, Tlv_Length, Reminder)
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% data_sm_resp                                                Operation 4.2.2.2
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(data_sm_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+    [{message_id, Message_Id}] = ets:lookup(?CODE_TEMPLATES, message_id),
+    Message_Id_Length = length(Message_Id),
+    [{tlv, Tlv}] = ets:lookup(?CODE_TEMPLATES, tlv),
+    Tlv_Length = length(Tlv),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            lists:append(
+                [
+                    lists:nth(rand:uniform(Message_Id_Length), Message_Id),
+                    case rand:uniform(6) rem 6 of
+                        0 -> [];
+                        Reminder -> add_tlvs(Tlv, Tlv_Length, Reminder)
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% enquire_link                                                Operation 4.1.2.1
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -560,10 +712,14 @@ create_code(enquire_link_resp = Rule) ->
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% ip_address
+%% -----------------------------------------------------------------------------
+%% destination_addr                                                       4.7.8
 %% esme_addr                                                              4.7.11
+%% source_addr                                                            4.7.29
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-create_code(esme_addr = Rule) ->
+create_code(ip_address = Rule) ->
     ?CREATE_CODE_START,
 
     Code =
@@ -575,8 +731,29 @@ create_code(esme_addr = Rule) ->
             "192.168.1.1"
         ],
 
-    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+    store_code(destination_addr, [string_2_c_octet_string(C) || C <- Code],
+        ?MAX_BASIC, false),
+    store_code(esme_addr, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
+    store_code(source_addr, [string_2_c_octet_string(C) || C <- Code],
+        ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% generic_nack                                                Operation 4.1.4.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(generic_nack = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            []}
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -630,6 +807,22 @@ create_code(interface_version = Rule) ->
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% message_id                                                             4.7.14
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(message_id = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "this_could_be_a_message_id"
+        ],
+
+    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% ms_availability_status                                           TLV 4.8.4.39
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -644,6 +837,44 @@ create_code(ms_availability_status = Rule) ->
         ],
 
     store_code(Rule, Code, ?MAX_BASIC, false),
+    store_code(tlv, Code, ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% octet
+%% -----------------------------------------------------------------------------
+%% data_coding                                                            4.7.7
+%% esm_class                                                              4.7.12
+%% registered_delivery                                                    4.7.21
+%% sm_length                                                              4.7.28
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(octet = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            0,
+            1,
+            2,
+            3,
+            7,
+            15,
+            31,
+            63,
+            127,
+            255
+        ],
+
+    store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(data_coding, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC,
+        false),
+    store_code(esm_class, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC,
+        false),
+    store_code(registered_delivery, [integer_to_octet(C, 1) || C <- Code],
+        ?MAX_BASIC, false),
+    store_code(sm_length, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC,
+        false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -689,6 +920,93 @@ create_code(password = Rule) ->
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% priority_flag                                                          4.7.19
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(priority_flag = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            0,
+            1,
+            2,
+            3,
+            4
+        ],
+
+    store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% protocol_id                                                            4.7.20
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(protocol_id = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            0,
+            1,
+            2,
+            3,
+            7,
+            15,
+            31,
+            63
+        ],
+
+    store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% relative_time
+%% -----------------------------------------------------------------------------
+%% schedule_delivery_time                                               4.7.23.1
+%% validity_period                                                      4.7.23.2
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(relative_time = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "01R",
+            "0207R",
+            "030610R",
+            "04051125R",
+            "0504122431R",
+            "060313233243R",
+            "0702142233420R",
+            "080115213441000R"
+        ],
+
+    store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    store_code(schedule_delivery_time,
+        [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC, false),
+    store_code(validity_period, [string_2_c_octet_string(C) || C <- Code],
+        ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% replace_if_present_flag                                                4.7.22
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(replace_if_present_flag = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            0,
+            1
+        ],
+
+    store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% sc_interface_version                                             TLV 4.8.4.51
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -707,26 +1025,213 @@ create_code(sc_interface_version = Rule) ->
         ],
 
     store_code(Rule, Code, ?MAX_BASIC, false),
+    store_code(tlv, Code, ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% source_addr                                                            4.7.29
+%% service_type                                                           4.7.25
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-create_code(source_addr = Rule) ->
+create_code(service_type = Rule) ->
     ?CREATE_CODE_START,
 
     Code =
         [
-            "127.0.0.1",
-            "168.0.0.1",
-            "168.123.234.321",
-            "192.1.1.10",
-            "192.168.1.1"
+            "",
+            "CBS",
+            "CMT",
+            "CPT",
+            "custom",
+            "GUTS",
+            "USSD",
+            "VMA",
+            "VMN",
+            "WAP"
         ],
 
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
         false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% short_message                                                          4.7.26
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(short_message = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            "1 T",
+            "4 This",
+            "7 This is",
+            "9 This is a",
+            "15 This is a short",
+            "23 This is a short message",
+            lists:append([
+                "0 23 This is a short message"
+                "1 23 This is a short message"
+                "2 23 This is a short message"
+                "3 23 This is a short message"
+                "4 23 This is a short message"
+                "5 23 This is a short message"
+                "6 23 This is a short message"
+                "7 23 This is a short message"
+                "8 23 This is a short message"
+                "9 23 This is a short message"
+                "A End"
+            ])
+        ],
+
+    store_code(Rule, [string_2_octet_string(C) || C <- Code], ?MAX_BASIC,
+        false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% sm_default_message_id                                                  4.7.27
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(sm_default_message_id = Rule) ->
+    ?CREATE_CODE_START,
+
+    Code =
+        [
+            1,
+            2,
+            3,
+            7,
+            15,
+            31,
+            63,
+            127,
+            255
+        ],
+
+    store_code(Rule, [integer_to_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% submit_sm                                                   Operation 4.2.1.1
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(submit_sm = Rule) ->
+    ?CREATE_CODE_START,
+    [{addr_npi, Addr_Npi}] = ets:lookup(?CODE_TEMPLATES, addr_npi),
+    Addr_Npi_Length = length(Addr_Npi),
+    [{addr_ton, Addr_Ton}] = ets:lookup(?CODE_TEMPLATES, addr_ton),
+    Addr_Ton_Length = length(Addr_Ton),
+    [{data_coding, Data_Coding}] = ets:lookup(?CODE_TEMPLATES, data_coding),
+    Data_Coding_Length = length(Data_Coding),
+    [{destination_addr, Destination_Addr}] =
+        ets:lookup(?CODE_TEMPLATES, destination_addr),
+    Destination_Addr_Length = length(Destination_Addr),
+    [{esm_class, Esm_Class}] = ets:lookup(?CODE_TEMPLATES, esm_class),
+    Esm_Class_Length = length(Esm_Class),
+    [{priority_flag, Priority_Flag}] =
+        ets:lookup(?CODE_TEMPLATES, priority_flag),
+    Priority_Flag_Length = length(Priority_Flag),
+    [{protocol_id, Protocol_Id}] = ets:lookup(?CODE_TEMPLATES, protocol_id),
+    Protocol_Id_Length = length(Protocol_Id),
+    [{registered_delivery, Registered_Delivery}] =
+        ets:lookup(?CODE_TEMPLATES, registered_delivery),
+    Registered_Delivery_Length = length(Registered_Delivery),
+    [{replace_if_present_flag, Replace_If_Present_Flag}] =
+        ets:lookup(?CODE_TEMPLATES, replace_if_present_flag),
+    Replace_If_Present_Flag_Length = length(Replace_If_Present_Flag),
+    [{schedule_delivery_time, Schedule_Delivery_Time}] =
+        ets:lookup(?CODE_TEMPLATES, schedule_delivery_time),
+    Schedule_Delivery_Time_Length = length(Schedule_Delivery_Time),
+    [{service_type, Service_Type}] = ets:lookup(?CODE_TEMPLATES, service_type),
+    Service_Type_Length = length(Service_Type),
+    [{short_message, Short_Message}] =
+        ets:lookup(?CODE_TEMPLATES, short_message),
+    Short_Message_Length = length(Short_Message),
+    [{sm_default_message_id, Sm_Default_Message_Id}] =
+        ets:lookup(?CODE_TEMPLATES, sm_default_message_id),
+    Sm_Default_Message_Id_Length = length(Sm_Default_Message_Id),
+    [{sm_length, Sm_Length}] = ets:lookup(?CODE_TEMPLATES, sm_length),
+    Sm_Length_Length = length(Sm_Length),
+    [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
+    Source_Addr_Length = length(Source_Addr),
+    [{tlv, Tlv}] = ets:lookup(?CODE_TEMPLATES, tlv),
+    Tlv_Length = length(Tlv),
+    [{validity_period, Validity_Period}] =
+        ets:lookup(?CODE_TEMPLATES, validity_period),
+    Validity_Period_Length = length(Validity_Period),
+
+    Code =
+        [{
+            Rule,
+            "00000000",
+            lists:append(
+                [
+                    lists:nth(rand:uniform(Service_Type_Length), Service_Type),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Source_Addr_Length), Source_Addr),
+                    lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
+                    lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
+                    lists:nth(rand:uniform(Destination_Addr_Length),
+                        Destination_Addr),
+                    lists:nth(rand:uniform(Esm_Class_Length), Esm_Class),
+                    lists:nth(rand:uniform(Protocol_Id_Length), Protocol_Id),
+                    lists:nth(rand:uniform(Priority_Flag_Length),
+                        Priority_Flag),
+                    lists:nth(rand:uniform(Schedule_Delivery_Time_Length),
+                        Schedule_Delivery_Time),
+                    lists:nth(rand:uniform(Validity_Period_Length),
+                        Validity_Period),
+                    lists:nth(rand:uniform(Registered_Delivery_Length),
+                        Registered_Delivery),
+                    lists:nth(rand:uniform(Replace_If_Present_Flag_Length),
+                        Replace_If_Present_Flag),
+                    lists:nth(rand:uniform(Data_Coding_Length), Data_Coding),
+                    lists:nth(rand:uniform(Sm_Default_Message_Id_Length),
+                        Sm_Default_Message_Id),
+                    lists:nth(rand:uniform(Sm_Length_Length), Sm_Length),
+                    lists:nth(rand:uniform(Short_Message_Length),
+                        Short_Message),
+                    case rand:uniform(6) rem 6 of
+                        0 -> [];
+                        Reminder -> add_tlvs(Tlv, Tlv_Length, Reminder)
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
+    ?CREATE_CODE_END;
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% submit_sm_resp                                              Operation 4.2.1.2
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+create_code(submit_sm_resp = Rule) ->
+    ?CREATE_CODE_START,
+    [{command_status, Command_Status}] =
+        ets:lookup(?CODE_TEMPLATES, command_status),
+    Command_Status_Length = length(Command_Status),
+    [{message_id, Message_Id}] = ets:lookup(?CODE_TEMPLATES, message_id),
+    Message_Id_Length = length(Message_Id),
+    [{tlv, Tlv}] = ets:lookup(?CODE_TEMPLATES, tlv),
+    Tlv_Length = length(Tlv),
+
+    Code =
+        [{
+            Rule,
+            lists:nth(rand:uniform(Command_Status_Length), Command_Status),
+            lists:append(
+                [
+                    lists:nth(rand:uniform(Message_Id_Length), Message_Id),
+                    case rand:uniform(6) rem 6 of
+                        0 -> [];
+                        Reminder -> add_tlvs(Tlv, Tlv_Length, Reminder)
+                    end
+                ])}
+            || _ <- lists:seq(1, ?MAX_OPERATION * 2)
+        ],
+
+    store_code(Rule, Code, ?MAX_OPERATION, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
