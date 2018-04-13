@@ -447,6 +447,7 @@ b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
 b2a(<<"ms_availability_status">>) -> ms_availability_status;
+b2a(<<"alert_on_message_delivery">>) -> alert_on_message_delivery;
 b2a(Field) when is_atom(Field) -> Field.
 
 err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
@@ -732,6 +733,10 @@ schema() ->
   "00 00 00 3D 00 00 01 03 00 00 00 00 00 00 00 01 34 31 31 35 00 03 08 31 32 "
   "35 2E 31 32 35 2E 31 32 34 2E 32 34 35 00 01 01 31 32 34 2E 31 34 37 35 2E "
   "32 35 30 2E 31 34 37 00 03 00 00"},
+ {"data_sm",
+  "00 00 00 41 00 00 01 03 00 00 00 00 93 F3 66 CF 56 4D 4E 00 00 12 31 39 32 "
+  "2E 31 36 38 2E 31 2E 31 00 06 00 31 39 32 2E 31 2E 31 2E 31 30 00 00 00 FF "
+  "13 0C 00 01 02 13 0C 00 01 00 13 0C 00 01 01"},
  {"query_sm",
   "00 00 00 24 00 00 00 03 00 00 00 00 00 00 00 01 35 00 01 0E 31 35 34 2E 31 "
   "35 36 2E 31 35 34 2E 31 32 34 00"},
