@@ -46,7 +46,7 @@ REM ----------------------------------------------------------------------------
         REM true: compacted / false: detailed.
         SET GENERATE_COMPACTED=true
         SET HEAP_SIZE=+hms 33554432
-        SET LOGGING=true
+        SET LOGGING=false
         SET MAX_BASIC=50
     )
 
