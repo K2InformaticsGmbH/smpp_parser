@@ -48,7 +48,9 @@
     unbind_resp
 ]).
 
-% -define(NODEBUG, true).
+-define(LOGGING, list_to_atom(string:to_lower(os:getenv("LOGGING", "false")))).
+
+-define(NODEBUG, true).
 
 -include("smpp_parser_generator.hrl").
 
@@ -318,8 +320,9 @@ create_code(additional_status_info_text = Rule) ->
             || Value <- ["my_additional_status_info_text"]
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_response_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_response_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_response_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -446,8 +449,9 @@ create_code(alert_on_msg_delivery = Rule) ->
             || Value <- lists:seq(0, 3)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -471,8 +475,8 @@ create_code(billing_identification = Rule) ->
             || Tag <- ["01", "FF"]
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -739,8 +743,10 @@ create_code(callback_num = Rule) ->
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -766,8 +772,10 @@ create_code(callback_num_atag = Rule) ->
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -789,8 +797,10 @@ create_code(callback_num_pres_ind = Rule) ->
             || Value <- lists:seq(0, 15)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -953,8 +963,9 @@ create_code(delivery_failure_reason = Rule) ->
             || Value <- lists:seq(0, 3)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_response_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_response_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_response_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1008,8 +1019,9 @@ create_code(dest_addr_np_country = Rule) ->
             integer_2_octet(88210, 3)
         ]],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1031,8 +1043,9 @@ create_code(dest_addr_np_information = Rule) ->
             || Value <- ["2025331234", "2025336789", "8001234567"]
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1054,8 +1067,9 @@ create_code(dest_addr_np_resolution = Rule) ->
             || Value <- lists:seq(0, 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1077,8 +1091,10 @@ create_code(dest_addr_subunit = Rule) ->
             || Value <- lists:seq(0, 4)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1100,8 +1116,8 @@ create_code(dest_bearer_type = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1125,8 +1141,9 @@ create_code(dest_network_id = Rule) ->
             || N <- lists:seq(1, Network_Id_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1148,8 +1165,8 @@ create_code(dest_network_type = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1171,8 +1188,9 @@ create_code(dest_node_id = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1191,11 +1209,13 @@ create_code(dest_port = Rule) ->
                 "0002",
                 integer_2_octet(rand:uniform(4294967295), 2)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1219,8 +1239,10 @@ create_code(dest_subaddress = Rule) ->
             || N <- lists:seq(1, Subaddress_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1245,8 +1267,8 @@ create_code(dest_telematics_id = Rule) ->
             || N <- lists:seq(1, Protocol_Id_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1294,8 +1316,9 @@ create_code(display_time = Rule) ->
             || Value <- lists:seq(0, 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1317,8 +1340,9 @@ create_code(dpf_result = Rule) ->
             || Value <- lists:seq(0, 1)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_response_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_response_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1470,8 +1494,9 @@ create_code(its_reply_type = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1491,11 +1516,12 @@ create_code(its_session_info = Rule) ->
                 integer_2_octet(rand:uniform(255)),
                 integer_2_octet(rand:uniform(65535))
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1517,8 +1543,10 @@ create_code(language_indicator = Rule) ->
             || Value <- lists:seq(0, 5)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1556,8 +1584,11 @@ create_code(message_payload = Rule) ->
             || Value <- ["my_message_payload"]
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_response_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_replacement_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_response_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1621,8 +1652,8 @@ create_code(more_messages_to_send = Rule) ->
             || Value <- lists:seq(0, 1)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1666,8 +1697,8 @@ create_code(ms_msg_wait_facilities = Rule) ->
             || Value <- [0, 1, 2, 3, 128, 129, 130, 131]
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1699,8 +1730,9 @@ create_code(ms_validity = Rule) ->
             || Value <- lists:seq(0, 6)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1724,8 +1756,10 @@ create_code(network_error_code = Rule) ->
             || _ <- lists:seq(0, 1)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_response_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_response_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_response_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1787,8 +1821,8 @@ create_code(number_of_messages = Rule) ->
             || Value <- lists:seq(0, 99)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1852,8 +1886,10 @@ create_code(payload_type = Rule) ->
             || Value <- lists:seq(0, 1)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1894,8 +1930,10 @@ create_code(privacy_indicator = Rule) ->
             || Value <- lists:seq(0, 3)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1941,11 +1979,11 @@ create_code(qos_time_to_live = Rule) ->
                 "0004",
                 integer_2_octet(rand:uniform(9999), 4)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2031,11 +2069,12 @@ create_code(sar_msg_ref_num = Rule) ->
                 "0002",
                 integer_2_octet(rand:uniform(4294967295), 2)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2054,11 +2093,12 @@ create_code(sar_segment_seqnum = Rule) ->
                 "0001",
                 integer_2_octet(rand:uniform(255))
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2077,11 +2117,12 @@ create_code(sar_total_segments = Rule) ->
                 "0001",
                 integer_2_octet(rand:uniform(255))
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2154,8 +2195,8 @@ create_code(set_dpf = Rule) ->
             || Value <- lists:seq(0, 1)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2231,11 +2272,12 @@ create_code(sms_signal = Rule) ->
                 "0002",
                 integer_2_octet(rand:uniform(4294967295), 2)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2257,8 +2299,10 @@ create_code(source_addr_subunit = Rule) ->
             || Value <- lists:seq(0, 4)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2280,8 +2324,8 @@ create_code(source_bearer_type = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2305,8 +2349,9 @@ create_code(source_network_id = Rule) ->
             || N <- lists:seq(1, Network_Id_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2328,8 +2373,8 @@ create_code(source_network_type = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2351,8 +2396,9 @@ create_code(source_node_id = Rule) ->
             || Value <- lists:seq(0, 8)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2371,11 +2417,13 @@ create_code(source_port = Rule) ->
                 "0002",
                 integer_2_octet(rand:uniform(4294967295), 2)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2399,8 +2447,10 @@ create_code(source_subaddress = Rule) ->
             || N <- lists:seq(1, Subaddress_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2425,8 +2475,8 @@ create_code(source_telematics_id = Rule) ->
             || N <- lists:seq(1, Protocol_Id_Length)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2816,11 +2866,16 @@ create_code(user_message_reference = Rule) ->
                 "0002",
                 integer_2_octet(rand:uniform(4294967295), 2)
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(cancel_broadcast_optional_tlv, Code, ?MAX_TLV, false),
+    store_code(message_broadcast_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
+    store_code(query_broadcast_request_optional_tlv, Code, ?MAX_TLV, false),
+    store_code(query_broadcast_response_optional_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2839,11 +2894,12 @@ create_code(user_response_code = Rule) ->
                 "0001",
                 integer_2_octet(rand:uniform(255))
             ])
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
+            || _ <- lists:seq(1, ?MAX_TLV * 2)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2865,8 +2921,9 @@ create_code(ussd_service_op = Rule) ->
             || Value <- lists:seq(0, 19)
         ],
 
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
+    store_code(Rule, Code, ?MAX_TLV, false),
+    store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
+    store_code(message_submission_request_tlv, Code, ?MAX_TLV, false),
     ?CREATE_CODE_END.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

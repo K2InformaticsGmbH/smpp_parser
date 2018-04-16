@@ -70,13 +70,12 @@
 -define(GENERATE_COMPACTED, list_to_atom(string:to_lower(
     os:getenv("GENERATE_COMPACTED", "true")))).
 
--define(LOGGING, list_to_atom(string:to_lower(os:getenv("LOGGING", "false")))).
-
 -define(MAX_BASIC, list_to_integer(os:getenv("MAX_BASIC", "50"))).
 -define(MAX_DEST, 12).
 -define(MAX_MESSAGE_SUBMISSION_RESPONSE_TLV, 6).
 -define(MAX_MESSAGE_SUBMISSION_REQUEST_TLV, 12).
 -define(MAX_OPERATION, ?MAX_BASIC * 5).
+-define(MAX_TLV, 10).
 -define(MAX_UNSUCCESS, 6).
 
 -define(MCC, [
