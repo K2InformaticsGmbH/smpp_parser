@@ -57,12 +57,13 @@
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 generate() ->
-    ?assertEqual("05", integer_2_octet(5, 1)),
+    ?assertEqual("05", integer_2_octet(5)),
     ?assertEqual("A312", integer_2_octet(41746, 2)),
     ?assertEqual("01D95E1F", integer_2_octet(31022623, 4)),
 
     ?assertEqual("48656C6C6F00", string_2_c_octet_string("Hello")),
-    ?assertEqual("31323334353637383900", string_2_c_octet_string("123456789")),
+    ?assertEqual("31323334353637383900",
+        string_2_c_octet_string("123456789")),
     ?assertEqual("413246354544323738464300",
         string_2_c_octet_string("A2F5ED278FC")),
 
@@ -106,6 +107,22 @@ generate() ->
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Helper functions.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Check the generated code.
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+check_code(Rule, []) ->
+    ok;
+check_code(Rule, [Head | Tail]) ->
+    case Head of
+        {Rule, _CommandStatus, PDUBody} ->
+            ?assertEqual(0, length(PDUBody) rem 2,
+                "Rule=" ++ Rule ++ " PDUBody=" ++ PDUBody);
+        _ -> ?assertEqual(0, length(Head) rem 2,
+            "Rule=" ++ Rule ++ " Code=" ++ Head)
+    end,
+    check_code(Rule, Tail).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create operation.
@@ -326,7 +343,7 @@ create_code(addr_npi = Rule) ->
             18
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -347,7 +364,7 @@ create_code(addr_ton = Rule) ->
             6
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -424,7 +441,7 @@ create_code(alert_on_msg_delivery = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 3)
         ],
@@ -767,7 +784,7 @@ create_code(callback_num_pres_ind = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 15)
         ],
@@ -822,7 +839,7 @@ create_code(data_coding = Rule) ->
             255
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -931,7 +948,7 @@ create_code(delivery_failure_reason = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 3)
         ],
@@ -978,19 +995,18 @@ create_code(dest_addr_np_country = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(Value), 2),
+                integer_2_octet(length(Value) div 2, 2),
                 Value
             ])
             || Value <- [
             integer_2_octet(1),
             integer_2_octet(41),
-            integer_2_octet(423),
-            integer_2_octet(44),
-            integer_2_octet(49),
-            integer_2_octet(8818),
-            integer_2_octet(88210)
-        ]
-        ],
+            integer_2_octet(423, 2),
+            integer_2_octet(44, 2),
+            integer_2_octet(49, 2),
+            integer_2_octet(8818, 2),
+            integer_2_octet(88210, 3)
+        ]],
 
     store_code(Rule, Code, ?MAX_BASIC, false),
     store_code(message_submission_request_tlv, Code, ?MAX_BASIC, false),
@@ -1033,7 +1049,7 @@ create_code(dest_addr_np_resolution = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 2)
         ],
@@ -1056,7 +1072,7 @@ create_code(dest_addr_subunit = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 4)
         ],
@@ -1079,7 +1095,7 @@ create_code(dest_bearer_type = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 8)
         ],
@@ -1273,7 +1289,7 @@ create_code(display_time = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 2)
         ],
@@ -1296,7 +1312,7 @@ create_code(dpf_result = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 1)
         ],
@@ -1365,7 +1381,7 @@ create_code(esm_class = Rule) ->
             192
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1432,7 +1448,7 @@ create_code(interface_version = Rule) ->
             50
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1449,7 +1465,7 @@ create_code(its_reply_type = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 8)
         ],
@@ -1472,8 +1488,8 @@ create_code(its_session_info = Rule) ->
             lists:append([
                 ParameterTag,
                 "0002",
-                integer_2_octet(rand:uniform(255), 1),
-                integer_2_octet(rand:uniform(65535), 1)
+                integer_2_octet(rand:uniform(255)),
+                integer_2_octet(rand:uniform(65535))
             ])
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
@@ -1496,7 +1512,7 @@ create_code(language_indicator = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 5)
         ],
@@ -1600,7 +1616,7 @@ create_code(more_messages_to_send = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 1)
         ],
@@ -1623,7 +1639,7 @@ create_code(ms_availability_status = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 2)
         ],
@@ -1645,7 +1661,7 @@ create_code(ms_msg_wait_facilities = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- [0, 1, 2, 3, 128, 129, 130, 131]
         ],
@@ -1668,7 +1684,7 @@ create_code(ms_validity = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 3)
         ] ++
@@ -1677,7 +1693,7 @@ create_code(ms_validity = Rule) ->
                 ParameterTag,
                 "0004",
                 "04",
-                integer_2_octet(Value, 1),
+                integer_2_octet(Value),
                 "000C"
             ])
             || Value <- lists:seq(0, 6)
@@ -1701,7 +1717,7 @@ create_code(network_error_code = Rule) ->
             lists:append([
                 ParameterTag,
                 "0003",
-                integer_2_octet(rand:uniform(8), 1),
+                integer_2_octet(rand:uniform(8)),
                 string_2_octet_string(lists:flatten(
                     io_lib:format("~2.2.0w", [rand:uniform(99)])))
             ])
@@ -1730,7 +1746,7 @@ create_code(network_id = Rule) ->
                     lists:flatten(
                         io_lib:format("~5.5.0w", [rand:uniform(99999)]))
                 ]));
-                3 -> lists:append([
+                3 -> string_2_c_octet_string(lists:append([
                     "31",
                     lists:flatten(
                         io_lib:format("~3.3.0w", [rand:uniform(255)])),
@@ -1739,12 +1755,12 @@ create_code(network_id = Rule) ->
                     lists:flatten(
                         io_lib:format("~3.3.0w", [rand:uniform(255)])),
                     lists:flatten(io_lib:format("~3.3.0w", [rand:uniform(255)]))
-                ]);
-                _ -> lists:append([
+                ]));
+                _ -> string_2_c_octet_string(lists:append([
                     "32smpp.",
                     integer_to_list(N),
                     ".esme.com"
-                ])
+                ]))
             end
             || N <- lists:seq(1, ?MAX_BASIC * 2)
         ],
@@ -1766,7 +1782,7 @@ create_code(number_of_messages = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 99)
         ],
@@ -1831,7 +1847,7 @@ create_code(payload_type = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 1)
         ],
@@ -1856,7 +1872,7 @@ create_code(priority_flag = Rule) ->
             4
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1873,7 +1889,7 @@ create_code(privacy_indicator = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 3)
         ],
@@ -1906,7 +1922,7 @@ create_code(protocol_id = Rule) ->
             68
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1950,7 +1966,7 @@ create_code(registered_delivery = Rule) ->
             16
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1996,7 +2012,7 @@ create_code(replace_if_present_flag = Rule) ->
             1
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2036,7 +2052,7 @@ create_code(sar_segment_seqnum = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(rand:uniform(255), 1)
+                integer_2_octet(rand:uniform(255))
             ])
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
@@ -2059,7 +2075,7 @@ create_code(sar_total_segments = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(rand:uniform(255), 1)
+                integer_2_octet(rand:uniform(255))
             ])
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
@@ -2133,7 +2149,7 @@ create_code(set_dpf = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 1)
         ],
@@ -2196,7 +2212,7 @@ create_code(sm_default_message_id = Rule) ->
             255
         ],
 
-    store_code(Rule, [integer_2_octet(C, 1) || C <- Code], ?MAX_BASIC, false),
+    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2236,7 +2252,7 @@ create_code(source_addr_subunit = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 4)
         ],
@@ -2259,7 +2275,7 @@ create_code(source_bearer_type = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 8)
         ],
@@ -2544,7 +2560,7 @@ create_code(submit_multi_resp = Rule) ->
                 [
                     lists:nth(rand:uniform(Message_Id_Length), Message_Id),
                     case rand:uniform(2) rem 2 of
-                        0 -> integer_2_octet(0, 1);
+                        0 -> integer_2_octet(0);
                         _ ->
                             lists:nth(rand:uniform(Unsuccess_Length), Unsuccess)
                     end,
@@ -2821,7 +2837,7 @@ create_code(user_response_code = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(rand:uniform(255), 1)
+                integer_2_octet(rand:uniform(255))
             ])
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
@@ -2844,7 +2860,7 @@ create_code(ussd_service_op = Rule) ->
             lists:append([
                 ParameterTag,
                 "0001",
-                integer_2_octet(Value, 1)
+                integer_2_octet(Value)
             ])
             || Value <- lists:seq(0, 19)
         ],
@@ -2862,14 +2878,14 @@ create_dest(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
     DestList = [
         case rand:uniform(2) rem 2 of
             1 -> lists:append([
-                integer_2_octet(1, 1),
+                integer_2_octet(1),
                 lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
                 lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
                 lists:nth(rand:uniform(Destination_Addr_Length),
                     Destination_Addr)
             ]);
             _ -> lists:append([
-                integer_2_octet(2, 1),
+                integer_2_octet(2),
                 string_2_c_octet_string(
                     "distribution_list_#" ++ integer_to_list(N))
             ])
@@ -2877,7 +2893,7 @@ create_dest(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
         || N <- lists:seq(1, Number)
     ],
     DestUnique = sets:to_list(sets:from_list(DestList)),
-    integer_2_octet(length(DestUnique), 1) ++ lists:flatten(DestUnique).
+    integer_2_octet(length(DestUnique)) ++ lists:flatten(DestUnique).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create operation.
@@ -2893,6 +2909,7 @@ create_operation(Rule, CommandStatus, PDUBody) ->
             PDUBody
         ]),
 
+    ?assertEqual(0, length(PDU) rem 2, "PDU=" ++ PDU),
     create_byte_string(PDU, []).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2901,7 +2918,7 @@ create_operation(Rule, CommandStatus, PDUBody) ->
 
 create_short_message(Short_Message, Short_Message_Length) ->
     Value = lists:nth(rand:uniform(Short_Message_Length), Short_Message),
-    integer_2_octet(length(Value) - 1, 1) ++ Value.
+    integer_2_octet(length(Value) - 1) ++ Value.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% tlv
@@ -2923,7 +2940,7 @@ create_unsuccess(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
     Error_Status_Code, Error_Status_Code_Length) ->
     UnsuccessList = [
         lists:append([
-            integer_2_octet(1, 1),
+            integer_2_octet(1),
             lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
             lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
             lists:nth(rand:uniform(Destination_Addr_Length),
@@ -2934,8 +2951,7 @@ create_unsuccess(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
         || _ <- lists:seq(1, Number)
     ],
     UnsuccessUnique = sets:to_list(sets:from_list(UnsuccessList)),
-    integer_2_octet(length(UnsuccessUnique), 1)
-    ++ lists:flatten(UnsuccessUnique).
+    integer_2_octet(length(UnsuccessUnique)) ++ lists:flatten(UnsuccessUnique).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Creating Common Test data files.
@@ -3139,7 +3155,7 @@ file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PD
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 integer_2_octet(Integer) ->
-    integer_to_list(Integer, 16).
+    integer_2_octet(Integer, 1).
 
 integer_2_octet(Integer, NumberOctets) ->
     String = lists:flatten(lists:duplicate(NumberOctets, "00")) ++
@@ -3156,6 +3172,7 @@ integer_2_octet(Integer, NumberOctets) ->
 store_code(Rule, Code, Max, Strict) ->
     ?D("Start~n Rule: ~p~n Code: ~p~n Max: ~p~n Strict: ~p~n",
         [Rule, Code, Max, Strict]),
+    ok = check_code(Rule, Code),
     case ?LOGGING of
         true ->
             erlang:display(io:format(user, "~n" ++ ?MODULE_STRING ++
@@ -3211,8 +3228,7 @@ store_code(Rule, Code, Max, Strict) ->
 
 string_2_c_octet_string(String) ->
     RT = string_2_octet_string(String) ++ "00",
-    ?assertEqual(length(String) * 2 + 2, length(RT),
-        "String=" ++ String ++ " RT=" ++ RT),
+    ?assertEqual(0, length(RT) rem 2, "String=" ++ String ++ " RT=" ++ RT),
     RT.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3221,6 +3237,5 @@ string_2_c_octet_string(String) ->
 
 string_2_octet_string(String) ->
     RT = lists:flatten([io_lib:format("~2.16.0B", [X]) || X <- String]),
-    ?assertEqual(length(String) * 2, length(RT),
-        "String=" ++ String ++ " RT=" ++ RT),
+    ?assertEqual(0, length(RT) rem 2, "String=" ++ String ++ " RT=" ++ RT),
     RT.
