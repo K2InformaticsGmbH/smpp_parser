@@ -410,6 +410,7 @@ b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
+b2a(<<"dpf_result">>) -> dpf_result;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
 b2a(<<"error_code">>) -> error_code;
@@ -447,6 +448,7 @@ b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"ms_availability_status">>) -> ms_availability_status;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
@@ -821,7 +823,23 @@ schema() ->
     destination_addr => <<"152.142.136.78">>, message_id => <<>>,
     sequence_number => 1, service_type => <<>>,
     source_addr => <<"142.25.95.68">>, source_addr_npi => <<"National">>,
-    source_addr_ton => <<"International">>}}
+    source_addr_ton => <<"International">>}},
+  {"data_sm_resp_dpf_result",
+   "00 00 00 30 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "  
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 20 00 01 00",
+   #{command_id => <<"data_sm_resp">>, command_length => 48,
+     command_status => <<"ESME_ROK">>,dpf_result => 0,
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"alert_notification_ms_availability_status",
+   "00 00 00 33 00 00 01 02 00 00 00 00 00 00 00 01 02 04 31 32 37 2E 30 2E 30 "
+   "2E 31 00 02 0A 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 04 22 00 01 "
+   "00",
+   #{command_id => <<"alert_notification">>, command_length => 51,
+     command_status => <<"ESME_ROK">>, esme_addr => <<"168.123.234.321">>,
+     esme_addr_npi => <<"ERMES">>, esme_addr_ton => <<"National">>,
+     ms_availability_status => 0, sequence_number => 1,
+     source_addr => <<"127.0.0.1">>, source_addr_npi => <<"Telex (F.69)">>,
+     source_addr_ton => <<"National">>}}
 ]).
 
 packunpack_test_() ->
@@ -829,11 +847,18 @@ packunpack_test_() ->
      [{T, fun() ->
             Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(L, " ")]),
             SMPP = unpack_map(Bin),
-            ?assertEqual(E, to_enum(internal2json(SMPP))),
+            E1 = to_enum(internal2json(SMPP)),
+            if E /= E1 ->
+                    ?debugFmt("~nExpected : ~p~n"
+                                "Got      : ~p", [E, E1]);
+                true -> ok
+            end,
+            ?assertEqual(E, E1),
             {ok, NewBin} = pack(SMPP),
             if Bin /= NewBin ->
-                   ?debugFmt("~nExpected : ~p~nGot      : ~p", [Bin, NewBin]);
-               true -> ok
+                    ?debugFmt("~nExpected : ~p~n"
+                                "Got      : ~p", [Bin, NewBin]);
+                true -> ok
             end,
             ?assertEqual(Bin, NewBin)
           end}
