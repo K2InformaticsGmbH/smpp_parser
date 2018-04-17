@@ -66,9 +66,13 @@ unpack(Bin, Opts) ->
             case lists:member(return_maps, Opts) of
                 true ->
                     SMPPMap = lists:foldl(fun list_to_map/2, #{}, Body),
-                    SMPPMap#{command_id => CmdId, command_status => Status, sequence_number => SeqNum};
+                    SMPPMap#{command_id => CmdId, command_status => Status,
+                             sequence_number => SeqNum,
+                             command_length => byte_size(Bin)};
                 _ ->
-                    Hd = [{command_id, CmdId}, {command_status, Status}, {sequence_number, SeqNum}],
+                    Hd = [{command_id, CmdId}, {command_status, Status},
+                          {sequence_number, SeqNum},
+                          {command_length, byte_size(Bin)}],
                     Hd ++ lists:foldl(fun list_to_pl/2, [], Body)
             end
     end.
@@ -184,7 +188,7 @@ decode_bin(Bin) when is_binary(Bin) ->
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, internal2json(to_enum(PDU#{command_length => byte_size(Bin)}))}
+            {ok, internal2json(to_enum(PDU))}
     end.
 
 
@@ -406,6 +410,7 @@ b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
+b2a(<<"dpf_result">>) -> dpf_result;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
 b2a(<<"error_code">>) -> error_code;
@@ -443,6 +448,7 @@ b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"ms_availability_status">>) -> ms_availability_status;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
@@ -692,52 +698,148 @@ schema() ->
 -define(TESTS,
 [{"bind_transceiver",
   "00 00 00 23 00 00 00 09 00 00 00 00 00 00 00 01 34 31 31 35 00 7A 75 6A 5F "
-  "34 31 31 35 00 00 34 00 00 00"},
+  "34 31 31 35 00 00 34 00 00 00",
+  #{addr_npi => <<"Unknown">>,addr_ton => <<"Unknown">>, address_range => <<>>,
+    command_id => <<"bind_transceiver">>, command_length => 35,
+    command_status => <<"ESME_ROK">>, interface_version => 52,
+    password => <<"zuj_4115">>, sequence_number => 1,system_id => <<"4115">>,
+    system_type => <<>>}},
  {"bind_transmitter",
   "00 00 00 27 00 00 00 02 00 00 00 00 00 00 00 01 34 31 31 35 00 66 64 73 66 "
-  "61 6A 66 6B 00 74 65 73 74 00 34 04 08 00"},
+  "61 6A 66 6B 00 74 65 73 74 00 34 04 08 00",
+  #{addr_npi => <<"National">>, addr_ton => <<"Subscriber Number">>,
+    address_range => <<>>, command_id => <<"bind_transmitter">>,
+    command_length => 39,command_status => <<"ESME_ROK">>,
+    interface_version => 52,password => <<"fdsfajfk">>, sequence_number => 1,
+    system_id => <<"4115">>, system_type => <<"test">>}},
  {"bind_transmitter_resp",
-  "00 00 00 1F 80 00 00 02 00 00 00 11 0A 36 8E 1F 53 4D 50 50 33 54 45 53 54 "
-  "00 02 10 00 01 19"},
+  "00 00 00 1F 80 00 00 02 00 00 00 00 00 00 00 01 53 4D 50 50 33 54 45 53 54 "
+  "00 02 10 00 01 19",
+  #{command_id => <<"bind_transmitter_resp">>, command_length => 31,
+    command_status => <<"ESME_ROK">>, sequence_number => 1,
+    sc_interface_version => 25, system_id => <<"SMPP3TEST">>}},
  {"bind_receiver",
   "00 00 00 2A 00 00 00 01 00 00 00 00 00 00 00 01 34 31 31 35 00 66 64 67 61 "
-  "73 72 67 73 00 74 65 73 74 69 6E 67 00 34 02 09 00"},
+  "73 72 67 73 00 74 65 73 74 69 6E 67 00 34 02 09 00",
+  #{addr_npi => <<"Private">>,addr_ton => <<"National">>, address_range => <<>>,
+    command_id => <<"bind_receiver">>, command_length => 42,
+    command_status => <<"ESME_ROK">>, interface_version => 52,
+    password => <<"fdgasrgs">>, sequence_number => 1, system_id => <<"4115">>,
+    system_type => <<"testing">>}},
  {"submit_sm",
   "00 00 00 44 00 00 00 04 00 00 00 00 00 00 00 01 00 05 00 34 31 30 33 37 00 "
   "00 00 30 37 39 34 36 35 30 31 31 35 00 00 00 00 00 00 11 00 00 00 14 74 65 "
-  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29"},
+  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29",
+  #{command_id => <<"submit_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>, data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"Unknown">>, dest_addr_ton => <<"Unknown">>,
+    destination_addr => <<"0794650115">>,esm_class => 0, priority_flag => 0,
+    protocol_id => 0, registered_delivery => 17, replace_if_present_flag => 0,
+    schedule_delivery_time => <<>>, sequence_number => 1,service_type => <<>>,
+    short_message => <<"test swisscom (SMPP)">>, sm_default_msg_id => 0,
+    source_addr => <<"41037">>, source_addr_npi => <<"Unknown">>,
+    source_addr_ton => <<"Alphanumeric">>, validity_period => <<>>}},
  {"deliver_sm",
   "00 00 00 44 00 00 00 05 00 00 00 00 00 00 00 01 00 00 00 34 31 37 39 34 34 "
   "34 34 34 34 34 00 00 00 31 32 33 34 35 00 00 00 00 00 00 00 00 00 00 13 68 "
-  "69 20 67 6F 74 20 79 6F 75 72 20 6D 65 73 73 61 67 65"},
+  "69 20 67 6F 74 20 79 6F 75 72 20 6D 65 73 73 61 67 65",
+  #{command_id => <<"deliver_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>, data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"Unknown">>,dest_addr_ton => <<"Unknown">>,
+    destination_addr => <<"12345">>,esm_class => 0, priority_flag => 0,
+    protocol_id => 0,registered_delivery => 0, replace_if_present_flag => 0,
+    schedule_delivery_time => <<>>, sequence_number => 1, service_type => <<>>,
+    short_message => <<"hi got your message">>, sm_default_msg_id => 0,
+    source_addr => <<"41794444444">>, source_addr_npi => <<"Unknown">>,
+    source_addr_ton => <<"Unknown">>,validity_period => <<>>}},
  {"deliver_sm_resp",
-  "00 00 00 11 80 00 00 05 00 00 00 00 00 00 00 01 00"},
+  "00 00 00 11 80 00 00 05 00 00 00 00 00 00 00 01 00",
+  #{command_id => <<"deliver_sm_resp">>,command_length => 17,
+    command_status => <<"ESME_ROK">>, message_id => <<>>,
+    sequence_number => 1}},
  {"submit_sm_optional",
   "00 00 00 51 00 00 00 04 00 00 00 00 00 00 00 01 34 31 31 35 00 01 09 31 39 "
   "32 2E 32 35 34 2E 32 35 34 2E 31 37 00 03 01 31 34 38 2E 32 34 37 2E 31 35 "
   "37 2E 32 35 00 03 00 00 00 00 00 00 00 00 00 02 05 00 01 04 02 04 00 02 00 "
-  "03 04 26 00 01 01"},
+  "03 04 26 00 01 01",
+  #{command_id => <<"submit_sm">>, command_length => 81,
+    command_status => <<"ESME_ROK">>, data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"ISDN (E163/E164)">>,
+    dest_addr_ton => <<"Network Specific">>,
+    destination_addr => <<"148.247.157.25">>, esm_class => 3,
+    more_messages_to_send => 1, priority_flag => 0, protocol_id => 0,
+    registered_delivery => 0, replace_if_present_flag => 0,
+    schedule_delivery_time => <<>>, sequence_number => 1,
+    service_type => <<"4115">>, short_message => <<>>, sm_default_msg_id => 0,
+    source_addr => <<"192.254.254.17">>, source_addr_npi => <<"Private">>,
+    source_addr_ton => <<"International">>, user_message_reference => 3,
+    user_response_code => 4, validity_period => <<>>}},
  {"submit_multi",
   "00 00 00 6D 00 00 00 21 00 00 00 00 00 00 00 01 74 65 73 74 00 01 01 31 32 "
   "2E 35 34 2E 32 36 2E 32 38 00 02 01 00 00 00 01 01 01 31 32 2E 32 34 2E 32 "
   "35 2E 36 33 00 CB 40 03 31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 "
   "31 35 30 31 30 35 31 35 31 33 32 35 36 39 39 2B 00 17 00 0A 06 0C 74 65 73 "
-  "74 20 6D 65 73 73 61 67 65"},
+  "74 20 6D 65 73 73 61 67 65",
+  #{}},
  {"data_sm",
   "00 00 00 3D 00 00 01 03 00 00 00 00 00 00 00 01 34 31 31 35 00 03 08 31 32 "
   "35 2E 31 32 35 2E 31 32 34 2E 32 34 35 00 01 01 31 32 34 2E 31 34 37 35 2E "
-  "32 35 30 2E 31 34 37 00 03 00 00"},
+  "32 35 30 2E 31 34 37 00 03 00 00",
+  #{command_id => <<"data_sm">>,command_length => 61,
+    command_status => <<"ESME_ROK">>,data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"ISDN (E163/E164)">>,
+    dest_addr_ton => <<"International">>,
+    destination_addr => <<"124.1475.250.147">>, esm_class => 3,
+    registered_delivery => 0, sequence_number => 1, service_type => <<"4115">>,
+    source_addr => <<"125.125.124.245">>, source_addr_npi => <<"National">>,
+    source_addr_ton => <<"Network Specific">>}},
  {"query_sm",
   "00 00 00 24 00 00 00 03 00 00 00 00 00 00 00 01 35 00 01 0E 31 35 34 2E 31 "
-  "35 36 2E 31 35 34 2E 31 32 34 00"},
+  "35 36 2E 31 35 34 2E 31 32 34 00",
+  #{command_id => <<"query_sm">>,command_length => 36,
+    command_status => <<"ESME_ROK">>,message_id => <<"5">>,
+    sequence_number => 1,source_addr => <<"154.156.154.124">>,
+    source_addr_npi => <<"Internet (IP)">>,
+    source_addr_ton => <<"International">>}},
  {"replace_sm",
   "00 00 00 52 00 00 00 07 00 00 00 00 00 00 00 01 35 00 03 0E 31 32 2E 31 35 "
   "33 2E 32 35 2E 34 38 00 31 36 30 31 30 34 31 35 34 34 32 33 36 31 32 2D 00 "
   "31 36 30 31 30 34 31 35 34 34 32 39 36 31 32 2D 00 1A 06 0C 74 65 73 74 20 "
-  "6D 65 73 73 61 67 65"},
+  "6D 65 73 73 61 67 65",
+  #{command_id => <<"replace_sm">>,command_length => 82,
+    command_status => <<"ESME_ROK">>, message_id => <<"5">>,
+    registered_delivery => 26, schedule_delivery_time => <<"160104154423612-">>,
+    sequence_number => 1, short_message => <<"test message">>,
+    sm_default_msg_id => 6,source_addr => <<"12.153.25.48">>,
+    source_addr_npi => <<"Internet (IP)">>,
+    source_addr_ton => <<"Network Specific">>,
+    validity_period => <<"160104154429612-">>}},
  {"cancel_sm",
   "00 00 00 32 00 00 00 08 00 00 00 00 00 00 00 01 00 00 01 08 31 34 32 2E 32 "
-  "35 2E 39 35 2E 36 38 00 01 0E 31 35 32 2E 31 34 32 2E 31 33 36 2E 37 38 00"}
+  "35 2E 39 35 2E 36 38 00 01 0E 31 35 32 2E 31 34 32 2E 31 33 36 2E 37 38 00",
+  #{command_id => <<"cancel_sm">>, command_length => 50,
+    command_status => <<"ESME_ROK">>, dest_addr_npi => <<"Internet (IP)">>,
+    dest_addr_ton => <<"International">>,
+    destination_addr => <<"152.142.136.78">>, message_id => <<>>,
+    sequence_number => 1, service_type => <<>>,
+    source_addr => <<"142.25.95.68">>, source_addr_npi => <<"National">>,
+    source_addr_ton => <<"International">>}},
+  {"data_sm_resp_dpf_result",
+   "00 00 00 30 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "  
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 20 00 01 00",
+   #{command_id => <<"data_sm_resp">>, command_length => 48,
+     command_status => <<"ESME_ROK">>,dpf_result => 0,
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"alert_notification_ms_availability_status",
+   "00 00 00 33 00 00 01 02 00 00 00 00 00 00 00 01 02 04 31 32 37 2E 30 2E 30 "
+   "2E 31 00 02 0A 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 04 22 00 01 "
+   "00",
+   #{command_id => <<"alert_notification">>, command_length => 51,
+     command_status => <<"ESME_ROK">>, esme_addr => <<"168.123.234.321">>,
+     esme_addr_npi => <<"ERMES">>, esme_addr_ton => <<"National">>,
+     ms_availability_status => 0, sequence_number => 1,
+     source_addr => <<"127.0.0.1">>, source_addr_npi => <<"Telex (F.69)">>,
+     source_addr_ton => <<"National">>}}
 ]).
 
 packunpack_test_() ->
@@ -745,17 +847,22 @@ packunpack_test_() ->
      [{T, fun() ->
             Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(L, " ")]),
             SMPP = unpack_map(Bin),
-            JSON = internal2json(SMPP),
-            ?debugFmt("~s~n~p~n~s~n",
-                      [T, SMPP, jsx:prettify(jsx:encode(JSON))]),
+            E1 = to_enum(internal2json(SMPP)),
+            if E /= E1 ->
+                    ?debugFmt("~nExpected : ~p~n"
+                                "Got      : ~p", [E, E1]);
+                true -> ok
+            end,
+            ?assertEqual(E, E1),
             {ok, NewBin} = pack(SMPP),
             if Bin /= NewBin ->
-                   ?debugFmt("~nExpected : ~p~nGot      : ~p", [Bin, NewBin]);
-               true -> ok
+                    ?debugFmt("~nExpected : ~p~n"
+                                "Got      : ~p", [Bin, NewBin]);
+                true -> ok
             end,
             ?assertEqual(Bin, NewBin)
           end}
-      || {T,L} <- ?TESTS]
+      || {T,L,E} <- ?TESTS]
     }.
 
 -define(PDU(_Id,_Extra), <<"{\"command_id\":",(integer_to_binary(_Id))/binary,
@@ -814,6 +921,7 @@ encode_decode_test_() ->
         [{T,
             fun() ->
                 {ok, D} = decode(P),
+                ?assertEqual(Ex, D),
                 ?assertEqual(true, is_map(D)),
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,list}]))),
                 ?assertEqual({ok, D}, decode(re:replace(P,"\s","",[global,{return,binary}]))),
@@ -821,7 +929,7 @@ encode_decode_test_() ->
                 ?assertEqual(true, is_binary(E)),
                 ?assertEqual({ok, D}, decode(E))
             end}
-        || {T,P} <- ?TESTS]
+        || {T,P,Ex} <- ?TESTS]
     }.
 
 encode_decode_1_test_() ->
