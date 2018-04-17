@@ -136,6 +136,7 @@
     pack_unpack,
     pack_unpack_map
 ]).
+-define(FUNCTIONS_LAST, lists:last(?FUNCTIONS)).
 
 % TRUE: compacted / FALSE: detailed.
 -define(GENERATE_COMPACTED, list_to_atom(string:to_lower(
