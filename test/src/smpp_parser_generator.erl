@@ -267,7 +267,6 @@ create_code() ->
     create_code(message_replacement_request_tlvs),
     create_code(message_submission_request_tlvs),
     create_code(message_submission_response_tlvs),
-    create_code(query_broadcast_request_tlvs),
     create_code(query_broadcast_response_tlvs),
     create_code(sc_interface_version),
     create_code(source_subaddress),
@@ -366,8 +365,8 @@ create_code(additional_status_info_text = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(Value), 2),
-                string_2_octet_string(Value)
+                integer_2_octet(length(Value) + 1, 2),
+                string_2_c_octet_string(Value)
             ])
             || Value <- ["my_additional_status_info_text"]
         ],
@@ -2871,30 +2870,7 @@ create_code(query_broadcast_response_tlvs = Rule) ->
 
     Code =
         [
-            create_tlvs(rand:uniform(
-                rand:uniform(?MAX_RESPONSE_TLV)), Tlv,
-                Tlv_Length)
-            || _ <- lists:seq(1, ?MAX_BASIC * 2)
-        ],
-
-    store_code(Rule, Code, ?MAX_BASIC, false),
-    ?CREATE_CODE_END;
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% query_broadcast_request_tlvs
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-create_code(query_broadcast_request_tlvs = Rule) ->
-    ?CREATE_CODE_START,
-    [{query_broadcast_request_tlv, Tlv}] =
-        ets:lookup(?CODE_TEMPLATES, query_broadcast_request_tlv),
-    Tlv_Length = length(Tlv),
-
-    Code =
-        [
-            create_tlvs(rand:uniform(
-                rand:uniform(?MAX_REQUEST_TLV)), Tlv,
-                Tlv_Length)
+            create_tlvs(rand:uniform(rand:uniform(2)), Tlv, Tlv_Length)
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
 
@@ -2915,8 +2891,8 @@ create_code(query_broadcast_sm = Rule) ->
     Message_Id_Length = length(Message_Id),
     [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
     Source_Addr_Length = length(Source_Addr),
-    [{query_broadcast_request_tlvs, Tlvs}] =
-        ets:lookup(?CODE_TEMPLATES, query_broadcast_request_tlvs),
+    [{query_broadcast_request_tlv, Tlvs}] =
+        ets:lookup(?CODE_TEMPLATES, query_broadcast_request_tlv),
     Tlvs_Length = length(Tlvs),
 
     Code =
@@ -2957,9 +2933,9 @@ create_code(query_broadcast_sm_resp = Rule) ->
     Command_Status_Length = length(Command_Status),
     [{message_id, Message_Id}] = ets:lookup(?CODE_TEMPLATES, message_id),
     Message_Id_Length = length(Message_Id),
-    [{message_state, Message_State}] =
-        ets:lookup(?CODE_TEMPLATES, message_state),
-    Message_State_Length = length(Message_State),
+    [{message_state_tlv, Message_State_Tlv}] =
+        ets:lookup(?CODE_TEMPLATES, message_state_tlv),
+    Message_State_Tlv_Length = length(Message_State_Tlv),
     [{query_broadcast_response_tlvs, Tlvs}] =
         ets:lookup(?CODE_TEMPLATES, query_broadcast_response_tlvs),
     Tlvs_Length = length(Tlvs),
@@ -2971,17 +2947,14 @@ create_code(query_broadcast_sm_resp = Rule) ->
             lists:append(
                 [
                     lists:nth(rand:uniform(Message_Id_Length), Message_Id),
-                    lists:nth(rand:uniform(Message_State_Length),
-                        Message_State),
-                    lists:nth(rand:uniform(Broadcast_Area_Identifier_Length),
+                    lists:nth(rand:uniform(Message_State_Tlv_Length),
+                        Message_State_Tlv),
+                    lists:nth(
+                        rand:uniform(Broadcast_Area_Identifier_Length),
                         Broadcast_Area_Identifier),
                     lists:nth(rand:uniform(Broadcast_Area_Success_Length),
                         Broadcast_Area_Success),
-                    case rand:uniform(?MAX_RESPONSE_TLV) rem
-                        ?MAX_RESPONSE_TLV of
-                        0 -> [];
-                        _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
-                    end
+                    lists:nth(rand:uniform(Tlvs_Length), Tlvs)
                 ])}
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
@@ -4186,12 +4159,14 @@ create_dest(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
 %% Create operation.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-create_operation(Rule, CommandStatus, PDUBody) ->
+create_operation(Rule, _CommandStatus, PDUBody) ->
     PDU = lists:append(
         [
             integer_2_octet(length(PDUBody) div 2 + 16, 4),
             integer_2_octet(?COMMAND_ID(Rule), 4),
-            CommandStatus,
+%% not used because of issue #25 (https://github.com/K2InformaticsGmbH/smpp_parser/issues/25)
+%%            CommandStatus,
+            "00000000",
             integer_2_octet(rand:uniform(4294967296), 4),
             PDUBody
         ]),
