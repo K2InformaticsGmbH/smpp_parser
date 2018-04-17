@@ -71,16 +71,19 @@
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 generate() ->
+    ?assertEqual("00", integer_2_octet(0)),
     ?assertEqual("05", integer_2_octet(5)),
     ?assertEqual("A312", integer_2_octet(41746, 2)),
     ?assertEqual("01D95E1F", integer_2_octet(31022623, 4)),
 
+    ?assertEqual("00", string_2_c_octet_string("")),
     ?assertEqual("48656C6C6F00", string_2_c_octet_string("Hello")),
     ?assertEqual("31323334353637383900",
         string_2_c_octet_string("123456789")),
     ?assertEqual("413246354544323738464300",
         string_2_c_octet_string("A2F5ED278FC")),
 
+    ?assertEqual("", string_2_octet_string("")),
     ?assertEqual("48656C6C6F", string_2_octet_string("Hello")),
     ?assertEqual("313233343536373839", string_2_octet_string("123456789")),
     ?assertEqual("4132463545443237384643",
@@ -231,7 +234,6 @@ create_code() ->
     create_code(set_dpf),
     create_code(short_message),
     create_code(sm_default_message_id),
-    create_code(sm_length),
     create_code(sms_signal),
     create_code(source_addr_subunit),
     create_code(source_bearer_type),
@@ -329,16 +331,17 @@ create_code(absolute_time = Rule) ->
 
     Code =
         [
-            "01",
-            "0207",
-            "030610",
-            "04051125",
-            "0504122431",
-            "060313233243",
-            "0702142233421",
-            "080115213441000"
-            "080115213441010+"
-            "080115213441020-"
+            "",
+            "010000000000000+",
+            "020700000000000-",
+            "030610000000000-",
+            "040511250000000+",
+            "050412243100000-",
+            "060313233243000+",
+            "070214223342100-",
+            "080115213441000+"
+            "080115213441010-"
+            "080115213441020+"
         ],
 
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
@@ -1629,8 +1632,6 @@ create_code(deliver_sm = Rule) ->
     [{sm_default_message_id, Sm_Default_Message_Id}] =
         ets:lookup(?CODE_TEMPLATES, sm_default_message_id),
     Sm_Default_Message_Id_Length = length(Sm_Default_Message_Id),
-    [{sm_length, Sm_Length}] = ets:lookup(?CODE_TEMPLATES, sm_length),
-    Sm_Length_Length = length(Sm_Length),
     [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
     Source_Addr_Length = length(Source_Addr),
     [{message_delivery_request_tlvs, Tlvs}] =
@@ -1669,8 +1670,8 @@ create_code(deliver_sm = Rule) ->
                     lists:nth(rand:uniform(Data_Coding_Length), Data_Coding),
                     lists:nth(rand:uniform(Sm_Default_Message_Id_Length),
                         Sm_Default_Message_Id),
-                    lists:nth(rand:uniform(Sm_Length_Length), Sm_Length),
-                    create_short_message(Short_Message, Short_Message_Length),
+                    lists:nth(rand:uniform(Short_Message_Length),
+                        Short_Message),
                     case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
                         0 -> [];
                         _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
@@ -3105,13 +3106,14 @@ create_code(relative_time = Rule) ->
 
     Code =
         [
-            "01R",
-            "0207R",
-            "030610R",
-            "04051125R",
-            "0504122431R",
-            "060313233243R",
-            "0702142233420R",
+            "",
+            "010000000000000R",
+            "020700000000000R",
+            "030610000000000R",
+            "040511250000000R",
+            "050412243100000R",
+            "060313233243000R",
+            "070214223342000R",
             "080115213441000R"
         ],
 
@@ -3163,8 +3165,6 @@ create_code(replace_sm = Rule) ->
     [{sm_default_message_id, Sm_Default_Message_Id}] =
         ets:lookup(?CODE_TEMPLATES, sm_default_message_id),
     Sm_Default_Message_Id_Length = length(Sm_Default_Message_Id),
-    [{sm_length, Sm_Length}] = ets:lookup(?CODE_TEMPLATES, sm_length),
-    Sm_Length_Length = length(Sm_Length),
     [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
     Source_Addr_Length = length(Source_Addr),
     [{message_replacement_request_tlvs, Tlvs}] =
@@ -3192,8 +3192,8 @@ create_code(replace_sm = Rule) ->
                         Registered_Delivery),
                     lists:nth(rand:uniform(Sm_Default_Message_Id_Length),
                         Sm_Default_Message_Id),
-                    lists:nth(rand:uniform(Sm_Length_Length), Sm_Length),
-                    create_short_message(Short_Message, Short_Message_Length),
+                    lists:nth(rand:uniform(Short_Message_Length),
+                        Short_Message),
                     case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
                         0 -> [];
                         _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
@@ -3380,29 +3380,31 @@ create_code(short_message = Rule) ->
 
     Code =
         [
-            "1 T",
-            "4 This",
-            "7 This is",
-            "9 This is a",
-            "15 This is a short",
-            "23 This is a short message",
+            "",
+            "T",
+            "This",
+            "This is",
+            "This is a",
+            "This is a short",
+            "This is a short message",
             lists:append([
-                "0 23 This is a short message"
-                "1 23 This is a short message"
-                "2 23 This is a short message"
-                "3 23 This is a short message"
-                "4 23 This is a short message"
-                "5 23 This is a short message"
-                "6 23 This is a short message"
-                "7 23 This is a short message"
-                "8 23 This is a short message"
-                "9 23 This is a short message"
-                "A End"
+                "1 This is a short message"
+                "2 This is a short message"
+                "3 This is a short message"
+                "4 This is a short message"
+                "5 This is a short message"
+                "6 This is a short message"
+                "7 This is a short message"
+                "8 This is a short message"
+                "9 This is a short message"
+                "A This is a short message"
+                "B End"
             ])
         ],
 
-    store_code(Rule, [string_2_octet_string(C) || C <- Code], ?MAX_BASIC,
-        false),
+    store_code(Rule,
+        [integer_2_octet(length(C)) ++ string_2_octet_string(C) || C <- Code],
+        ?MAX_BASIC, false),
     ?CREATE_CODE_END;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3414,30 +3416,6 @@ create_code(sm_default_message_id = Rule) ->
 
     Code =
         [
-            1,
-            2,
-            3,
-            7,
-            15,
-            31,
-            63,
-            127,
-            255
-        ],
-
-    store_code(Rule, [integer_2_octet(C) || C <- Code], ?MAX_BASIC, false),
-    ?CREATE_CODE_END;
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% sm_length                                                              4.7.28
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-create_code(sm_length = Rule) ->
-    ?CREATE_CODE_START,
-
-    Code =
-        [
-            0,
             1,
             2,
             3,
@@ -3768,7 +3746,8 @@ create_code(submit_multi = Rule) ->
                     lists:nth(rand:uniform(Data_Coding_Length), Data_Coding),
                     lists:nth(rand:uniform(Sm_Default_Message_Id_Length),
                         Sm_Default_Message_Id),
-                    create_short_message(Short_Message, Short_Message_Length),
+                    lists:nth(rand:uniform(Short_Message_Length),
+                        Short_Message),
                     case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
                         0 -> [];
                         _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
@@ -3898,7 +3877,8 @@ create_code(submit_sm = Rule) ->
                     lists:nth(rand:uniform(Data_Coding_Length), Data_Coding),
                     lists:nth(rand:uniform(Sm_Default_Message_Id_Length),
                         Sm_Default_Message_Id),
-                    create_short_message(Short_Message, Short_Message_Length),
+                    lists:nth(rand:uniform(Short_Message_Length),
+                        Short_Message),
                     case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
                         0 -> [];
                         _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
@@ -4162,14 +4142,6 @@ create_operation(Rule, _CommandStatus, PDUBody) ->
 
     ?assertEqual(0, length(PDU) rem 2, "PDU=" ++ PDU),
     create_byte_string(PDU, []).
-
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% short_message
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-create_short_message(Short_Message, Short_Message_Length) ->
-    Value = lists:nth(rand:uniform(Short_Message_Length), Short_Message),
-    integer_2_octet(length(Value) - 1) ++ Value.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% tlv
