@@ -26,7 +26,9 @@
     generate/0
 ]).
 
--define(ALL_OPERATION, [
+-define(NODEBUG, true).
+
+-define(OPERATION, [
     alert_notification,
     bind_receiver,
     bind_receiver_resp,
@@ -61,8 +63,6 @@
     unbind,
     unbind_resp
 ]).
-
--define(NODEBUG, true).
 
 -include("smpp_parser_generator.hrl").
 
@@ -117,8 +117,8 @@ generate() ->
     %% Common tests ............................................................
 
     case ?GENERATE_COMPACTED of
-        true -> ok = file_create_ct_all("compacted", ?ALL_OPERATION);
-        _ -> ok = file_create_ct_all("detailed_", ?ALL_OPERATION)
+        true -> ok = file_create_ct_all("compacted", ?OPERATION);
+        _ -> ok = file_create_ct_all("detailed_", ?OPERATION)
     end.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -332,16 +332,16 @@ create_code(absolute_time = Rule) ->
     Code =
         [
             "",
-            "010000000000000+",
-            "020700000000000-",
-            "030610000000000-",
-            "040511250000000+",
-            "050412243100000-",
-            "060313233243000+",
-            "070214223342100-",
-            "080115213441000+"
-            "080115213441010-"
-            "080115213441020+"
+            "990000000000000+",
+            "990200000000000-",
+            "990310000000000-",
+            "990427200000000+",
+            "990526195600000-",
+            "990625185545000+",
+            "990724175444100-",
+            "990823165343244+",
+            "990922155242346-",
+            "991021145141448+"
         ],
 
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
@@ -2449,7 +2449,7 @@ create_code(message_state_tlv = Rule) ->
 
     ?CREATE_CODE_START,
 
-    ParameterTag = "0424",
+    ParameterTag = "0427",
 
     Code =
         [
@@ -3107,14 +3107,16 @@ create_code(relative_time = Rule) ->
     Code =
         [
             "",
-            "010000000000000R",
-            "020700000000000R",
-            "030610000000000R",
-            "040511250000000R",
-            "050412243100000R",
-            "060313233243000R",
-            "070214223342000R",
-            "080115213441000R"
+            "990000000000000R",
+            "990200000000000R",
+            "990310000000000R",
+            "990427200000000R",
+            "990526195600000R",
+            "990625185545000R",
+            "990724175444000R",
+            "990823165343000R",
+            "990922155242000R",
+            "991021145141000R"
         ],
 
     store_code(Rule, [string_2_c_octet_string(C) || C <- Code], ?MAX_BASIC,
@@ -4136,7 +4138,7 @@ create_operation(Rule, _CommandStatus, PDUBody) ->
 %% not used because of issue #25 (https://github.com/K2InformaticsGmbH/smpp_parser/issues/25)
 %%            CommandStatus,
             "00000000",
-            integer_2_octet(rand:uniform(4294967296), 4),
+            "00000001",
             PDUBody
         ]),
 
