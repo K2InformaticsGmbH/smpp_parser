@@ -446,12 +446,16 @@ b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"ms_msg_wait_facilities">>) -> ms_msg_wait_facilities;
 b2a(<<"ms_availability_status">>) -> ms_availability_status;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
+b2a(<<"delivery_failure_reason">>) -> delivery_failure_reason;
+b2a(<<"additional_status_info_text">>) -> additional_status_info_text;
 b2a(Field) when is_atom(Field) -> Field.
 
 err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
@@ -839,7 +843,62 @@ schema() ->
      esme_addr_npi => <<"ERMES">>, esme_addr_ton => <<"National">>,
      ms_availability_status => 0, sequence_number => 1,
      source_addr => <<"127.0.0.1">>, source_addr_npi => <<"Telex (F.69)">>,
-     source_addr_ton => <<"National">>}}
+     source_addr_ton => <<"National">>}},
+  {"submit_sm_resp_additional_status_info_text",
+   "00 00 00 53 80 00 00 04 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "  
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D 79 5F "  
+   "61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 "  
+   "78 74 00 04 25 00 01 01",
+   #{additional_status_info_text => <<"my_additional_status_info_text">>,
+     command_id => <<"submit_sm_resp">>, command_length => 83,
+     command_status => <<"ESME_ROK">>,delivery_failure_reason => 1,
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"submit_multi_resp_delivery_failure_reason",
+   "00 00 00 3B 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 04 25 00 01 03 04 "
+   "25 00 01 02 04 20 00 01 01",
+   #{command_id => <<"submit_multi_resp">>, command_length => 59,
+     command_status => <<"ESME_ROK">>, delivery_failure_reason => 2,
+     dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
+     sequence_number => 1, tlvs => [#{len => 1,tag => 1061,val => <<2>>}],
+     unsuccess_sme => <<>>}},
+  {"data_sm_dest_addr_np_country",
+   "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
+   "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
+   "7F 06 13 00 02 22 72",
+   #{command_id => <<"data_sm">>, command_length => 57,
+     command_status => <<"ESME_ROK">>,data_coding => <<"127">>,
+     dest_addr_np_country => 8818,dest_addr_npi => <<"ERMES">>,
+     dest_addr_ton => <<"Network Specific">>,
+     destination_addr => <<"192.168.1.1">>, esm_class => 192,
+     registered_delivery => 0, sequence_number => 1, service_type => <<"CMT">>,
+     source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Telex (F.69)">>,
+     source_addr_ton => <<"Alphanumeric">>}},
+  {"data_sm_resp_additional_status_info_text",
+   "00 00 00 6B 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D 79 5F "
+   "61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 "
+   "78 74 00 04 24 00 19 6D 79 5F 6D 65 73 73 61 67 65 5F 70 61 79 6C 6F 61 64 "
+   "5F 30 30 30 30 39 00",
+    #{additional_status_info_text => <<"my_additional_status_info_text">>,
+      command_id => <<"data_sm_resp">>, command_length => 107,
+      command_status => <<"ESME_ROK">>,
+      message_id => <<"this_could_be_a_message_id">>, sequence_number => 1,
+      tlvs => [#{len => 25,tag => 1060,
+                 val => <<109,121,95,109,101,115,115,97,103,101,95,112,97,
+                          121,108,111,97,100,95,48,48,48,48,57,0>>}]}},
+  {"data_sm_ms_msg_wait_facilities",
+   "00 00 00 42 00 00 01 03 00 00 00 00 00 00 00 01 57 41 50 00 04 03 31 39 32 "
+   "2E 31 36 38 2E 31 2E 31 00 04 08 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 "
+   "31 00 08 00 3F 00 30 00 01 83 02 0C 00 02 BF B3",
+   #{command_id => <<"data_sm">>, command_length => 66,
+     command_status => <<"ESME_ROK">>, data_coding => <<"63">>,
+     dest_addr_npi => <<"National">>, dest_addr_ton => <<"Subscriber Number">>,
+     destination_addr => <<"168.123.234.321">>, esm_class => 8,
+     ms_msg_wait_facilities => 131,registered_delivery => 0,
+     sar_msg_ref_num => 49075, sequence_number => 1, service_type => <<"WAP">>,
+     source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Data (X.121)">>,
+     source_addr_ton => <<"Subscriber Number">>}}
 ]).
 
 packunpack_test_() ->
@@ -849,18 +908,19 @@ packunpack_test_() ->
             SMPP = unpack_map(Bin),
             E1 = to_enum(internal2json(SMPP)),
             if E /= E1 ->
-                    ?debugFmt("~nExpected : ~p~n"
-                                "Got      : ~p", [E, E1]);
+                    ?debugFmt("~s~nExpected : ~p~n"
+                                "Got      : ~p", [T, E, E1]);
                 true -> ok
             end,
             ?assertEqual(E, E1),
             {ok, NewBin} = pack(SMPP),
-            if Bin /= NewBin ->
-                    ?debugFmt("~nExpected : ~p~n"
-                                "Got      : ~p", [Bin, NewBin]);
+            NewSMPP = unpack_map(NewBin),
+            if NewSMPP /= SMPP ->
+                    ?debugFmt("~s~nExpected : ~p~n"
+                                "Got      : ~p", [T, SMPP, NewSMPP]);
                 true -> ok
             end,
-            ?assertEqual(Bin, NewBin)
+            ?assertEqual(SMPP, NewSMPP)
           end}
       || {T,L,E} <- ?TESTS]
     }.
