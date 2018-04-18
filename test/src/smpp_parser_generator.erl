@@ -2006,7 +2006,7 @@ create_code(dest_subaddress = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(lists:nth(N, Subaddress)), 2),
+                integer_2_octet(length(lists:nth(N, Subaddress)) div 2, 2),
                 lists:nth(N, Subaddress)
             ])
             || N <- lists:seq(1, Subaddress_Length)
@@ -3617,7 +3617,7 @@ create_code(source_subaddress = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(lists:nth(N, Subaddress)), 2),
+                integer_2_octet(length(lists:nth(N, Subaddress)) div 2, 2),
                 lists:nth(N, Subaddress)
             ])
             || N <- lists:seq(1, Subaddress_Length)
@@ -3664,11 +3664,8 @@ create_code(subaddress = Rule) ->
 
     Code =
         [
-            string_2_octet_string(lists:append([
-                "A0",
-                "user_specified_",
-                integer_to_list(N)
-            ]))
+                "A0" ++
+                string_2_octet_string("user_specified_" ++ integer_to_list(N))
             || N <- lists:seq(1, ?MAX_BASIC * 2)
         ],
 
