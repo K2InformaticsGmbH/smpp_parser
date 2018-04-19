@@ -985,7 +985,24 @@ schema() ->
   "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 30 30 30 30 "
   "30 30 30 30 30 30 30 30 2B 00 05 31",
-  #{}}
+  #{}},
+ {"replace_sm_issue_55",
+  "00 00 00 7A 00 00 00 07 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+  "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 05 09 31 39 32 2E 31 "
+  "36 38 2E 31 2E 31 00 39 39 30 33 31 30 30 30 30 30 30 30 30 30 30 2D 00 39 "
+  "39 30 30 30 30 30 30 30 30 30 30 30 30 30 52 00 00 1F 00 04 24 00 18 6D 79 "
+  "5F 6D 65 73 73 61 67 65 5F 70 61 79 6C 6F 61 64 5F 30 30 30 30 38",
+  #{command_id => <<"replace_sm">>,command_length => 122,
+    command_status => <<"ESME_ROK">>,
+    message_id => <<"this_could_be_a_message_id">>,
+    message_payload => <<"my_message_payload_00008">>,
+    registered_delivery => 0,
+    schedule_delivery_time => <<"990310000000000-">>,
+    sequence_number => 1,short_message => <<>>,
+    sm_default_msg_id => 31,source_addr => <<"192.168.1.1">>,
+    source_addr_npi => <<"Private">>,
+    source_addr_ton => <<"Alphanumeric">>,
+    validity_period => <<"990000000000000R">>}}
 ]).
 
 packunpack_test_() ->
