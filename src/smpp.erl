@@ -1002,7 +1002,18 @@ schema() ->
     sm_default_msg_id => 31,source_addr => <<"192.168.1.1">>,
     source_addr_npi => <<"Private">>,
     source_addr_ton => <<"Alphanumeric">>,
-    validity_period => <<"990000000000000R">>}}
+    validity_period => <<"990000000000000R">>}},
+ {"data_sm_resp_issue_57",
+   "00 00 00 53 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D 79 5F "
+   "61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 "
+   "78 74 00 04 25 00 01 00",
+   #{additional_status_info_text =>
+     <<"my_additional_status_info_text">>,
+     command_id => <<"data_sm_resp">>,command_length => 83,
+     command_status => <<"ESME_ROK">>,delivery_failure_reason => 0,
+     message_id => <<"this_could_be_a_message_id">>,
+     sequence_number => 1}}
 ]).
 
 packunpack_test_() ->
