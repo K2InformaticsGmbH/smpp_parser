@@ -980,7 +980,12 @@ schema() ->
    service_type => "USSD",source_addr => "168.0.0.1",
    source_addr_npi => 10,source_addr_ton => 6,
    tlvs => [#{len => 2,tag => 516,val => "��"}],
-   user_message_reference => 24938}}
+   user_message_reference => 24938}},
+ {"query_sm_resp_issue_38",
+  "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+  "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 30 30 30 30 "
+  "30 30 30 30 30 30 30 30 2B 00 05 31",
+  #{}}
 ]).
 
 packunpack_test_() ->
