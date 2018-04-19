@@ -970,7 +970,17 @@ schema() ->
    esm_class => 2,registered_delivery => 12,sequence_number => 1,
    service_type => <<"VMN">>,source_addr => <<"168.0.0.1">>,
    source_addr_npi => <<"Unknown">>,
-   source_addr_ton => <<"Abbreviated">>,source_bearer_type => 8}}
+   source_addr_ton => <<"Abbreviated">>,source_bearer_type => 8}},
+ {"cancel_broadcast_sm_issue_52",
+  "00 00 00 48 00 00 01 13 00 00 00 00 00 00 00 01 55 53 53 44 00 74 68 69 73 "
+  "5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 0A "
+  "31 36 38 2E 30 2E 30 2E 31 00 02 04 00 02 C0 EF 02 04 00 02 61 6A",
+ #{command_id => 275,command_length => 72,command_status => 0,
+   message_id => "this_could_be_a_message_id",sequence_number => 1,
+   service_type => "USSD",source_addr => "168.0.0.1",
+   source_addr_npi => 10,source_addr_ton => 6,
+   tlvs => [#{len => 2,tag => 516,val => "��"}],
+   user_message_reference => 24938}}
 ]).
 
 packunpack_test_() ->
