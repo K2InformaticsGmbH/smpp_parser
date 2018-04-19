@@ -951,7 +951,13 @@ schema() ->
     sm_default_msg_id => 255,source_addr => <<"168.123.234.321">>,
     source_addr_npi => <<"Land Mobile (E.212)">>,
     source_addr_ton => <<"International">>,user_response_code => 254,
-    validity_period => <<"990625185545000+">>}}
+    validity_period => <<"990625185545000+">>}},
+ {"query_broadcast_sm_resp_issue_40",
+  "00 00 00 5C 80 00 01 12 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+  "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 02 06 06 "
+  "00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 65 6E "
+  "74 69 66 69 65 72 5F 30 30 30 31 30 06 08 00 01 5A",
+  #{}}
 ]).
 
 packunpack_test_() ->
