@@ -2660,7 +2660,7 @@ create_code(ms_validity = Rule) ->
                 "0004",
                 "04",
                 integer_2_octet(Value),
-                "000C"
+                integer_2_octet(rand:uniform(65535), 2)
             ])
             || Value <- lists:seq(0, 6)
         ],
