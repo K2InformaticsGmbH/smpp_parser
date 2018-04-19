@@ -956,7 +956,7 @@ create_code(broadcast_end_time = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(lists:nth(N, Absolute_Time)), 2),
+                integer_2_octet(length(lists:nth(N, Absolute_Time)) div 2, 2),
                 lists:nth(N, Absolute_Time)
             ])
             || N <- lists:seq(1, Absolute_Time_Length)
@@ -2904,15 +2904,29 @@ create_code(protocol_id = Rule) ->
 
 create_code(query_broadcast_response_optional_tlvs = Rule) ->
     ?CREATE_CODE_START,
-    [{query_broadcast_response_optional_tlv, Tlv}] =
-        ets:lookup(?CODE_TEMPLATES, query_broadcast_response_optional_tlv),
-    Tlv_Length = length(Tlv),
+    [{broadcast_end_time, Broadcast_End_Time}] =
+        ets:lookup(?CODE_TEMPLATES, broadcast_end_time),
+    Broadcast_End_Time_Length = length(Broadcast_End_Time),
+    [{user_message_reference, User_Message_Reference}] =
+        ets:lookup(?CODE_TEMPLATES, user_message_reference),
+    User_Message_Reference_Length = length(User_Message_Reference),
 
     Code =
         [
-            create_tlvs(rand:uniform(
-                rand:uniform(?MAX_RESPONSE_TLV)), Tlv,
-                Tlv_Length)
+            case rand:uniform(4) rem 4 of
+                0 -> lists:nth(rand:uniform(Broadcast_End_Time_Length),
+                    Broadcast_End_Time);
+                1 -> lists:nth(rand:uniform(Broadcast_End_Time_Length),
+                    Broadcast_End_Time) ++
+                lists:nth(rand:uniform(User_Message_Reference_Length),
+                    User_Message_Reference);
+                2 -> lists:nth(rand:uniform(User_Message_Reference_Length),
+                    User_Message_Reference);
+                _ -> lists:nth(rand:uniform(User_Message_Reference_Length),
+                    User_Message_Reference) ++
+                lists:nth(rand:uniform(Broadcast_End_Time_Length),
+                    Broadcast_End_Time)
+            end
             || _ <- lists:seq(1, ?MAX_BASIC * 2)
         ],
 
