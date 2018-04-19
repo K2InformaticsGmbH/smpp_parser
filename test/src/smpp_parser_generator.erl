@@ -2471,8 +2471,8 @@ create_code(message_payload = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(Value) + 6, 2),
-                string_2_c_octet_string(
+                integer_2_octet(length(Value) + 5, 2),
+                string_2_octet_string(
                     Value ++ lists:flatten(io_lib:format("~5.5.0w", [N])))
             ])
             || N <- lists:seq(1, ?MAX_TLV * 2)
