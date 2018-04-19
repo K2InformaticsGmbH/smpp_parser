@@ -957,7 +957,20 @@ schema() ->
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 02 06 06 "
   "00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 65 6E "
   "74 69 66 69 65 72 5F 30 30 30 31 30 06 08 00 01 5A",
-  #{}}
+  #{}},
+ {"data_sm_issue_50",
+  "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 56 4D 4E 00 06 00 31 36 38 "
+  "2E 30 2E 30 2E 31 00 06 0A 31 36 38 2E 30 2E 30 2E 31 00 02 0C 07 00 0F 00 "
+  "01 08 00 06 00 01 00",
+ #{command_id => <<"data_sm">>,command_length => 57,
+   command_status => <<"ESME_ROK">>,
+   data_coding => <<"Latin/Hebrew (ISO-8859-8)">>,
+   dest_addr_npi => <<"ERMES">>,dest_addr_ton => <<"Abbreviated">>,
+   dest_network_type => 0,destination_addr => <<"168.0.0.1">>,
+   esm_class => 2,registered_delivery => 12,sequence_number => 1,
+   service_type => <<"VMN">>,source_addr => <<"168.0.0.1">>,
+   source_addr_npi => <<"Unknown">>,
+   source_addr_ton => <<"Abbreviated">>,source_bearer_type => 8}}
 ]).
 
 packunpack_test_() ->
