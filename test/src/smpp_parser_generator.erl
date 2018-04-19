@@ -3082,8 +3082,6 @@ create_code(query_sm_resp = Rule) ->
             lists:append(
                 [
                     lists:nth(rand:uniform(Message_Id_Length), Message_Id),
-
-                    lists:nth(rand:uniform(Message_Id_Length), Message_Id),
                     lists:nth(rand:uniform(Final_Date_Length), Final_Date),
                     lists:nth(rand:uniform(Message_State_Length),
                         Message_State),
