@@ -1019,7 +1019,28 @@ schema() ->
   "38 2E 30 2E 30 2E 31 00 05 04 31 39 32 2E 31 36 38 2E 31 2E 31 00 00 05 1F "
   "02 0F 00 01 38 03 81 00 12 01 01 04 6D 79 5F 63 61 6C 6C 62 61 63 6B 5F 6E "
   "75 6D 00 06 00 01 06",
-   #{}}
+   #{}},
+ {"submit_sm_issue_61",
+  "00 00 00 68 00 00 00 04 00 00 00 00 00 00 00 01 55 53 53 44 00 00 06 31 39 "
+  "32 2E 31 2E 31 2E 31 30 00 02 03 31 39 32 2E 31 2E 31 2E 31 30 00 01 02 00 "
+  "39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00 39 39 30 39 32 32 31 35 "
+  "35 32 34 32 30 30 30 52 00 01 00 00 1F 04 54 68 69 73 02 0B 00 02 30 5A 00 "
+  "07 00 01 00",
+  #{command_id => <<"submit_sm">>,command_length => 104,
+    command_status => <<"ESME_ROK">>,
+    data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"Data (X.121)">>,
+    dest_addr_ton => <<"National">>,dest_bearer_type => 0,
+    dest_port => 12378,destination_addr => <<"192.1.1.10">>,
+    esm_class => 1,priority_flag => 0,protocol_id => 2,
+    registered_delivery => 1,replace_if_present_flag => 0,
+    schedule_delivery_time => <<"991021145141448+">>,
+    sequence_number => 1,service_type => <<"USSD">>,
+    short_message => <<"This">>,sm_default_msg_id => 31,
+    source_addr => <<"192.1.1.10">>,
+    source_addr_npi => <<"Land Mobile (E.212)">>,
+    source_addr_ton => <<"Unknown">>,
+    validity_period => <<"990922155242000R">>}}
 ]).
 
 packunpack_test_() ->
