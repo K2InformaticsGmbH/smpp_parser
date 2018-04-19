@@ -1945,7 +1945,7 @@ create_code(dest_network_id = Rule) ->
         [
             lists:append([
                 ParameterTag,
-                integer_2_octet(length(lists:nth(N, Network_Id)), 2),
+                integer_2_octet(length(lists:nth(N, Network_Id)) div 2, 2),
                 lists:nth(N, Network_Id)
             ])
             || N <- lists:seq(1, Network_Id_Length)
