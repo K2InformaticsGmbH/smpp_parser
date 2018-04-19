@@ -1380,9 +1380,10 @@ create_code(cancel_broadcast_sm = Rule) ->
     Service_Type_Length = length(Service_Type),
     [{source_addr, Source_Addr}] = ets:lookup(?CODE_TEMPLATES, source_addr),
     Source_Addr_Length = length(Source_Addr),
-    [{cancel_broadcast_optional_tlvs, Tlvs}] =
-        ets:lookup(?CODE_TEMPLATES, cancel_broadcast_optional_tlvs),
-    Tlvs_Length = length(Tlvs),
+%% Meaning of the text in the specification is unclear (4.6.2.1 & 4.6.2.2).
+%%    [{cancel_broadcast_optional_tlvs, Tlvs}] =
+%%        ets:lookup(?CODE_TEMPLATES, cancel_broadcast_optional_tlvs),
+%%    Tlvs_Length = length(Tlvs),
 
     Code =
         [{
@@ -1394,11 +1395,12 @@ create_code(cancel_broadcast_sm = Rule) ->
                     lists:nth(rand:uniform(Message_Id_Length), Message_Id),
                     lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
                     lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
-                    lists:nth(rand:uniform(Source_Addr_Length), Source_Addr),
-                    case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
-                        0 -> [];
-                        _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
-                    end
+                    lists:nth(rand:uniform(Source_Addr_Length), Source_Addr)
+%% Meaning of the text in the specification is unclear (4.6.2.1 & 4.6.2.2).
+%%                    case rand:uniform(?MAX_REQUEST_TLV) rem ?MAX_REQUEST_TLV of
+%%                        0 -> [];
+%%                        _ -> lists:nth(rand:uniform(Tlvs_Length), Tlvs)
+%%                    end
                 ])}
             || _ <- lists:seq(1, ?MAX_OPERATION * 2)
         ],
