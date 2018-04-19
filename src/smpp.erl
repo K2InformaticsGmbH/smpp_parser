@@ -919,7 +919,39 @@ schema() ->
   "2E 30 2E 31 00 39 39 30 30 30 30 30 30 30 30 30 30 30 30 30 2B 00 39 39 30 "
   "34 32 37 32 30 30 30 30 30 30 30 30 52 00 10 7F 00 04 24 00 19 6D 79 5F 6D "
   "65 73 73 61 67 65 5F 70 61 79 6C 6F 61 64 5F 30 30 30 30 35 00",
-  #{}}
+  #{}},
+ {"deliver_sm_issue_47",
+  "00 00 01 60 00 00 00 05 00 00 00 00 00 00 00 01 57 41 50 00 01 06 31 36 38 "
+  "2E 31 32 33 2E 32 33 34 2E 33 32 31 00 01 06 31 32 37 2E 30 2E 30 2E 31 00 "
+  "01 03 00 39 39 30 37 32 34 31 37 35 34 34 34 30 30 30 52 00 39 39 30 36 32 "
+  "35 31 38 35 35 34 35 30 30 30 2B 00 10 01 02 FF FF 31 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 32 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 33 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 34 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 35 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 36 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 37 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 38 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 69 73 20 69 "
+  "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 6E 64 02 05 00 "
+  "01 FE",
+  #{command_id => <<"deliver_sm">>,command_length => 352,
+    command_status => <<"ESME_ROK">>,
+    data_coding => <<"Octet unspecified (8-bit binary)">>,
+    dest_addr_npi => <<"Land Mobile (E.212)">>,
+    dest_addr_ton => <<"International">>,
+    destination_addr => <<"127.0.0.1">>,esm_class => 1,
+    priority_flag => 0,protocol_id => 3,registered_delivery => 16,
+    replace_if_present_flag => 1,
+    schedule_delivery_time => <<"990724175444000R">>,
+    sequence_number => 1,service_type => <<"WAP">>,
+    short_message =>
+    <<"1 This is a short message2 This is a short message3 This is a short message4 This is a short message5 This is a short message6 This is a short message7 This is a short message8 This is a short message9 This is a short messageA This is a short messageB End">>,
+    sm_default_msg_id => 255,source_addr => <<"168.123.234.321">>,
+    source_addr_npi => <<"Land Mobile (E.212)">>,
+    source_addr_ton => <<"International">>,user_response_code => 254,
+    validity_period => <<"990625185545000+">>}}
 ]).
 
 packunpack_test_() ->
