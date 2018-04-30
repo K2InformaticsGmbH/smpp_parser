@@ -27,6 +27,7 @@ json2internal(SMPP) when is_map(SMPP) ->
 
 internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
 internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
+internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
 internal2json(_, V) when is_list(V)   -> list_to_binary(V);
 internal2json(_, V)                   -> V.
 
@@ -144,6 +145,8 @@ rec_info(network_error_code) ->
     record_info(fields, network_error_code);
 rec_info(unsuccess_sme) ->
     record_info(fields, unsuccess_sme);
+rec_info(broadcast_area) ->
+    record_info(fields, broadcast_area);
 rec_info(Type) ->
     io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
@@ -424,6 +427,8 @@ b2a(<<"source_addr">>) -> source_addr;
 b2a(<<"protocol_id">>) -> protocol_id;
 b2a(<<"dest_address">>) -> dest_address;
 b2a(<<"service_type">>) -> service_type;
+b2a(<<"callback_num">>) -> callback_num;
+b2a(<<"number_digits">>) -> number_digits;
 b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
 b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
 b2a(<<"esme_addr_npi">>) -> esme_addr_npi;
@@ -453,6 +458,7 @@ b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
 b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"digit_mode_indicator">>) -> digit_mode_indicator;
 b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
@@ -1026,7 +1032,16 @@ schema() ->
   "38 2E 30 2E 30 2E 31 00 05 04 31 39 32 2E 31 36 38 2E 31 2E 31 00 00 05 1F "
   "02 0F 00 01 38 03 81 00 12 01 01 04 6D 79 5F 63 61 6C 6C 62 61 63 6B 5F 6E "
   "75 6D 00 06 00 01 06",
-   #{}},
+  #{callback_num => [#{addr_npi => 4,addr_ton => 1, digit_mode_indicator => 1,
+                       number_digits => <<"my_callback_num">>}],
+    command_id => <<"data_sm">>,command_length => 82,
+    command_status => <<"ESME_ROK">>, data_coding => <<"31">>,
+    dest_addr_npi => <<"Telex (F.69)">>, dest_addr_ton => <<"Alphanumeric">>,
+    dest_network_type => 6, destination_addr => <<"192.168.1.1">>,
+    esm_class => 0, registered_delivery => 5, sar_segment_seqnum => 56,
+    sequence_number => 1, service_type => <<"GUTS">>,
+    source_addr => <<"168.0.0.1">>, source_addr_npi => <<"ISDN (E163/E164)">>,
+    source_addr_ton => <<"Abbreviated">>}},
  {"submit_sm_issue_61",
   "00 00 00 68 00 00 00 04 00 00 00 00 00 00 00 01 55 53 53 44 00 00 06 31 39 "
   "32 2E 31 2E 31 2E 31 30 00 02 03 31 39 32 2E 31 2E 31 2E 31 30 00 01 02 00 "
