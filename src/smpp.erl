@@ -435,6 +435,7 @@ b2a(<<"priority_flag">>) -> priority_flag;
 b2a(<<"unsuccess_sme">>) -> unsuccess_sme;
 b2a(<<"command_status">>) -> command_status;
 b2a(<<"command_length">>) -> command_length;
+b2a(<<"message_payload">>) -> message_payload;
 b2a(<<"sequence_number">>) -> sequence_number;
 b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;
