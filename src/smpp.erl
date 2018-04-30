@@ -142,6 +142,8 @@ rec_info(callback_num_atag) ->
     record_info(fields, callback_num_atag);
 rec_info(network_error_code) ->
     record_info(fields, network_error_code);
+rec_info(unsuccess_sme) ->
+    record_info(fields, unsuccess_sme);
 rec_info(Type) ->
     io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
@@ -410,6 +412,7 @@ b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
+b2a(<<"dest_port">>) -> dest_port;
 b2a(<<"dpf_result">>) -> dpf_result;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
@@ -438,6 +441,7 @@ b2a(<<"source_addr_ton">>) -> source_addr_ton;
 b2a(<<"validity_period">>) -> validity_period;
 b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
 b2a(<<"destination_addr">>) -> destination_addr;
+b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
