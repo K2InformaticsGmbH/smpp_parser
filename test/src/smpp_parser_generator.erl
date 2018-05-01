@@ -4233,7 +4233,6 @@ create_unsuccess(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
     Error_Status_Code, Error_Status_Code_Length) ->
     UnsuccessList = [
         lists:append([
-            integer_2_octet(1),
             lists:nth(rand:uniform(Addr_Ton_Length), Addr_Ton),
             lists:nth(rand:uniform(Addr_Npi_Length), Addr_Npi),
             lists:nth(rand:uniform(Destination_Addr_Length),
