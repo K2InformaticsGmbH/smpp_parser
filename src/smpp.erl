@@ -614,7 +614,8 @@ err(<<"ESME_RINVOPTPARSTREAM">>)    -> ?ESME_RINVOPTPARSTREAM;
 err(<<"ESME_ROPTPARNOTALLWD">>)     -> ?ESME_ROPTPARNOTALLWD;
 err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
 err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
-err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
+err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL;
+err({error,_CmdId, ErrorCode,_Seq}) -> err(ErrorCode).
 
 -define(BASE(_Id), #{command_id => cmdstr(_Id),
                      command_status => statusstr(?ESME_ROK),
@@ -1063,6 +1064,25 @@ schema() ->
     source_addr_npi => <<"Land Mobile (E.212)">>,
     source_addr_ton => <<"Unknown">>,
     validity_period => <<"990922155242000R">>}},
+ {"submit_sm_protocol_id_52_issue_65",
+  "00 00 00 44 00 00 00 04 00 00 00 00 00 00 00 01 00 01 01 34 31 30 33 37 00 "
+  "01 01 30 37 39 34 36 35 30 31 31 35 00 00 34 00 00 00 11 00 00 00 14 74 65 "
+  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29",
+  #{command_id => <<"submit_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>,
+    data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"ISDN (E163/E164)">>,
+    dest_addr_ton => <<"International">>,
+    destination_addr => <<"0794650115">>,esm_class => 0,
+    priority_flag => 0,protocol_id => 52,
+    registered_delivery => 17,replace_if_present_flag => 0,
+    schedule_delivery_time => <<>>,sequence_number => 1,
+    service_type => <<>>,
+    short_message => <<"test swisscom (SMPP)">>,
+    sm_default_msg_id => 0,source_addr => <<"41037">>,
+    source_addr_npi => <<"ISDN (E163/E164)">>,
+    source_addr_ton => <<"International">>,
+    validity_period => <<>>}},
  {"submit_multi_resp_issue_63",
   "00 00 00 A6 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 01 01 08 31 36 38 "
@@ -1071,6 +1091,30 @@ schema() ->
   "32 31 00 00 00 04 00 01 01 01 31 39 32 2E 31 2E 31 2E 31 30 00 00 00 04 FF "
   "01 00 00 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 00 00 00 0F 01 02 "
   "0A 31 39 32 2E 31 2E 31 2E 31 30 00 00 00 01 12",
+  #{}},
+  {"submit_multi_issue_46",
+  "00 00 02 0E 00 00 00 21 00 00 00 00 00 00 00 01 57 41 50 00 06 0E 31 32 37 "
+  "2E 30 2E 30 2E 31 00 0B 01 02 08 31 39 32 2E 31 36 38 2E 31 2E 31 00 02 64 "
+  "69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 31 31 00 02 64 69 73 "
+  "74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 34 00 01 04 03 31 39 32 2E "
+  "31 2E 31 2E 31 30 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 "
+  "5F 23 38 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 35 "
+  "00 01 02 03 31 36 38 2E 30 2E 30 2E 31 00 02 64 69 73 74 72 69 62 75 74 69 "
+  "6F 6E 5F 6C 69 73 74 5F 23 32 00 01 04 0E 31 36 38 2E 30 2E 30 2E 31 00 02 "
+  "64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 36 00 01 04 09 31 "
+  "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 08 07 01 39 39 30 39 32 32 31 "
+  "35 35 32 34 32 30 30 30 52 00 00 0C 00 FF 0F FF 31 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 32 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 33 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 34 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 35 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 36 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 37 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 38 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 69 73 20 69 73 "
+  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 6E 64 02 05 00 01 "
+  "27",
   #{}}
 ]).
 
