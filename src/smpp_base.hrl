@@ -157,6 +157,10 @@
 -define(PORT_DOMAIN,   ?INTEGER(2)).
 -define(PORT_RESERVED, ?EMPTY).
 
+-define(PROTOCOL_IDENTIFIER_DATATYPE, ?INTEGER(1)).
+-ifdef(GSM_VALID_RANGES).
+%% Disabled in favor of #65
+
 %% According to [3GPP TS 23.040] GSM values are listed below.
 %%
 %% On both, TDMA and CDMA, protocol_id is Ignored for mobile terminated
@@ -170,7 +174,6 @@
 %%
 %% **TODO** Review the domain declaration.  What about the SM-AL protocol
 %% identifier values (when bits 7, 6 and 5 are 0).
--define(PROTOCOL_IDENTIFIER_DATATYPE, ?INTEGER(1)).
 -define(PROTOCOL_IDENTIFIER_DOMAIN,
         ?UNION([?RANGE_INTEGER(1, 2#00000000, 2#00011111),
                 ?RANGE_INTEGER(1, 2#00100000, 2#00101101),
@@ -180,6 +183,11 @@
                 ?RANGE_INTEGER(1, 2#01011110, 2#01011111),
                 ?RANGE_INTEGER(1, 2#01111100, 2#01111111),
                 ?RANGE_INTEGER(1, 2#11000000, 2#11111111)])). % SC use
+-else.
+%% Entire 8bit vale range is accepted in favor of #65
+-define(PROTOCOL_IDENTIFIER_DOMAIN,
+        ?UNION([?RANGE_INTEGER(1, 2#00000000, 2#11111111)])).
+-endif.
 -define(PROTOCOL_IDENTIFIER_RESERVED, ?EMPTY).
 
 %% A list with all the SMPP Error Codes can be found on **smpp_globals.hrl**

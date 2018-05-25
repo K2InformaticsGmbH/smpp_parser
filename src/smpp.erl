@@ -614,7 +614,8 @@ err(<<"ESME_RINVOPTPARSTREAM">>)    -> ?ESME_RINVOPTPARSTREAM;
 err(<<"ESME_ROPTPARNOTALLWD">>)     -> ?ESME_ROPTPARNOTALLWD;
 err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
 err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
-err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL.
+err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL;
+err({error,_CmdId, ErrorCode,_Seq}) -> err(ErrorCode).
 
 -define(BASE(_Id), #{command_id => cmdstr(_Id),
                      command_status => statusstr(?ESME_ROK),
@@ -1063,6 +1064,25 @@ schema() ->
     source_addr_npi => <<"Land Mobile (E.212)">>,
     source_addr_ton => <<"Unknown">>,
     validity_period => <<"990922155242000R">>}},
+ {"submit_sm_protocol_id_52_issue_65",
+  "00 00 00 44 00 00 00 04 00 00 00 00 00 00 00 01 00 01 01 34 31 30 33 37 00 "
+  "01 01 30 37 39 34 36 35 30 31 31 35 00 00 34 00 00 00 11 00 00 00 14 74 65 "
+  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29",
+  #{command_id => <<"submit_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>,
+    data_coding => <<"MC Specific">>,
+    dest_addr_npi => <<"ISDN (E163/E164)">>,
+    dest_addr_ton => <<"International">>,
+    destination_addr => <<"0794650115">>,esm_class => 0,
+    priority_flag => 0,protocol_id => 52,
+    registered_delivery => 17,replace_if_present_flag => 0,
+    schedule_delivery_time => <<>>,sequence_number => 1,
+    service_type => <<>>,
+    short_message => <<"test swisscom (SMPP)">>,
+    sm_default_msg_id => 0,source_addr => <<"41037">>,
+    source_addr_npi => <<"ISDN (E163/E164)">>,
+    source_addr_ton => <<"International">>,
+    validity_period => <<>>}},
  {"submit_multi_resp_issue_63",
   "00 00 00 A6 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 01 01 08 31 36 38 "
