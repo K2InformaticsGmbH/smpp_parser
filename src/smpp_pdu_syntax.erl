@@ -180,7 +180,7 @@ pack_opts_tlv(Body, Acc) ->
             lists:foldl(
                 fun({T, L, V}, A) ->
                     [<<T:16, L:16, (list_to_binary(V))/binary>> | A]
-                end, Acc, Tlvs)
+                end, Acc, lists:reverse(Tlvs))
     end.
 
 unpack_body(BinBody, P) ->
@@ -263,7 +263,7 @@ unpack_opts(UnusedOpts, [], Acc) ->
                 RestUnusedOpts, [],
                 case lists:keytake(tlvs, 1, Acc) of
                     {value, {tlvs, TLVs}, Acc1} ->
-                        [{tlvs, [{T,L,V} | TLVs]} | Acc1];
+                        [{tlvs, TLVs ++ [{T,L,V}]} | Acc1];
                     false ->
                         [{tlvs, [{T,L,V}]} | Acc]
                 end);

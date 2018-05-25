@@ -1277,13 +1277,11 @@ vendor_tlv_test_() ->
     {inparallel,
         [{T,
             fun() ->
-                 {ok, #{tlvs := Tlvs} = D0} = decode(I),
-                 D = D0#{tlvs => lists:usort(Tlvs)},
+                 {ok, D} = decode(I),
                  ?assertEqual(O, maps:without(?IGNORE_FIELDS, D)),
                  {ok, E} = encode(jsx:decode(jsx:encode(D), [return_maps])),
                  ?assertEqual(true, is_binary(E)),
-                 {ok, #{tlvs := Tlvs1} = D00} = decode(E),
-                 D1 = D00#{tlvs => lists:usort(Tlvs1)},
+                 {ok, D1} = decode(E),
                  ?assertEqual(O, maps:without(?IGNORE_FIELDS, D1))
             end
          } || {T,I,O} <-
@@ -1306,10 +1304,22 @@ vendor_tlv_test_() ->
                  "02 04 00 01 01 ", % user_message_reference
                  #{command_id => <<"submit_sm">>,
                    user_message_reference => 1,
+                   tlvs => [#{tag => 16#1401, len => 2, val => <<3,4>>},
+                            #{tag => 16#1400, len => 1, val => <<2>>}]
+                  }
+                },
+                {"submit_sm-2",
+                 "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+                 "14 00 00 01 02 "     % {5120,1,[2]}
+                 "14 01 00 02 03 04 "  % {5121,2,[3,4]}
+                 "14 02 00 01 05 ",    % {5122,1,[5]},
+                 #{command_id => <<"submit_sm">>,
                    tlvs => [#{tag => 16#1400, len => 1, val => <<2>>},
-                            #{tag => 16#1401, len => 2, val => <<3,4>>}]
+                            #{tag => 16#1401, len => 2, val => <<3,4>>},
+                            #{len => 1,tag => 5122,val => <<5>>}]
                   }
                 }
+
             ]
         ]
     }.
