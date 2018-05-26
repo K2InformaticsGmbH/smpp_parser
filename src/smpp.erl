@@ -989,12 +989,12 @@ schema() ->
   "00 00 00 48 00 00 01 13 00 00 00 00 00 00 00 01 55 53 53 44 00 74 68 69 73 "
   "5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 0A "
   "31 36 38 2E 30 2E 30 2E 31 00 02 04 00 02 C0 EF 02 04 00 02 61 6A",
- #{command_id => 275,command_length => 72,command_status => 0,
-   message_id => "this_could_be_a_message_id",sequence_number => 1,
-   service_type => "USSD",source_addr => "168.0.0.1",
-   source_addr_npi => 10,source_addr_ton => 6,
-   tlvs => [#{len => 2,tag => 516,val => "��"}],
-   user_message_reference => 24938}},
+ #{command_id => <<"cancel_broadcast_sm">>,command_length => 72,command_status => <<"ESME_ROK">>,
+   message_id => <<"this_could_be_a_message_id">>,sequence_number => 1,
+   service_type => <<"USSD">>,source_addr => <<"168.0.0.1">>,
+   source_addr_npi => <<"ERMES">>,source_addr_ton => <<"Abbreviated">>,
+   tlvs => [#{len => 2,tag => 516,val => <<"aj">>}],
+   user_message_reference => 49391}},
  {"query_sm_resp_issue_38",
   "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 30 30 30 30 "
@@ -1312,7 +1312,7 @@ vendor_tlv_test_() ->
                  "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
                  "14 00 00 01 02 "     % {5120,1,[2]}
                  "14 01 00 02 03 04 "  % {5121,2,[3,4]}
-                 "14 02 00 01 05 ",    % {5122,1,[5]},
+                 "14 02 00 01 05",    % {5122,1,[5]},
                  #{command_id => <<"submit_sm">>,
                    tlvs => [#{tag => 16#1400, len => 1, val => <<2>>},
                             #{tag => 16#1401, len => 2, val => <<3,4>>},
