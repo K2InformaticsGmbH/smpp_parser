@@ -456,8 +456,7 @@
              [?BROADCAST_AREA_IDENTIFIER,
               ?BROADCAST_CONTENT_TYPE,
               ?BROADCAST_FREQUENCY_INTERVAL,
-              ?BROADCAST_REP_NUM,
-              ?MESSAGE_PAYLOAD],
+              ?BROADCAST_REP_NUM],
              [?ALERT_ON_MESSAGE_DELIVERY,   % (CDMA)
               ?BROADCAST_CHANNEL_INDICATOR,
               ?BROADCAST_CONTENT_TYPE_INFO, % (CDMA, TDMA)
@@ -478,7 +477,8 @@
               ?SOURCE_ADDR_SUBUNIT,
               ?SOURCE_PORT,
               ?SOURCE_SUBADDRESS,           % (CDMA, TDMA)
-              ?USER_MESSAGE_REFERENCE])).
+              ?USER_MESSAGE_REFERENCE,
+              ?MESSAGE_PAYLOAD])).
 
 -define(BROADCAST_SM_RESP,
         ?PDU([?MESSAGE_ID],
