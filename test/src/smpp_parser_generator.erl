@@ -3406,7 +3406,8 @@ create_code(service_type = Rule) ->
             "CBS",
             "CMT",
             "CPT",
-            "custom",
+%%            not yet supported
+%%            "custom",
             "GUTS",
             "USSD",
             "VMA",
@@ -4222,7 +4223,9 @@ create_tlvs(Number, Tlv, Tlv_Length) ->
         lists:nth(rand:uniform(Tlv_Length), Tlv)
         || _ <- lists:seq(1, Number)
     ],
-    lists:flatten(sets:to_list(sets:from_list(TlvList))).
+    TlvMap = maps:from_list(
+        [{string:slice(Tlv, 0, 2), string:slice(Tlv, 2)} || Tlv <- TlvList]),
+    lists:flatten([Key ++ Value || {Key, Value} <- maps:to_list(TlvMap)]).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% unsuccess
