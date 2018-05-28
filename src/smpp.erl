@@ -913,10 +913,14 @@ schema() ->
      source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Data (X.121)">>,
      source_addr_ton => <<"Subscriber Number">>}},
   {"cancel_broadcast_sm_issue_30",
-   "00 00 00 44 00 00 01 13 00 00 00 00 00 00 00 01 63 75 73 74 6F 6D 00 74 68 "
-   "69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 "
-   "06 06 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00",
-   #{}},
+   "00 00 00 41 00 00 01 13 00 00 00 00 00 00 00 01 43 4D 54 00 74 68 69 73 5F "
+   "63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 06 31 "
+   "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00",
+   #{command_id => <<"cancel_broadcast_sm">>,command_length => 65,
+     command_status => <<"ESME_ROK">>,
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1,
+     service_type => <<"CMT">>, source_addr => <<"168.123.234.321">>,
+     source_addr_npi => <<"Land Mobile (E.212)">>, source_addr_ton => <<"Abbreviated">>}},
   {"broadcast_sm_issue_42",
    "00 00 00 A9 00 00 01 11 00 00 00 00 00 00 00 01 47 55 54 53 00 00 0E 31 39 "
    "32 2E 31 36 38 2E 31 2E 31 00 74 68 69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 "
