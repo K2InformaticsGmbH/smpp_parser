@@ -868,14 +868,13 @@ schema() ->
      command_status => <<"ESME_ROK">>,delivery_failure_reason => 1,
      message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
   {"submit_multi_resp_delivery_failure_reason",
-   "00 00 00 3B 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
-   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 04 25 00 01 03 04 "
-   "25 00 01 02 04 20 00 01 01",
-   #{command_id => <<"submit_multi_resp">>, command_length => 59,
+   "00 00 00 36 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 04 25 00 01 02 04 "
+   "20 00 01 01",
+   #{command_id => <<"submit_multi_resp">>, command_length => 54,
      command_status => <<"ESME_ROK">>, delivery_failure_reason => 2,
      dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
-     sequence_number => 1, tlvs => [#{len => 1,tag => 1061,val => <<2>>}],
-     unsuccess_sme => <<>>}},
+     sequence_number => 1, unsuccess_sme => <<>>}},
   {"data_sm_dest_addr_np_country",
    "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
@@ -960,8 +959,12 @@ schema() ->
     replace_if_present_flag => 1,
     schedule_delivery_time => <<"990724175444000R">>,
     sequence_number => 1,service_type => <<"WAP">>,
-    short_message =>
-    <<"1 This is a short message2 This is a short message3 This is a short message4 This is a short message5 This is a short message6 This is a short message7 This is a short message8 This is a short message9 This is a short messageA This is a short messageB End">>,
+    short_message => <<"1 This is a short message2 This is a short message3 "
+                       "This is a short message4 This is a short message5 "
+                       "This is a short message6 This is a short message7 "
+                       "This is a short message8 This is a short message9 "
+                       "This is a short messageA This is a short messageB "
+                       "End">>,
     sm_default_msg_id => 255,source_addr => <<"168.123.234.321">>,
     source_addr_npi => <<"Land Mobile (E.212)">>,
     source_addr_ton => <<"International">>,user_response_code => 254,
@@ -994,7 +997,7 @@ schema() ->
    service_type => <<"USSD">>,source_addr => <<"168.0.0.1">>,
    source_addr_npi => <<"ERMES">>,source_addr_ton => <<"Abbreviated">>,
    tlvs => [#{len => 2,tag => 516,val => <<"aj">>}],
-   user_message_reference => 49391}},
+   user_message_reference => 24938}},
  {"query_sm_resp_issue_38",
   "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 30 30 30 30 "
@@ -1125,7 +1128,7 @@ packunpack_test_() ->
             SMPP = unpack_map(Bin),
             E1 = to_enum(internal2json(SMPP)),
             if E /= E1 ->
-                    ?debugFmt("~s~nExpected : ~p~n"
+                    ?debugFmt("~n~s~nExpected : ~p~n"
                                 "Got      : ~p", [T, E, E1]);
                 true -> ok
             end,
@@ -1133,8 +1136,10 @@ packunpack_test_() ->
             {ok, NewBin} = pack(SMPP),
             NewSMPP = unpack_map(NewBin),
             if NewSMPP /= SMPP ->
-                    ?debugFmt("~s~nExpected : ~p~n"
-                                "Got      : ~p", [T, SMPP, NewSMPP]);
+                    ?debugFmt("~n~s~n"
+                              "Expected : ~p~n"
+                              "Got      : ~p~n",
+                              [T, SMPP, NewSMPP]);
                 true -> ok
             end,
             ?assertEqual(SMPP, NewSMPP)
