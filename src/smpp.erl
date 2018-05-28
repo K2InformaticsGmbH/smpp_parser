@@ -174,7 +174,7 @@ statusstr(Status) when is_integer(Status) ->
 
 -spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
 encode(PDU) when is_map(PDU) ->
-    case pack(json2internal(from_enum(PDU))) of
+    case pack(json2internal(encode_msg(from_enum(PDU)))) of
         {ok, Bin} ->
             {ok,
                 list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
@@ -200,9 +200,56 @@ decode_bin(Bin) when is_binary(Bin) ->
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, internal2json(to_enum(PDU))}
+            {ok, internal2json(to_enum(decode_msg(PDU)))}
     end.
 
+encode_msg(#{data_coding := ?ENCODING_SCHEME_UCS2, short_message := Msg} = Pdu) ->
+    Pdu#{short_message => ucs2_encoding(Msg)};
+encode_msg(#{<<"data_coding">> := ?ENCODING_SCHEME_UCS2, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => ucs2_encoding(Msg)};
+encode_msg(Pdu) -> Pdu.
+
+decode_msg(#{data_coding := ?ENCODING_SCHEME_UCS2, short_message := Msg} = Pdu) ->
+    Pdu#{short_message => decode_ucs2(Msg)};
+decode_msg(#{<<"data_coding">> := ?ENCODING_SCHEME_UCS2, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => decode_ucs2(Msg)};
+decode_msg(Pdu) -> Pdu.
+
+ucs2_encoding(Msg) when is_binary(Msg) ->
+    ucs2_encoding(unicode:characters_to_list(Msg, unicode));
+ucs2_encoding(Msg) when is_list(Msg) ->
+    SM1 = unicode:characters_to_list(Msg, unicode),
+    SM2 = unicode:characters_to_binary(SM1, unicode, utf16),
+    re:replace(SM2, "\"", "\\\\\"", [global, {return, binary}]).
+
+decode_ucs2(Msg) when is_binary(Msg) ->
+    decode_ucs2(binary_to_list(Msg));
+decode_ucs2(Msg) when is_list(Msg) ->
+    re:replace(ucs2_to_utf16(Msg), "\"", "\\\\\"", [global, {return, binary}]).
+
+ucs2_to_utf16({cp, CPList}) ->
+    case unicode:characters_to_binary(CPList, utf16, utf8) of
+        {error, ConvertedBin, [[Failed]|Rest]} ->
+            <<ConvertedBin/binary, (Failed bsr 8), (Failed band 16#00FF),
+              (ucs2_to_utf16({cp, Rest}))/binary>>;
+        ConvertedBin when is_binary(ConvertedBin) -> ConvertedBin
+    end;
+ucs2_to_utf16(Msg) when is_list(Msg) ->
+    CPList = ucs2_to_utf16_cp(Msg, []),
+    ucs2_to_utf16({cp, CPList}).
+
+ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
+% Erlang DOC: An integer in the range 16#D800 to 16#DFFF (invalid range
+%  reserved for UTF-16 surrogate pairs)
+ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
+    ucs2_to_utf16_cp(
+      Rest, lists:reverse(
+              lists:flatten(
+                [$\\, $u,
+                 io_lib:format("~2.16.0B~2.16.0B", [A,B])]
+               )) ++ Result);
+ucs2_to_utf16_cp([A,B|Rest], Result) ->
+    ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
 to_enum(SMPP) when is_map(SMPP) ->
     maps:fold(
