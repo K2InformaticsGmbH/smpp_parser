@@ -634,7 +634,8 @@ err(<<"ESME_ROPTPARNOTALLWD">>)     -> ?ESME_ROPTPARNOTALLWD;
 err(<<"ESME_RINVPARLEN">>)          -> ?ESME_RINVPARLEN;
 err(<<"ESME_RMISSINGOPTPARAM">>)    -> ?ESME_RMISSINGOPTPARAM;
 err(<<"ESME_RINVOPTPARAMVAL">>)     -> ?ESME_RINVOPTPARAMVAL;
-err({error,_CmdId, ErrorCode,_Seq}) -> err(ErrorCode).
+err({error, _CmdId, ErrCode, _Seq}) -> err(ErrCode);
+err(undefined)                      -> err(?ESME_RUNKNOWNERR).
 
 -define(BASE(_Id), #{command_id => cmdstr(_Id),
                      command_status => statusstr(?ESME_ROK),
@@ -1036,9 +1037,13 @@ schema() ->
    user_message_reference => 24938}},
  {"query_sm_resp_issue_38",
   "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
-  "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 30 30 30 30 "
+  "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 39 39 30 31 30 31 30 "
   "30 30 30 30 30 30 30 30 2B 00 05 31",
-  #{}},
+  #{command_id => <<"query_sm_resp">>,command_length => 62,
+    command_status => <<"ESME_ROK">>, error_code => 49,
+    final_date => <<"990101000000000+">>,
+    message_id => <<"this_could_be_a_message_id">>,
+    message_state => <<"UNDELIVERABLE">>,sequence_number => 1}},
  {"replace_sm_issue_55",
   "00 00 00 7A 00 00 00 07 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 05 09 31 39 32 2E 31 "
