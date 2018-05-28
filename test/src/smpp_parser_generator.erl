@@ -4224,7 +4224,7 @@ create_tlvs(Number, Tlv, Tlv_Length) ->
         || _ <- lists:seq(1, Number)
     ],
     TlvMap = maps:from_list(
-        [{string:slice(Tlv, 0, 2), string:slice(Tlv, 2)} || Tlv <- TlvList]),
+        [{string:slice(T, 0, 2), string:slice(T, 2)} || T <- TlvList]),
     lists:flatten([Key ++ Value || {Key, Value} <- maps:to_list(TlvMap)]).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
