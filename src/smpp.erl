@@ -868,14 +868,13 @@ schema() ->
      command_status => <<"ESME_ROK">>,delivery_failure_reason => 1,
      message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
   {"submit_multi_resp_delivery_failure_reason",
-   "00 00 00 3B 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
-   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 04 25 00 01 03 04 "
-   "25 00 01 02 04 20 00 01 01",
-   #{command_id => <<"submit_multi_resp">>, command_length => 59,
+   "00 00 00 36 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 04 25 00 01 02 04 "
+   "20 00 01 01",
+   #{command_id => <<"submit_multi_resp">>, command_length => 54,
      command_status => <<"ESME_ROK">>, delivery_failure_reason => 2,
      dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
-     sequence_number => 1, tlvs => [#{len => 1,tag => 1061,val => <<2>>}],
-     unsuccess_sme => <<>>}},
+     sequence_number => 1, unsuccess_sme => <<>>}},
   {"data_sm_dest_addr_np_country",
    "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
@@ -914,10 +913,14 @@ schema() ->
      source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Data (X.121)">>,
      source_addr_ton => <<"Subscriber Number">>}},
   {"cancel_broadcast_sm_issue_30",
-   "00 00 00 44 00 00 01 13 00 00 00 00 00 00 00 01 63 75 73 74 6F 6D 00 74 68 "
-   "69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 "
-   "06 06 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00",
-   #{}},
+   "00 00 00 41 00 00 01 13 00 00 00 00 00 00 00 01 43 4D 54 00 74 68 69 73 5F "
+   "63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 06 31 "
+   "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00",
+   #{command_id => <<"cancel_broadcast_sm">>,command_length => 65,
+     command_status => <<"ESME_ROK">>,
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1,
+     service_type => <<"CMT">>, source_addr => <<"168.123.234.321">>,
+     source_addr_npi => <<"Land Mobile (E.212)">>, source_addr_ton => <<"Abbreviated">>}},
   {"broadcast_sm_issue_42",
    "00 00 00 A9 00 00 01 11 00 00 00 00 00 00 00 01 47 55 54 53 00 00 0E 31 39 "
    "32 2E 31 36 38 2E 31 2E 31 00 74 68 69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 "
@@ -960,8 +963,12 @@ schema() ->
     replace_if_present_flag => 1,
     schedule_delivery_time => <<"990724175444000R">>,
     sequence_number => 1,service_type => <<"WAP">>,
-    short_message =>
-    <<"1 This is a short message2 This is a short message3 This is a short message4 This is a short message5 This is a short message6 This is a short message7 This is a short message8 This is a short message9 This is a short messageA This is a short messageB End">>,
+    short_message => <<"1 This is a short message2 This is a short message3 "
+                       "This is a short message4 This is a short message5 "
+                       "This is a short message6 This is a short message7 "
+                       "This is a short message8 This is a short message9 "
+                       "This is a short messageA This is a short messageB "
+                       "End">>,
     sm_default_msg_id => 255,source_addr => <<"168.123.234.321">>,
     source_addr_npi => <<"Land Mobile (E.212)">>,
     source_addr_ton => <<"International">>,user_response_code => 254,
@@ -986,14 +993,13 @@ schema() ->
    source_addr_npi => <<"Unknown">>,
    source_addr_ton => <<"Abbreviated">>,source_bearer_type => 8}},
  {"cancel_broadcast_sm_issue_52",
-  "00 00 00 48 00 00 01 13 00 00 00 00 00 00 00 01 55 53 53 44 00 74 68 69 73 "
+  "00 00 00 42 00 00 01 13 00 00 00 00 00 00 00 01 55 53 53 44 00 74 68 69 73 "
   "5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 0A "
-  "31 36 38 2E 30 2E 30 2E 31 00 02 04 00 02 C0 EF 02 04 00 02 61 6A",
- #{command_id => 275,command_length => 72,command_status => 0,
-   message_id => "this_could_be_a_message_id",sequence_number => 1,
-   service_type => "USSD",source_addr => "168.0.0.1",
-   source_addr_npi => 10,source_addr_ton => 6,
-   tlvs => [#{len => 2,tag => 516,val => "��"}],
+  "31 36 38 2E 30 2E 30 2E 31 00 02 04 00 02 61 6A",
+ #{command_id => <<"cancel_broadcast_sm">>,command_length => 66,command_status => <<"ESME_ROK">>,
+   message_id => <<"this_could_be_a_message_id">>,sequence_number => 1,
+   service_type => <<"USSD">>,source_addr => <<"168.0.0.1">>,
+   source_addr_npi => <<"ERMES">>,source_addr_ton => <<"Abbreviated">>,
    user_message_reference => 24938}},
  {"query_sm_resp_issue_38",
   "00 00 00 3E 80 00 00 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
@@ -1125,7 +1131,7 @@ packunpack_test_() ->
             SMPP = unpack_map(Bin),
             E1 = to_enum(internal2json(SMPP)),
             if E /= E1 ->
-                    ?debugFmt("~s~nExpected : ~p~n"
+                    ?debugFmt("~n~s~nExpected : ~p~n"
                                 "Got      : ~p", [T, E, E1]);
                 true -> ok
             end,
@@ -1133,8 +1139,10 @@ packunpack_test_() ->
             {ok, NewBin} = pack(SMPP),
             NewSMPP = unpack_map(NewBin),
             if NewSMPP /= SMPP ->
-                    ?debugFmt("~s~nExpected : ~p~n"
-                                "Got      : ~p", [T, SMPP, NewSMPP]);
+                    ?debugFmt("~n~s~n"
+                              "Expected : ~p~n"
+                              "Got      : ~p~n",
+                              [T, SMPP, NewSMPP]);
                 true -> ok
             end,
             ?assertEqual(SMPP, NewSMPP)
@@ -1312,7 +1320,7 @@ vendor_tlv_test_() ->
                  "00 00 00 31 00 00 00 04 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
                  "14 00 00 01 02 "     % {5120,1,[2]}
                  "14 01 00 02 03 04 "  % {5121,2,[3,4]}
-                 "14 02 00 01 05 ",    % {5122,1,[5]},
+                 "14 02 00 01 05",    % {5122,1,[5]},
                  #{command_id => <<"submit_sm">>,
                    tlvs => [#{tag => 16#1400, len => 1, val => <<2>>},
                             #{tag => 16#1401, len => 2, val => <<3,4>>},
