@@ -477,6 +477,7 @@ b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"callback_num_pres_ind">>) -> callback_num_pres_ind;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"broadcast_area_success">>) -> broadcast_area_success;
 b2a(<<"broadcast_content_type">>) -> broadcast_content_type;
 b2a(<<"ms_msg_wait_facilities">>) -> ms_msg_wait_facilities;
 b2a(<<"ms_availability_status">>) -> ms_availability_status;
@@ -1012,7 +1013,12 @@ schema() ->
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 02 06 06 "
   "00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 65 6E "
   "74 69 66 69 65 72 5F 30 30 30 31 30 06 08 00 01 5A",
-  #{}},
+  #{broadcast_area_identifier =>
+    [#{details => <<"my_broadcast_area_identifier_00010">>, format => 1}],
+    broadcast_area_success => <<"Z">>, message_state => <<"DELIVERED">>,
+    command_id => <<"query_broadcast_sm_resp">>, command_length => 92,
+    command_status => <<"ESME_ROK">>, sequence_number => 1,
+    message_id => <<"this_could_be_a_message_id">>}},
  {"data_sm_issue_50",
   "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 56 4D 4E 00 06 00 31 36 38 "
   "2E 30 2E 30 2E 31 00 06 0A 31 36 38 2E 30 2E 30 2E 31 00 02 0C 07 00 0F 00 "
