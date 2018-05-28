@@ -147,6 +147,12 @@ rec_info(unsuccess_sme) ->
     record_info(fields, unsuccess_sme);
 rec_info(broadcast_area) ->
     record_info(fields, broadcast_area);
+rec_info(broadcast_frequency_interval) ->
+    record_info(fields, broadcast_frequency_interval);
+rec_info(broadcast_content_type) ->
+    record_info(fields, broadcast_content_type);
+rec_info(broadcast_area_identifier) ->
+    record_info(fields, broadcast_area);
 rec_info(Type) ->
     io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
@@ -154,6 +160,7 @@ rec_info(Type) ->
 rec_type(ms_validity) -> ms_validity_absolute;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
+rec_type(broadcast_area_identifier) -> broadcast_area;
 rec_type(Type) -> Type.
 
 cmdstr(Cmd) when is_integer(Cmd) -> atom_to_binary(cmd(Cmd),utf8).
@@ -408,6 +415,10 @@ b2a(<<"val">>) -> val;
 b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"type">>) -> type;
 b2a(<<"error">>) -> error;
+b2a(<<"format">>) -> format;
+b2a(<<"number">>) -> number;
+b2a(<<"details">>) -> details;
+b2a(<<"service">>) -> service;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
@@ -416,6 +427,7 @@ b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
 b2a(<<"dest_port">>) -> dest_port;
+b2a(<<"time_unit">>) -> time_unit;
 b2a(<<"dpf_result">>) -> dpf_result;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
@@ -425,6 +437,7 @@ b2a(<<"data_coding">>) -> data_coding;
 b2a(<<"system_type">>) -> system_type;
 b2a(<<"source_addr">>) -> source_addr;
 b2a(<<"protocol_id">>) -> protocol_id;
+b2a(<<"network_type">>) -> network_type;
 b2a(<<"dest_address">>) -> dest_address;
 b2a(<<"service_type">>) -> service_type;
 b2a(<<"callback_num">>) -> callback_num;
@@ -451,6 +464,7 @@ b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
 b2a(<<"dest_network_type">>) -> dest_network_type;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;
+b2a(<<"broadcast_rep_num">>) -> broadcast_rep_num;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"source_bearer_type">>) -> source_bearer_type;
 b2a(<<"network_error_code">>) -> network_error_code;
@@ -461,14 +475,19 @@ b2a(<<"registered_delivery">>) -> registered_delivery;
 b2a(<<"digit_mode_indicator">>) -> digit_mode_indicator;
 b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
+b2a(<<"callback_num_pres_ind">>) -> callback_num_pres_ind;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"broadcast_content_type">>) -> broadcast_content_type;
 b2a(<<"ms_msg_wait_facilities">>) -> ms_msg_wait_facilities;
 b2a(<<"ms_availability_status">>) -> ms_availability_status;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
 b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
 b2a(<<"delivery_failure_reason">>) -> delivery_failure_reason;
+b2a(<<"broadcast_area_identifier">>) -> broadcast_area_identifier;
+b2a(<<"alert_on_message_delivery">>) -> alert_on_message_delivery;
 b2a(<<"additional_status_info_text">>) -> additional_status_info_text;
+b2a(<<"broadcast_frequency_interval">>) -> broadcast_frequency_interval;
 b2a(Field) when is_atom(Field) -> Field.
 
 err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
@@ -929,7 +948,21 @@ schema() ->
    "06 06 00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 "
    "65 6E 74 69 66 69 65 72 5F 30 30 30 30 37 06 01 00 03 00 00 33 06 04 00 02 "
    "00 00 06 05 00 03 08 00 03 13 0C 00 01 03 03 02 00 01 0B",
-  #{}},
+   #{command_id => <<"broadcast_sm">>, command_length => 169,
+     command_status => <<"ESME_ROK">>, data_coding => <<"15">>,
+     alert_on_message_delivery => 3,
+     broadcast_area_identifier =>
+        [#{details => <<"my_broadcast_area_identifier_00007">>, format => 1}],
+     broadcast_content_type => #{network_type => 0,service => 51},
+     broadcast_frequency_interval => #{number => 3,time_unit => 8},
+     broadcast_rep_num => 0, callback_num_pres_ind => <<"\v">>,
+     message_id => <<"this_could_be_a_message_id">>, priority_flag => 4,
+     replace_if_present_flag => 0,
+     schedule_delivery_time => <<"990724175444000R">>, sequence_number => 1,
+     service_type => <<"GUTS">>, sm_default_msg_id => 63,
+     source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Internet (IP)">>,
+     source_addr_ton => <<"Unknown">>,
+     validity_period => <<"990823165343000R">>}},
  {"replace_sm_issue_28",
   "00 00 00 79 00 00 00 07 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 03 31 32 37 2E 30 "
