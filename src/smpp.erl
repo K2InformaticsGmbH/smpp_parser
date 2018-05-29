@@ -166,7 +166,7 @@ rec_info(dest_address_sme) ->
 rec_info(dest_address_dl) ->
     record_info(fields, dest_address_dl);
 rec_info(Type) ->
-    io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
+    io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
 rec_type(ms_validity) -> ms_validity_absolute;
@@ -504,6 +504,7 @@ b2a(<<"alert_on_message_delivery">>) -> alert_on_message_delivery;
 b2a(<<"broadcast_content_type_info">>) -> broadcast_content_type_info;
 b2a(<<"additional_status_info_text">>) -> additional_status_info_text;
 b2a(<<"broadcast_frequency_interval">>) -> broadcast_frequency_interval;
+b2a(<<"failed_broadcast_area_identifier">>) -> failed_broadcast_area_identifier;
 b2a(Field) when is_atom(Field) -> Field.
 
 err(?ESME_ROK)->                 {'ESME_ROK',                   "ESME_ROK",                 "No Error"};
@@ -1223,7 +1224,18 @@ schema() ->
     schedule_delivery_time => <<>>, sequence_number => 1, service_type => <<>>,
     sm_default_msg_id => 127, source_addr => <<"127.0.0.1">>,
     source_addr_npi => <<"National">>, source_addr_ton => <<"National">>,
-    validity_period => <<"990310000000000R">>}}
+    validity_period => <<"990310000000000R">>}},
+  {"broadcast_sm_resp_#70",
+   "00 00 00 59 80 00 01 11 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 06 00 2A 00 "
+   "6D 79 5F 66 61 69 6C 65 64 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 "
+   "5F 69 64 65 6E 74 69 66 69 65 72 5F 30 30 30 30 38",
+  #{command_id => <<"broadcast_sm_resp">>, command_length => 89,
+    command_status => <<"ESME_ROK">>,
+    failed_broadcast_area_identifier =>
+        [#{details => <<"my_failed_broadcast_area_identifier_00008">>,
+           format => 0}],
+    message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}}
 ]).
 
 packunpack_test_() ->
