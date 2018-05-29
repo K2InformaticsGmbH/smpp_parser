@@ -25,6 +25,7 @@ json2internal(SMPP) when is_map(SMPP) ->
                                end}
               end, #{}, SMPP).
 
+internal2json({error, _, _, _} = Err) -> error(err(Err));
 internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
 internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
 internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
@@ -923,10 +924,10 @@ schema() ->
      dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
      sequence_number => 1, unsuccess_sme => <<>>}},
   {"data_sm_dest_addr_np_country",
-   "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
+   "00 00 00 3C 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
    "7F 06 13 00 02 22 72",
-   #{command_id => <<"data_sm">>, command_length => 57,
+   #{command_id => <<"data_sm">>, command_length => 60,
      command_status => <<"ESME_ROK">>,data_coding => <<"127">>,
      dest_addr_np_country => 8818,dest_addr_npi => <<"ERMES">>,
      dest_addr_ton => <<"Network Specific">>,
