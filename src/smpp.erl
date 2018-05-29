@@ -128,6 +128,12 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
 map_to_rec(tlvs, Map) when is_map(Map) ->
     #{tag := T, len := L, val := V} = Map,
     {T, L, V};
+map_to_rec(dest_address, #{dl_name := _} = DA) ->
+    Rec = rec_type(dest_address_dl),
+    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
+map_to_rec(dest_address, DA) ->
+    Rec = rec_type(dest_address_sme),
+    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
@@ -154,6 +160,10 @@ rec_info(broadcast_content_type) ->
     record_info(fields, broadcast_content_type);
 rec_info(broadcast_area_identifier) ->
     record_info(fields, broadcast_area);
+rec_info(dest_address_sme) ->
+    record_info(fields, dest_address_sme);
+rec_info(dest_address_dl) ->
+    record_info(fields, dest_address_dl);
 rec_info(Type) ->
     io:format("~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
@@ -481,11 +491,13 @@ b2a(<<"format">>) -> format;
 b2a(<<"number">>) -> number;
 b2a(<<"details">>) -> details;
 b2a(<<"service">>) -> service;
+b2a(<<"dl_name">>) -> dl_name;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
 b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
+b2a(<<"dest_flag">>) -> dest_flag;
 b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
 b2a(<<"dest_port">>) -> dest_port;
@@ -1221,29 +1233,60 @@ schema() ->
   "0A 31 39 32 2E 31 2E 31 2E 31 30 00 00 00 01 12",
   #{}},
   {"submit_multi_issue_46",
-  "00 00 02 0E 00 00 00 21 00 00 00 00 00 00 00 01 57 41 50 00 06 0E 31 32 37 "
+  "00 00 02 0D 00 00 00 21 00 00 00 00 00 00 00 01 57 41 50 00 06 0E 31 32 37 "
   "2E 30 2E 30 2E 31 00 0B 01 02 08 31 39 32 2E 31 36 38 2E 31 2E 31 00 02 64 "
-  "69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 31 31 00 02 64 69 73 "
-  "74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 34 00 01 04 03 31 39 32 2E "
-  "31 2E 31 2E 31 30 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 "
-  "5F 23 38 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 35 "
-  "00 01 02 03 31 36 38 2E 30 2E 30 2E 31 00 02 64 69 73 74 72 69 62 75 74 69 "
-  "6F 6E 5F 6C 69 73 74 5F 23 32 00 01 04 0E 31 36 38 2E 30 2E 30 2E 31 00 02 "
-  "64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 36 00 01 04 09 31 "
-  "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 08 07 01 39 39 30 39 32 32 31 "
-  "35 35 32 34 32 30 30 30 52 00 00 0C 00 FF 0F FF 31 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 32 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 33 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 34 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 35 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 36 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 37 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 38 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 69 73 20 69 73 "
-  "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 6E 64 02 05 00 01 "
-  "27",
-  #{}}
+  "69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 31 00 02 64 69 73 74 "
+  "72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 34 00 01 04 03 31 39 32 2E 31 "
+  "2E 31 2E 31 30 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F "
+  "23 38 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 35 00 "
+  "01 02 03 31 36 38 2E 30 2E 30 2E 31 00 02 64 69 73 74 72 69 62 75 74 69 6F "
+  "6E 5F 6C 69 73 74 5F 23 32 00 01 04 0E 31 36 38 2E 30 2E 30 2E 31 00 02 64 "
+  "69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 69 73 74 5F 23 36 00 01 04 09 31 36 "
+  "38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 08 07 01 39 39 30 39 32 32 31 35 "
+  "35 32 34 32 30 30 30 52 00 00 0C 00 FF 0F FF 31 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 32 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 33 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 34 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 35 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 36 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 37 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 38 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 69 73 20 69 73 20 "
+  "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 6E 64 02 05 00 01 27",
+  #{command_id => <<"submit_multi">>, command_length => 525,
+    command_status => <<"ESME_ROK">>, data_coding => <<"255">>,
+    dest_address => [
+        #{dest_addr_npi => 8,dest_addr_ton => 2,dest_flag => 1,
+          destination_addr => <<"192.168.1.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#4">>},
+        #{dest_addr_npi => 3,dest_addr_ton => 4,dest_flag => 1,
+          destination_addr => <<"192.1.1.10">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#8">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#5">>},
+        #{dest_addr_npi => 3,dest_addr_ton => 2,dest_flag => 1,
+          destination_addr => <<"168.0.0.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#2">>},
+        #{dest_addr_npi => 14,dest_addr_ton => 4,dest_flag => 1,
+          destination_addr => <<"168.0.0.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_list_#6">>},
+        #{dest_addr_npi => 9,dest_addr_ton => 4,dest_flag => 1,
+          destination_addr => <<"168.123.234.321">>}],
+    esm_class => 8, priority_flag => 1, protocol_id => 7,
+    registered_delivery => 12, replace_if_present_flag => 0,
+    schedule_delivery_time => <<"990922155242000R">>,
+    sequence_number => 1, service_type => <<"WAP">>,
+    short_message => <<"1 This is a short message2 This is a short message3 "
+                       "This is a short message4 This is a short message5 "
+                       "This is a short message6 This is a short message7 "
+                       "This is a short message8 This is a short message9 "
+                       "This is a short messageA This is a short messageB "
+                       "End">>,
+    sm_default_msg_id => 15, source_addr => <<"127.0.0.1">>,
+    source_addr_npi => <<"Internet (IP)">>,
+    source_addr_ton => <<"Abbreviated">>, user_response_code => 39,
+    validity_period => <<>>}}
 ]).
 
 packunpack_test_() ->
