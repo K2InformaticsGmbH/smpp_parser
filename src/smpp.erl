@@ -28,6 +28,7 @@ json2internal(SMPP) when is_map(SMPP) ->
 internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
 internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
 internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
+internal2json(broadcast_area_success, V) -> V;
 internal2json(_, V) when is_list(V)   -> list_to_binary(V);
 internal2json(_, V)                   -> V.
 
@@ -660,6 +661,14 @@ info() ->
           cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),
           bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
           bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
+          broadcast_sm              => ?BASE(cmd(broadcast_sm))
+                                            #{broadcast_area_identifier =>
+                                                [#{details => <<>>, format => 0}],
+                                              broadcast_content_type =>
+                                                #{network_type => 0, service => 0},
+                                              broadcast_frequency_interval =>
+                                                #{number => 0, time_unit => 0},
+                                              broadcast_rep_num => 0},
           submit_multi              => ?BASE(cmd(submit_multi))
                                                     #{dest_address => <<>>},
 
@@ -678,7 +687,12 @@ info() ->
           bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
           bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
           submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
-                                                       #{unsuccess_sme => <<>>}},
+                                                       #{unsuccess_sme => <<>>},
+          query_broadcast_sm_resp   => ?BASE(cmd(query_broadcast_sm_resp))
+                                                    #{broadcast_area_identifier =>
+                                                        [#{details => <<>>, format => 0}],
+                                                      broadcast_area_success => [0],
+                                                      message_state => <<"SCHEDULED">>}},
       schema => schema()}.
 
 -include("smpp_pdu.hrl").
@@ -1012,10 +1026,10 @@ schema() ->
   "00 00 00 5C 80 00 01 12 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 02 06 06 "
   "00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 65 6E "
-  "74 69 66 69 65 72 5F 30 30 30 31 30 06 08 00 01 5A",
+  "74 69 66 69 65 72 5F 30 30 30 31 30 06 08 00 01 00",
   #{broadcast_area_identifier =>
     [#{details => <<"my_broadcast_area_identifier_00010">>, format => 1}],
-    broadcast_area_success => <<"Z">>, message_state => <<"DELIVERED">>,
+    broadcast_area_success => [0], message_state => <<"DELIVERED">>,
     command_id => <<"query_broadcast_sm_resp">>, command_length => 92,
     command_status => <<"ESME_ROK">>, sequence_number => 1,
     message_id => <<"this_could_be_a_message_id">>}},
