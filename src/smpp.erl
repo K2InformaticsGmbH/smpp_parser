@@ -926,7 +926,7 @@ schema() ->
   {"data_sm_dest_addr_np_country",
    "00 00 00 3C 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
-   "7F 06 13 00 02 22 72",
+   "7F 06 13 00 05 00 00 00 22 72",
    #{command_id => <<"data_sm">>, command_length => 60,
      command_status => <<"ESME_ROK">>,data_coding => <<"127">>,
      dest_addr_np_country => 8818,dest_addr_npi => <<"ERMES">>,
