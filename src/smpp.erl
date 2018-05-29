@@ -4,7 +4,9 @@
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
--export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, encode_msg/1, decode_msg/1]).
+-export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
+
+-export([encode_msg/1]).
 
 -safe([unpack_map/1]).
 
@@ -216,22 +218,22 @@ decode_bin(Bin) when is_binary(Bin) ->
     end.
 
 encode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
-    Pdu#{short_message => encode_msg(enc(EncodingScheme), Msg)};
-% encode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
-%     Pdu#{<<"short_message">> => encode_msg(enc(EncodingScheme), Msg)};
+    Pdu#{short_message => encode_msg(EncodingScheme, Msg)};
 encode_msg(Pdu) -> Pdu.
 
-encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
-    encode_msg(EncodingScheme, list_to_binary(Msg));
-encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
 encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
+encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
+    try list_to_binary(Msg) of
+        MsgBin -> encode_msg(EncodingScheme, MsgBin)
+    catch 
+        _:_ -> encode_msg(EncodingScheme, unicode:characters_to_binary(Msg))
+    end;
+encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
 encode_msg(_, Msg) -> base64:encode_to_string(Msg).
 
 decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
     Pdu#{short_message => decode_msg(enc(EncodingScheme), Msg)};
-% decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
-%     Pdu#{<<"short_message">> => decode_msg(enc(EncodingScheme), Msg)};
 decode_msg(Pdu) -> Pdu.
 
 decode_msg(EncodingScheme, Msg) when is_list(Msg) ->
@@ -1509,75 +1511,69 @@ schema_test() ->
 
 encod_msg_test() ->
     {inparallel,
-        [{Title, ?_assertEqual(Result, encode_msg(SubmitSm))}
+        [{Title, ?assertEqual(Result, encode_msg(SubmitSm))}
          || {Title, SubmitSm, Result} <-
-            [{"empty", #{<<"short_message">> => <<>>, <<"data_coding">> => ?ENCODING_SCHEME_LATIN_1},
-                #{<<"short_message">> => <<>>, <<"data_coding">> => ?ENCODING_SCHEME_LATIN_1}},
-             {"emty_ucs2", #{<<"short_message">> => <<>>, <<"data_coding">> => ?ENCODING_SCHEME_UCS2},
-                #{<<"short_message">> => <<>>, <<"data_coding">> => ?ENCODING_SCHEME_UCS2}},
-             {"ucs2_bigger_eur", #{<<"data_coding">> => ?ENCODING_SCHEME_UCS2,
-                                   <<"short_message">> => <<"Abc₭"/utf8>>},
-                [#{<<"data_coding">> => ?ENCODING_SCHEME_UCS2,
-                   <<"short_message">> =>
-                        unicode:characters_to_binary(
-                            <<"Abc₭"/utf8>>, utf8, utf16
-                        )}]},
-             {"ucs2_bigger_eur_internal", #{data_coding => ?ENCODING_SCHEME_UCS2,
-                                            short_message => <<"Abc₭"/utf8>>},
-                [#{data_coding => ?ENCODING_SCHEME_UCS2,
+            [{"empty", #{short_message => [], data_coding => ?ENCODING_SCHEME_LATIN_1},
+                #{short_message => [], data_coding => ?ENCODING_SCHEME_LATIN_1}},
+             {"emty_ucs2", #{short_message => [], data_coding => ?ENCODING_SCHEME_UCS2},
+                #{short_message => [], data_coding => ?ENCODING_SCHEME_UCS2}},
+             {"ucs2_bigger_eur", #{data_coding => ?ENCODING_SCHEME_UCS2,
+                                   short_message => "Abc₭"},
+                #{data_coding => ?ENCODING_SCHEME_UCS2,
                    short_message =>
-                        unicode:characters_to_binary(
+                        binary_to_list(unicode:characters_to_binary(
                             <<"Abc₭"/utf8>>, utf8, utf16
-                        )}]}
-            %  {"base64", #{<<"data_coding">> => 1,
-            %               <<"short_message">> => base64:encode(<<"Test">>)},
-            %     #{<<"data_coding">> => 1, <<"short_message">> => <<"Test">>}},
-            %  {"ia5_max", #{<<"data_coding">> => <<"utf8">>,
-            %                           <<"short_message">> => <<"äöüéèà€"/utf8>>},
-            %     #{<<"data_coding">> => ?ENCODING_SCHEME_IA5_ASCII,
-            %       <<"short_message">> => <<16#E4,16#F6,16#FC,16#05,16#04,16#7F,
-            %                                16#1B,16#65>>}},
+                        ))}},
+             {"ucs2_bigger_eur_internal", #{data_coding => ?ENCODING_SCHEME_UCS2,
+                                            short_message => "Abc₭"},
+                #{data_coding => ?ENCODING_SCHEME_UCS2,
+                   short_message =>
+                        binary_to_list(unicode:characters_to_binary(
+                            <<"Abc₭"/utf8>>, utf8, utf16
+                        ))}},
+             {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
+                         short_message => "Test"},
+                #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
+                  short_message => base64:encode_to_string("Test")}}
             ]
         ]
     }.
 
 emoji_test() ->
-    Seg132_0 = <<"😀😁😂😃😄😅😆😇😈😉😊😋😌😍😎😏😐😑😒😓😔😕😖😗😘😙😚😛😜😝"
-                 "😞😟😠"/utf8>>,
-    Seg132_1 = <<"😡😢😣😤😥😦😧😨😩😪😫😬😭😮😯😰😱😲😳😴😵😶😷😸😹😺😻😼😽😾"
-                 "😿🙀🙁"/utf8>>,
-    Seg56    = <<"🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏"/utf8>>,
-
-    AllEmojis320 = <<Seg132_0/binary, Seg132_1/binary, Seg56/binary>>,
-
     {inparallel,
-        [{Title,
-            fun() ->
-                Result =
-                    case encode(SubmitSm) of
-                        Concats when is_list(Concats) ->
-                            [maps:without([<<"sar_msg_ref_num">>], C)
-                             || C <- Concats];
-                        Single when is_map(Single) -> Single
-                    end,
-                ?assertEqual(Target, Result)
-            end}
+        [{Title, ?assertEqual(Target, element(2, decode(element(2, encode(SubmitSm)))))}
          || {Title, SubmitSm, Target} <-
             [{"1-part all emojis",
-              #{<<"short_message">> => AllEmojis320},
-              [#{<<"data_coding">> => ?ENCODING_SCHEME_UCS2,
-                 <<"sar_segment_seqnum">> => 1, <<"sar_total_segments">> => 3,
-                 <<"short_message">> =>
-                        unicode:characters_to_binary(Seg132_0, unicode, utf16)},
-               #{<<"data_coding">> => ?ENCODING_SCHEME_UCS2,
-                 <<"sar_segment_seqnum">> => 2, <<"sar_total_segments">> => 3,
-                 <<"short_message">> =>
-                        unicode:characters_to_binary(Seg132_1, unicode, utf16)},
-               #{<<"data_coding">> => ?ENCODING_SCHEME_UCS2,
-                 <<"sar_segment_seqnum">> => 3, <<"sar_total_segments">> => 3,
-                 <<"short_message">> =>
-                        unicode:characters_to_binary(Seg56, unicode, utf16)}
-              ]}
+              #{command_id => <<"submit_sm">>,command_length => 33,
+                command_status => <<"ESME_ROK">>,
+                data_coding => <<"UCS2 (ISO/IEC-10646)">>,
+                dest_addr_npi => <<"ISDN (E163/E164)">>,
+                dest_addr_ton => <<"International">>,
+                destination_addr => <<>>,esm_class => 0,priority_flag => 0,
+                protocol_id => 0,registered_delivery => 0,
+                replace_if_present_flag => 0,schedule_delivery_time => <<>>,
+                sequence_number => 0,service_type => <<>>,
+                short_message => <<"🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏"/utf8>>,
+                sm_default_msg_id => 0,
+                source_addr => <<>>,
+                source_addr_npi => <<"ISDN (E163/E164)">>,
+                source_addr_ton => <<"International">>,
+                validity_period => <<>>},
+              #{command_id => <<"submit_sm">>,command_length => 89,
+                command_status => <<"ESME_ROK">>,
+                data_coding => <<"UCS2 (ISO/IEC-10646)">>,
+                dest_addr_npi => <<"ISDN (E163/E164)">>,
+                dest_addr_ton => <<"International">>,
+                destination_addr => <<>>,esm_class => 0,priority_flag => 0,
+                protocol_id => 0,registered_delivery => 0,
+                replace_if_present_flag => 0,schedule_delivery_time => <<>>,
+                sequence_number => 0,service_type => <<>>,
+                short_message =>
+                    <<"\\uD83D\\uDE42\\uD83D\\uDE43\\uD83D\\uDE44\\uD83D\\uDE45\\uD83D\\uDE46\\uD83D\\uDE47\\uD83D\\uDE48\\uD83D\\uDE49\\uD83D\\uDE4A\\uD83D\\uDE4B\\uD83D\\uDE4C\\uD83D\\uDE4D\\uD83D\\uDE4E\\uD83D\\uDE4F">>,
+                sm_default_msg_id => 0,source_addr => <<>>,
+                source_addr_npi => <<"ISDN (E163/E164)">>,
+                source_addr_ton => <<"International">>,
+                validity_period => <<>>}}
             ]
         ]
     }.
