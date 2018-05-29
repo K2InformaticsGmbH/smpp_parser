@@ -4187,7 +4187,7 @@ create_dest(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
             _ -> lists:append([
                 integer_2_octet(2),
                 string_2_c_octet_string(
-                    "distribution_list_#" ++ integer_to_list(N))
+                    "distribution_lst_#" ++ integer_to_list(N))
             ])
         end
         || N <- lists:seq(1, Number)
