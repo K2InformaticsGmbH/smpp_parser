@@ -1571,8 +1571,8 @@
 -define(USER_RESPONSE_CODE,
         ?SIMPLE_TLV(user_response_code,
                     16#0205,
-                    ?USER_RESPONSE_CODE_TDMA_DOMAIN,  % Do not uncomment both
-%                   ?USER_RESPONSE_CODE_CDMA_DOMAIN,  % Do not uncomment both
+                    %?USER_RESPONSE_CODE_TDMA_DOMAIN,  % Do not uncomment both
+                    ?USER_RESPONSE_CODE_CDMA_DOMAIN,  % Do not uncomment both
                     ?USER_RESPONSE_CODE_RESERVED,
                     undefined,
                     undefined)).
