@@ -735,7 +735,29 @@
 		#{details => <<"my_failed_broadcast_area_identifier_00008">>,
 		  format => 0}
 	],
-	message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}}
+	message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"broadcast_sm_#80",
+   "00 00 00 B1 00 00 01 11 00 00 00 00 00 00 00 01 00 02 08 31 32 37 2E 30 "
+   "2E 30 2E 31 00 74 68 69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 "
+   "73 61 67 65 5F 69 64 00 04 00 39 39 30 33 31 30 30 30 30 30 30 30 30 30 "
+   "30 52 00 01 FF 7F 06 06 00 23 02 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F "
+   "61 72 65 61 5F 69 64 65 6E 74 69 66 69 65 72 5F 30 30 30 31 30 06 01 00 "
+   "03 00 00 81 06 04 00 02 00 00 06 05 00 03 0B 00 05 06 02 00 24 6D 79 5F "
+   "62 72 6F 61 64 63 61 73 74 5F 63 6F 6E 74 65 6E 74 5F 74 79 70 65 5F 69 "
+   "6E 66 6F 5F 30 30 30 31 32",
+   #{broadcast_area_identifier => [
+	   	#{details => <<"my_broadcast_area_identifier_00010">>, format => 2}],
+	 broadcast_content_type => #{network_type => 0,service => 129},
+	 broadcast_content_type_info => <<"my_broadcast_content_type_info_00012">>,
+	 broadcast_frequency_interval => #{number => 5,time_unit => 11},
+	 broadcast_rep_num => 0,command_id => <<"broadcast_sm">>,
+	 command_length => 177,command_status => <<"ESME_ROK">>,
+	 data_coding => <<"255">>, message_id => <<"this_could_be_a_message_id">>,
+	 priority_flag => 4,replace_if_present_flag => 1,
+	 schedule_delivery_time => <<>>,sequence_number => 1, service_type => <<>>,
+	 sm_default_msg_id => 127, source_addr => <<"127.0.0.1">>,
+	 source_addr_npi => <<"National">>, source_addr_ton => <<"National">>,
+	 validity_period => <<"990310000000000R">>}}
 ]).
 
 -define(TESTS2,
