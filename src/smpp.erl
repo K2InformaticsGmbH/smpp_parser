@@ -4,7 +4,8 @@
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
--export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
+-export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, encode_msg/1,
+         decode_msg/1]).
 
 -safe([unpack_map/1]).
 
@@ -189,7 +190,8 @@ statusstr(Status) when is_integer(Status) ->
 
 -spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
 encode(PDU) when is_map(PDU) ->
-    case pack(encode_msg(json2internal(from_enum(PDU)))) of
+    % case pack(encode_msg(json2internal(from_enum(PDU)))) of
+    case pack(json2internal(from_enum(PDU))) of
         {ok, Bin} ->
             {ok,
                 list_to_binary(string:join([string:pad(integer_to_list(B, 16), 2, leading, $0) || <<B>> <= Bin], " "))};
@@ -215,13 +217,18 @@ decode_bin(Bin) when is_binary(Bin) ->
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, internal2json(to_enum(decode_msg(PDU)))}
+            % {ok, internal2json(to_enum(decode_msg(PDU)))}
+            {ok, internal2json(to_enum(PDU))}
     end.
 
+encode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => encode_msg(EncodingScheme, Msg)};
 encode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
     Pdu#{short_message => encode_msg(EncodingScheme, Msg)};
 encode_msg(Pdu) -> Pdu.
 
+encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    encode_msg(enc(EncodingScheme), Msg);
 encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
 encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
@@ -234,10 +241,14 @@ encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
 encode_msg(_, Msg) -> base64:decode_to_string(Msg).
 
+decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => decode_msg(EncodingScheme, Msg)};
 decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
     Pdu#{short_message => decode_msg(EncodingScheme, Msg)};
 decode_msg(Pdu) -> Pdu.
 
+decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    decode_msg(enc(EncodingScheme), Msg);
 decode_msg(EncodingScheme, Msg) when is_list(Msg) ->
     decode_msg(EncodingScheme, list_to_binary(Msg));
 decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
@@ -1348,7 +1359,8 @@ packunpack_test_() ->
      [{T, fun() ->
             Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(L, " ")]),
             SMPP = unpack_map(Bin),
-            E1 = to_enum(internal2json(decode_msg(SMPP))),
+            % E1 = to_enum(internal2json(decode_msg(SMPP))),
+            E1 = to_enum(internal2json(SMPP)),
             if E /= E1 ->
                     ?debugFmt("~n~s~nExpected : ~p~n"
                                 "Got      : ~p", [T, E, E1]);
@@ -1560,7 +1572,7 @@ schema_test() ->
     #{schema := Schema} = info(),
     ?assertEqual(true, is_binary(jsx:encode(Schema))).
 
-encod_msg_test() ->
+encode_msg_test() ->
     {inparallel,
         [{Title, ?assertEqual(Result, encode_msg(SubmitSm))}
          || {Title, SubmitSm, Result} <-
@@ -1575,13 +1587,6 @@ encod_msg_test() ->
                         binary_to_list(unicode:characters_to_binary(
                             <<"Abc₭"/utf8>>, utf8, utf16
                         ))}},
-             {"ucs2_bigger_eur_internal", #{data_coding => ?ENCODING_SCHEME_UCS2,
-                                            short_message => "Abc₭"},
-                #{data_coding => ?ENCODING_SCHEME_UCS2,
-                   short_message =>
-                        binary_to_list(unicode:characters_to_binary(
-                            <<"Abc₭"/utf8>>, utf8, utf16
-                        ))}},
              {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
                           short_message => base64:encode_to_string("Test")},
                 #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
@@ -1590,9 +1595,31 @@ encod_msg_test() ->
         ]
     }.
 
+decode_msg_test() ->
+    {inparallel,
+        [{Title, ?assertEqual(Result, decode_msg(SubmitSm))}
+         || {Title, SubmitSm, Result} <-
+            [{"empty", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1},
+                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1}},
+             {"emty_ucs2", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2},
+                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2}},
+             {"ucs2_bigger_eur", #{data_coding => ?ENCODING_SCHEME_UCS2,
+                                   short_message => unicode:characters_to_binary(
+                                                        <<"Abc₭"/utf8>>, utf8, utf16
+                                                    )},
+                #{data_coding => ?ENCODING_SCHEME_UCS2,
+                   short_message => <<"Abc₭"/utf8>> }},
+             {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
+                          short_message => <<"Test">>},
+                #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
+                  short_message => base64:encode("Test")}}
+            ]
+        ]
+    }.
+
 emoji_test() ->
     {inparallel,
-        [{Title, ?assertEqual(Target, element(2, decode(element(2, encode(SubmitSm)))))}
+        [{Title, ?assertEqual(Target, decode_msg(element(2, decode(element(2, encode(encode_msg(SubmitSm)))))))}
          || {Title, SubmitSm, Target} <-
             [{"1-part all emojis",
               #{command_id => <<"submit_sm">>,command_length => 33,
