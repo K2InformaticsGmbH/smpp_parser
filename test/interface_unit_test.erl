@@ -188,86 +188,27 @@ schema_test() ->
     #{schema := Schema} = smpp:info(),
     ?assertEqual(true, is_binary(jsx:encode(Schema))).
 
-encode_msg_test() ->
+encode_msg_test_() ->
     {inparallel,
-        [{Title, ?assertEqual(Result, smpp:encode_msg(SubmitSm))}
-         || {Title, SubmitSm, Result} <-
-            [{"empty", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1},
-                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1}},
-             {"emty_ucs2", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2},
-                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2}},
-             {"ucs2_bigger_eur", #{data_coding => ?ENCODING_SCHEME_UCS2,
-                                   short_message => <<"Abc₭"/utf8>>},
-                #{data_coding => ?ENCODING_SCHEME_UCS2,
-                   short_message =>
-                        unicode:characters_to_binary(
-                            <<"Abc₭"/utf8>>, utf8, utf16
-                        )}},
-             {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
-                          short_message => <<"Test">>},
-                #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
-                  short_message => <<"Test">>}}
-            ]
+        [{Title, ?_assertEqual(Result, smpp:encode_msg(SubmitSm))}
+         || {Title, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST
         ]
     }.
 
-decode_msg_test() ->
+decode_msg_test_() ->
     {inparallel,
-        [{Title, ?assertEqual(Result, smpp:decode_msg(SubmitSm))}
-         || {Title, SubmitSm, Result} <-
-            [{"empty", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1},
-                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1}},
-             {"emty_ucs2", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2},
-                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2}},
-             {"ucs2_bigger_eur", #{data_coding => ?ENCODING_SCHEME_UCS2,
-                                   short_message => unicode:characters_to_binary(
-                                                        <<"Abc₭"/utf8>>, utf8, utf16
-                                                    )},
-                #{data_coding => ?ENCODING_SCHEME_UCS2,
-                   short_message => <<"Abc₭"/utf8>> }},
-             {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
-                          short_message => <<"Test">>},
-                #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
-                  short_message => <<"Test">>}}
-            ]
+        [{Title, ?_assertEqual(Result, smpp:decode_msg(SubmitSm))}
+         || {Title, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST
         ]
     }.
 
-emoji_test() ->
+emoji_test_() ->
     {inparallel,
-        [{Title, ?assertEqual(Target, smpp:decode_msg(element(2, smpp:decode(element(2, smpp:encode(smpp:encode_msg(SubmitSm)))))))}
-         || {Title, SubmitSm, Target} <-
-            [{"1-part all emojis",
-              #{command_id => <<"submit_sm">>,command_length => 33,
-                command_status => <<"ESME_ROK">>,
-                data_coding => <<"UCS2 (ISO/IEC-10646)">>,
-                dest_addr_npi => <<"ISDN (E163/E164)">>,
-                dest_addr_ton => <<"International">>,
-                destination_addr => <<>>,esm_class => 0,priority_flag => 0,
-                protocol_id => 0,registered_delivery => 0,
-                replace_if_present_flag => 0,schedule_delivery_time => <<>>,
-                sequence_number => 0,service_type => <<>>,
-                short_message => <<"🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏"/utf8>>,
-                sm_default_msg_id => 0,
-                source_addr => <<>>,
-                source_addr_npi => <<"ISDN (E163/E164)">>,
-                source_addr_ton => <<"International">>,
-                validity_period => <<>>},
-              #{command_id => <<"submit_sm">>,command_length => 89,
-                command_status => <<"ESME_ROK">>,
-                data_coding => <<"UCS2 (ISO/IEC-10646)">>,
-                dest_addr_npi => <<"ISDN (E163/E164)">>,
-                dest_addr_ton => <<"International">>,
-                destination_addr => <<>>,esm_class => 0,priority_flag => 0,
-                protocol_id => 0,registered_delivery => 0,
-                replace_if_present_flag => 0,schedule_delivery_time => <<>>,
-                sequence_number => 0,service_type => <<>>,
-                short_message =>
-                    <<"\\uD83D\\uDE42\\uD83D\\uDE43\\uD83D\\uDE44\\uD83D\\uDE45\\uD83D\\uDE46\\uD83D\\uDE47\\uD83D\\uDE48\\uD83D\\uDE49\\uD83D\\uDE4A\\uD83D\\uDE4B\\uD83D\\uDE4C\\uD83D\\uDE4D\\uD83D\\uDE4E\\uD83D\\uDE4F">>,
-                sm_default_msg_id => 0,source_addr => <<>>,
-                source_addr_npi => <<"ISDN (E163/E164)">>,
-                source_addr_ton => <<"International">>,
-                validity_period => <<>>}}
-            ]
+        [{Title, fun() ->
+                {ok, Encoded} = smpp:encode(smpp:encode_msg(SubmitSm)),
+                {ok, Decoded} = smpp:decode(Encoded),
+                ?assertEqual(Target, smpp:decode_msg(Decoded))
+            end}
+         || {Title, SubmitSm, Target} <- ?EMOJI_TEST
         ]
     }.
