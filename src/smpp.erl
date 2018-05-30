@@ -235,7 +235,7 @@ encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
 encode_msg(_, Msg) when is_list(Msg) ->
     case io_lib:printable_list(Msg) of
         true -> list_to_binary(Msg);
-        fase -> base64:decode(Msg)
+        flase -> base64:decode(Msg)
     end.
 
 decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
@@ -254,7 +254,7 @@ decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
 decode_msg(_, Msg) when is_list(Msg) ->
     case io_lib:printable_list(Msg) of
         true -> list_to_binary(Msg);
-        fase -> base64:encode(Msg)
+        flase -> base64:encode(Msg)
     end.
 
 ucs2_encoding(Msg) when is_binary(Msg) ->
