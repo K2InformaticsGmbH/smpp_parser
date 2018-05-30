@@ -4,7 +4,8 @@
 -export([pack/1, unpack/1, unpack_map/1, unpack/2, json2internal/1,
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
--export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
+-export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, encode_msg/1,
+         decode_msg/1]).
 
 -safe([unpack_map/1]).
 
@@ -218,6 +219,78 @@ decode_bin(Bin) when is_binary(Bin) ->
             {ok, internal2json(to_enum(PDU))}
     end.
 
+encode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => encode_msg(EncodingScheme, Msg)};
+encode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
+    Pdu#{short_message => encode_msg(EncodingScheme, Msg)};
+encode_msg(Pdu) -> Pdu.
+
+encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    encode_msg(enc(EncodingScheme), Msg);
+encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
+encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
+encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
+encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    encode_msg(EncodingScheme, binary_to_list(Msg));
+encode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        false -> base64:decode(Msg)
+    end.
+
+decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
+    Pdu#{<<"short_message">> => decode_msg(EncodingScheme, Msg)};
+decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
+    Pdu#{short_message => decode_msg(EncodingScheme, Msg)};
+decode_msg(Pdu) -> Pdu.
+
+decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    decode_msg(enc(EncodingScheme), Msg);
+decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
+decode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
+decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
+decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    decode_msg(EncodingScheme, binary_to_list(Msg));
+decode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        false -> base64:encode(Msg)
+    end.
+
+ucs2_encoding(Msg) when is_binary(Msg) ->
+    ucs2_encoding(unicode:characters_to_list(Msg, unicode));
+ucs2_encoding(Msg) when is_list(Msg) ->
+    SM1 = unicode:characters_to_list(Msg, unicode),
+    SM2 = unicode:characters_to_binary(SM1, unicode, utf16),
+    re:replace(SM2, "\"", "\\\\\"", [global, {return, binary}]).
+
+decode_ucs2(Msg) when is_binary(Msg) ->
+    decode_ucs2(binary_to_list(Msg));
+decode_ucs2(Msg) when is_list(Msg) ->
+    re:replace(ucs2_to_utf16(Msg), "\"", "\\\\\"", [global, {return, binary}]).
+
+ucs2_to_utf16({cp, CPList}) ->
+    case unicode:characters_to_binary(CPList, utf16, utf8) of
+        {error, ConvertedBin, [[Failed]|Rest]} ->
+            <<ConvertedBin/binary, (Failed bsr 8), (Failed band 16#00FF),
+              (ucs2_to_utf16({cp, Rest}))/binary>>;
+        ConvertedBin when is_binary(ConvertedBin) -> ConvertedBin
+    end;
+ucs2_to_utf16(Msg) when is_list(Msg) ->
+    CPList = ucs2_to_utf16_cp(Msg, []),
+    ucs2_to_utf16({cp, CPList}).
+
+ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
+% Erlang DOC: An integer in the range 16#D800 to 16#DFFF (invalid range
+%  reserved for UTF-16 surrogate pairs)
+ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
+    ucs2_to_utf16_cp(
+      Rest, lists:reverse(
+                lists:flatten(
+                    [io_lib:format("\\u~2.16.0B~2.16.0B", [A,B])]
+                )) ++ Result);
+ucs2_to_utf16_cp([A,B|Rest], Result) ->
+    ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 
 to_enum(SMPP) when is_map(SMPP) ->
     maps:fold(
