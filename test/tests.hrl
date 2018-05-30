@@ -642,7 +642,18 @@
 	 short_message => <<"This">>, source_addr => <<"168.0.0.1">>,
 	 source_addr_npi => <<"Unknown">>,
 	 source_addr_ton => <<"Network Specific">>,
-	 validity_period => <<"991021145141448+">>}}
+	 validity_period => <<"991021145141448+">>}},
+  {"data_sm_#87",
+   "00 00 00 37 00 00 01 03 00 00 00 00 00 00 00 01 43 50 54 00 05 0E 31 32 "
+   "37 2E 30 2E 30 2E 31 00 04 09 31 39 32 2E 31 36 38 2E 31 2E 31 00 20 04 "
+   "3F 12 03 00 02 29 C0",
+   #{command_id => <<"data_sm">>, command_length => 55,
+     command_status => <<"ESME_ROK">>, data_coding => <<"63">>,
+	 dest_addr_npi => <<"Private">>, dest_addr_ton => <<"Subscriber Number">>,
+	 destination_addr => <<"192.168.1.1">>, esm_class => 32,
+	 registered_delivery => 4, sequence_number => 1, service_type => <<"CPT">>,
+	 sms_signal => 10688, source_addr => <<"127.0.0.1">>,
+	 source_addr_npi => <<"Internet (IP)">>, source_addr_ton => <<"Alphanumeric">>}}
 ]).
 
 -define(TESTS2,

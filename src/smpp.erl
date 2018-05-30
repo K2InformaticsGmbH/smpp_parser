@@ -519,6 +519,7 @@ b2a(<<"sm_length">>) -> sm_length;
 b2a(<<"system_id">>) -> system_id;
 b2a(<<"dest_port">>) -> dest_port;
 b2a(<<"time_unit">>) -> time_unit;
+b2a(<<"sms_signal">>) -> sms_signal;
 b2a(<<"dpf_result">>) -> dpf_result;
 b2a(<<"message_id">>) -> message_id;
 b2a(<<"command_id">>) -> command_id;
