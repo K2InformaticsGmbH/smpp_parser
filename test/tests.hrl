@@ -620,8 +620,8 @@
 	 dest_addr_npi => <<"Unknown">>, destination_addr => <<"168.123.234.321">>,
 	 number_of_messages => 89, registered_delivery => 0, sequence_number => 1,
 	 service_type => <<"VMA">>, source_addr => <<"168.123.234.321">>,
-	 source_addr_npi => <<"National">>, source_addr_ton => <<"Abbreviated">>,
-	 user_message_reference => 12709}}
+	 source_addr_npi => <<"National">>, user_message_reference => 12709,
+	 source_addr_ton => <<"Abbreviated">>}}
 ]).
 
 -define(TESTS2,
