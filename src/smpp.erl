@@ -1238,7 +1238,47 @@ schema() ->
     failed_broadcast_area_identifier =>
         [#{details => <<"my_failed_broadcast_area_identifier_00008">>,
            format => 0}],
-    message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}}
+    message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"submit_multi_#79",
+   "00 00 01 0D 00 00 00 21 00 00 00 00 00 00 00 01 47 55 54 53 00 01 04 31 "
+   "39 32 2E 31 2E 31 2E 31 30 00 0A 02 64 69 73 74 72 69 62 75 74 69 6F 6E "
+   "5F 6C 73 74 5F 23 36 00 01 06 12 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 "
+   "32 31 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 73 74 5F 23 34 00 "
+   "01 01 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 02 64 69 73 74 72 69 62 75 "
+   "74 69 6F 6E 5F 6C 73 74 5F 23 31 00 02 64 69 73 74 72 69 62 75 74 69 6F "
+   "6E 5F 6C 73 74 5F 23 38 00 01 06 00 31 36 38 2E 30 2E 30 2E 31 00 02 64 "
+   "69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 73 74 5F 23 35 00 02 64 69 73 74 "
+   "72 69 62 75 74 69 6F 6E 5F 6C 73 74 5F 23 32 00 01 05 12 31 36 38 2E 30 "
+   "2E 30 2E 31 00 40 03 03 39 39 30 34 32 37 32 30 30 30 30 30 30 30 30 2B "
+   "00 39 39 30 34 32 37 32 30 30 30 30 30 30 30 30 2B 00 01 00 3F 03 01 54 "
+   "02 0F 00 01 C0",
+  #{command_id => <<"submit_multi">>,command_length => 269,
+    command_status => <<"ESME_ROK">>, data_coding => <<"63">>,
+    dest_address => [
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#6">>},
+        #{dest_addr_npi => 18,dest_addr_ton => 6,dest_flag => 1,
+          destination_addr => <<"168.123.234.321">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#4">>},
+        #{dest_addr_npi => 10,dest_addr_ton => 1,dest_flag => 1,
+          destination_addr => <<"192.168.1.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#8">>},
+        #{dest_addr_npi => 0,dest_addr_ton => 6,dest_flag => 1,
+          destination_addr => <<"168.0.0.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#5">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#2">>},
+        #{dest_addr_npi => 18,dest_addr_ton => 5,dest_flag => 1,
+          destination_addr => <<"168.0.0.1">>}
+        ],
+    esm_class => 64, priority_flag => 3, protocol_id => 3,
+    registered_delivery => 1, replace_if_present_flag => 0,
+    sar_segment_seqnum => 192, sequence_number => 1,
+    schedule_delivery_time => <<"990427200000000+">>,
+    service_type => <<"GUTS">>, short_message => <<"T">>,
+    sm_default_msg_id => 3, source_addr => <<"192.1.1.10">>,
+    source_addr_npi => <<"Telex (F.69)">>,
+    source_addr_ton => <<"International">>,
+    validity_period => <<"990427200000000+">>}}
 ]).
 
 packunpack_test_() ->
