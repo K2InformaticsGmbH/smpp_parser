@@ -477,6 +477,7 @@ b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;
 b2a(<<"validity_period">>) -> validity_period;
 b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
+b2a(<<"dest_network_id">>) -> dest_network_id;
 b2a(<<"destination_addr">>) -> destination_addr;
 b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
 b2a(<<"dest_network_type">>) -> dest_network_type;

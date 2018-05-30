@@ -579,7 +579,7 @@
    "39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00 00 01 00 0F 0F 01 54 "
    "00 08 00 02 42 00",
    #{command_id => <<"submit_sm">>, command_length => 78,
-     command_status => <<"ESME_ROK">>,data_coding => <<"15">>,
+     command_status => <<"ESME_ROK">>, data_coding => <<"15">>,
              dest_addr_npi => <<"Land Mobile (E.212)">>,
              dest_addr_ton => <<"International">>,
              dest_telematics_id => #{protocol_id => 66,reserved => 0},
@@ -590,7 +590,26 @@
              sequence_number => 1,service_type => <<"WAP">>,
              short_message => <<"T">>,sm_default_msg_id => 15,
              source_addr => <<"127.0.0.1">>,source_addr_npi => <<"National">>,
-             source_addr_ton => <<"International">>,validity_period => <<>>}}
+             source_addr_ton => <<"International">>,validity_period => <<>>}},
+  {"deliver_sm_#72",
+   "00 00 00 72 00 00 00 05 00 00 00 00 00 00 00 01 43 4D 54 00 00 06 31 39 "
+   "32 2E 31 36 38 2E 31 2E 31 00 06 01 31 36 38 2E 30 2E 30 2E 31 00 10 01 "
+   "00 39 39 30 34 32 37 32 30 30 30 30 30 30 30 30 2B 00 39 39 30 35 32 36 "
+   "31 39 35 36 30 30 30 30 30 52 00 04 01 FF 07 07 54 68 69 73 20 69 73 06 "
+   "0E 00 0F 33 31 31 32 34 30 30 32 30 30 35 30 32 34 00",
+   #{command_id => <<"deliver_sm">>, command_length => 114,
+     command_status => <<"ESME_ROK">>, data_coding => <<"255">>,
+	 dest_addr_npi => <<"ISDN (E163/E164)">>, esm_class => 16,
+	 dest_addr_ton => <<"Abbreviated">>, priority_flag => 0,
+	 dest_network_id => <<"31124002005024">>,protocol_id => 1,
+	 destination_addr => <<"168.0.0.1">>,registered_delivery => 4,
+	 replace_if_present_flag => 1, sequence_number => 1,
+	 schedule_delivery_time => <<"990427200000000+">>,
+	 service_type => <<"CMT">>, short_message => <<"This is">>,
+	 sm_default_msg_id => 7, source_addr => <<"192.168.1.1">>,
+	 source_addr_npi => <<"Land Mobile (E.212)">>,
+	 source_addr_ton => <<"Unknown">>,
+	 validity_period => <<"990526195600000R">>}}
 ]).
 
 -define(TESTS2,
