@@ -1993,7 +1993,7 @@ create_code(dest_node_id = Rule) ->
             lists:append([
                 ParameterTag,
                 "0006",
-                lists:flatten(io_lib:format("~6.6.0w", [Value]))
+                integer_2_octet(Value, 6)
             ])
             || Value <- lists:seq(0, 8)
         ],
@@ -3636,7 +3636,7 @@ create_code(source_node_id = Rule) ->
             lists:append([
                 ParameterTag,
                 "0006",
-                lists:flatten(io_lib:format("~6.6.0w", [Value]))
+                integer_2_octet(Value, 6)
             ])
             || Value <- lists:seq(0, 8)
         ],
