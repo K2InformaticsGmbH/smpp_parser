@@ -190,7 +190,6 @@ statusstr(Status) when is_integer(Status) ->
 
 -spec(encode(PDU :: map()) -> {ok, HEX_STRING :: binary()} | {error, binary()}).
 encode(PDU) when is_map(PDU) ->
-    % case pack(encode_msg(json2internal(from_enum(PDU)))) of
     case pack(json2internal(from_enum(PDU))) of
         {ok, Bin} ->
             {ok,
@@ -217,7 +216,6 @@ decode_bin(Bin) when is_binary(Bin) ->
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            % {ok, internal2json(to_enum(decode_msg(PDU)))}
             {ok, internal2json(to_enum(PDU))}
     end.
 
@@ -239,7 +237,7 @@ encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
     end,
     encode_msg(EncodingScheme, MsgBin);
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
-encode_msg(_, Msg) -> base64:decode_to_string(Msg).
+encode_msg(_, Msg) -> base64:decode(Msg).
 
 decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
     Pdu#{<<"short_message">> => decode_msg(EncodingScheme, Msg)};
@@ -261,7 +259,7 @@ ucs2_encoding(Msg) when is_binary(Msg) ->
 ucs2_encoding(Msg) when is_list(Msg) ->
     SM1 = unicode:characters_to_list(Msg, unicode),
     SM2 = unicode:characters_to_binary(SM1, unicode, utf16),
-    re:replace(SM2, "\"", "\\\\\"", [global, {return, list}]).
+    re:replace(SM2, "\"", "\\\\\"", [global, {return, binary}]).
 
 decode_ucs2(Msg) when is_binary(Msg) ->
     decode_ucs2(binary_to_list(Msg));
@@ -1576,21 +1574,21 @@ encode_msg_test() ->
     {inparallel,
         [{Title, ?assertEqual(Result, encode_msg(SubmitSm))}
          || {Title, SubmitSm, Result} <-
-            [{"empty", #{short_message => [], data_coding => ?ENCODING_SCHEME_LATIN_1},
-                #{short_message => [], data_coding => ?ENCODING_SCHEME_LATIN_1}},
-             {"emty_ucs2", #{short_message => [], data_coding => ?ENCODING_SCHEME_UCS2},
-                #{short_message => [], data_coding => ?ENCODING_SCHEME_UCS2}},
+            [{"empty", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1},
+                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1}},
+             {"emty_ucs2", #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2},
+                #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2}},
              {"ucs2_bigger_eur", #{data_coding => ?ENCODING_SCHEME_UCS2,
-                                   short_message => "Abc₭"},
+                                   short_message => <<"Abc₭"/utf8>>},
                 #{data_coding => ?ENCODING_SCHEME_UCS2,
                    short_message =>
-                        binary_to_list(unicode:characters_to_binary(
+                        unicode:characters_to_binary(
                             <<"Abc₭"/utf8>>, utf8, utf16
-                        ))}},
+                        )}},
              {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
-                          short_message => base64:encode_to_string("Test")},
+                          short_message => base64:encode("Test")},
                 #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
-                  short_message => "Test"}}
+                  short_message => <<"Test">>}}
             ]
         ]
     }.
