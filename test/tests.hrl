@@ -621,7 +621,28 @@
 	 number_of_messages => 89, registered_delivery => 0, sequence_number => 1,
 	 service_type => <<"VMA">>, source_addr => <<"168.123.234.321">>,
 	 source_addr_npi => <<"National">>, user_message_reference => 12709,
-	 source_addr_ton => <<"Abbreviated">>}}
+	 source_addr_ton => <<"Abbreviated">>}},
+  {"deliver_sm_#85",
+   "00 00 00 78 00 00 00 05 00 00 00 00 00 00 00 01 43 50 54 00 03 00 31 36 "
+   "38 2E 30 2E 30 2E 31 00 05 06 31 32 37 2E 30 2E 30 2E 31 00 40 03 02 39 "
+   "39 30 33 31 30 30 30 30 30 30 30 30 30 30 52 00 39 39 31 30 32 31 31 34 "
+   "35 31 34 31 34 34 38 2B 00 01 00 03 1F 04 54 68 69 73 03 03 00 15 1F 6D "
+   "79 5F 63 61 6C 6C 62 61 63 6B 5F 6E 75 6D 5F 61 74 61 67 13 80 00 01 03",
+   #{callback_num_atag => [
+	   	#{data_coding => 31, display_characters => <<"my_callback_num_atag">>}
+	 ],
+	 command_id => <<"deliver_sm">>, command_length => 120,
+	 command_status => <<"ESME_ROK">>, priority_flag => 2, protocol_id => 3,
+	 data_coding => <<"Latin 1 (ISO-8859-1)">>, its_reply_type => 3,
+	 dest_addr_npi => <<"Land Mobile (E.212)">>, esm_class => 64,
+	 dest_addr_ton => <<"Alphanumeric">>, destination_addr => <<"127.0.0.1">>,
+	 registered_delivery => 1, replace_if_present_flag => 0,
+	 schedule_delivery_time => <<"990310000000000R">>, sm_default_msg_id => 31,
+	 sequence_number => 1, service_type => <<"CPT">>,
+	 short_message => <<"This">>, source_addr => <<"168.0.0.1">>,
+	 source_addr_npi => <<"Unknown">>,
+	 source_addr_ton => <<"Network Specific">>,
+	 validity_period => <<"991021145141448+">>}}
 ]).
 
 -define(TESTS2,
