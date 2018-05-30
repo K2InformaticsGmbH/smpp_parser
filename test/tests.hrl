@@ -711,7 +711,19 @@
 	 short_message => <<"T">>,sm_default_msg_id => 3,
 	 source_addr => <<"192.1.1.10">>, source_addr_npi => <<"Telex (F.69)">>,
 	 source_addr_ton => <<"International">>,
-	 validity_period => <<"990427200000000+">>}}
+	 validity_period => <<"990427200000000+">>}},
+  {"query_broadcast_sm_resp_#82",
+   "00 00 00 5C 80 00 01 12 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 09 "
+   "06 06 00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 "
+   "64 65 6E 74 69 66 69 65 72 5F 30 30 30 31 32 06 08 00 01 49",
+   #{broadcast_area_identifier => [
+	   	#{details => <<"my_broadcast_area_identifier_00012">>, format => 1}
+	 ],
+	 broadcast_area_success => "I", command_id => <<"query_broadcast_sm_resp">>,
+	 command_length => 92, command_status => <<"ESME_ROK">>,
+	 message_id => <<"this_could_be_a_message_id">>,sequence_number => 1,
+	 message_state => <<"SKIPPED">>}}
 ]).
 
 -define(TESTS2,
