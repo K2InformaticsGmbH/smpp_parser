@@ -609,7 +609,19 @@
 	 sm_default_msg_id => 7, source_addr => <<"192.168.1.1">>,
 	 source_addr_npi => <<"Land Mobile (E.212)">>,
 	 source_addr_ton => <<"Unknown">>,
-	 validity_period => <<"990526195600000R">>}}
+	 validity_period => <<"990526195600000R">>}},
+  {"data_sm_#71",
+   "00 00 00 46 00 00 01 03 00 00 00 00 00 00 00 01 56 4D 41 00 06 08 31 36 "
+   "38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 01 00 31 36 38 2E 31 32 33 2E "
+   "32 33 34 2E 33 32 31 00 40 00 02 02 04 00 02 31 A5 03 04 00 01 59",
+   #{command_id => <<"data_sm">>, command_length => 70, esm_class => 64,
+     command_status => <<"ESME_ROK">>, dest_addr_ton => <<"International">>,
+	 data_coding => <<"Octet unspecified (8-bit binary)">>,
+	 dest_addr_npi => <<"Unknown">>, destination_addr => <<"168.123.234.321">>,
+	 number_of_messages => 89, registered_delivery => 0, sequence_number => 1,
+	 service_type => <<"VMA">>, source_addr => <<"168.123.234.321">>,
+	 source_addr_npi => <<"National">>, source_addr_ton => <<"Abbreviated">>,
+	 user_message_reference => 12709}}
 ]).
 
 -define(TESTS2,

@@ -485,6 +485,7 @@ b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"broadcast_rep_num">>) -> broadcast_rep_num;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
+b2a(<<"number_of_messages">>) -> number_of_messages;
 b2a(<<"dest_telematics_id">>) -> dest_telematics_id;
 b2a(<<"source_bearer_type">>) -> source_bearer_type;
 b2a(<<"network_error_code">>) -> network_error_code;
