@@ -6,8 +6,6 @@
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1]).
 
--export([encode_msg/1]).
-
 -safe([unpack_map/1]).
 
 json2internal(SMPP) when is_map(SMPP) ->
@@ -214,7 +212,7 @@ decode_bin(Bin) when is_binary(Bin) ->
         {error, _, S, _} ->
             {error, list_to_binary(element(3, err(S)))};
         PDU ->
-            {ok, decode_msg(internal2json(to_enum(PDU)))}
+            {ok, internal2json(to_enum(decode_msg(PDU)))}
     end.
 
 encode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
@@ -224,16 +222,17 @@ encode_msg(Pdu) -> Pdu.
 encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
 encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
-    try list_to_binary(Msg) of
-        MsgBin -> encode_msg(EncodingScheme, MsgBin)
-    catch 
-        _:_ -> encode_msg(EncodingScheme, unicode:characters_to_binary(Msg))
-    end;
+    MsgBin =
+    case catch list_to_binary(Msg) of
+        MBin when is_binary(MBin) -> MBin;
+        _ -> unicode:characters_to_binary(Msg)
+    end,
+    encode_msg(EncodingScheme, MsgBin);
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
 encode_msg(_, Msg) -> base64:encode_to_string(Msg).
 
 decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
-    Pdu#{short_message => decode_msg(enc(EncodingScheme), Msg)};
+    Pdu#{short_message => decode_msg(EncodingScheme, Msg)};
 decode_msg(Pdu) -> Pdu.
 
 decode_msg(EncodingScheme, Msg) when is_list(Msg) ->
