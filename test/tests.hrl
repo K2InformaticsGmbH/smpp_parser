@@ -415,9 +415,9 @@
    "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 73 20 69 73 20 "
    "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 69 73 20 69 73 20 "
    "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 6E 64 02 05 00 01 27",
-  #{command_id => <<"submit_multi">>, command_length => 525,
-    command_status => <<"ESME_ROK">>, data_coding => <<"255">>,
-    dest_address => [
+   #{command_id => <<"submit_multi">>, command_length => 525,
+     command_status => <<"ESME_ROK">>, data_coding => <<"255">>,
+     dest_address => [
         #{dest_addr_npi => 8,dest_addr_ton => 2,dest_flag => 1,
           destination_addr => <<"192.168.1.1">>},
         #{dest_flag => 2,dl_name => <<"distribution_list_#1">>},
@@ -433,21 +433,22 @@
           destination_addr => <<"168.0.0.1">>},
         #{dest_flag => 2,dl_name => <<"distribution_list_#6">>},
         #{dest_addr_npi => 9,dest_addr_ton => 4,dest_flag => 1,
-          destination_addr => <<"168.123.234.321">>}],
-    esm_class => 8, priority_flag => 1, protocol_id => 7,
-    registered_delivery => 12, replace_if_present_flag => 0,
-    schedule_delivery_time => <<"990922155242000R">>,
-    sequence_number => 1, service_type => <<"WAP">>,
-    short_message => <<"1 This is a short message2 This is a short message3 "
-                       "This is a short message4 This is a short message5 "
-                       "This is a short message6 This is a short message7 "
-                       "This is a short message8 This is a short message9 "
-                       "This is a short messageA This is a short messageB "
-                       "End">>,
-    sm_default_msg_id => 15, source_addr => <<"127.0.0.1">>,
-    source_addr_npi => <<"Internet (IP)">>,
-    source_addr_ton => <<"Abbreviated">>, user_response_code => 39,
-    validity_period => <<>>}},
+          destination_addr => <<"168.123.234.321">>}
+	 ],
+     esm_class => 8, priority_flag => 1, protocol_id => 7,
+     registered_delivery => 12, replace_if_present_flag => 0,
+     schedule_delivery_time => <<"990922155242000R">>,
+     sequence_number => 1, service_type => <<"WAP">>,
+     short_message => <<"1 This is a short message2 This is a short message3 "
+                        "This is a short message4 This is a short message5 "
+                        "This is a short message6 This is a short message7 "
+                        "This is a short message8 This is a short message9 "
+                        "This is a short messageA This is a short messageB "
+                        "End">>,
+     sm_default_msg_id => 15, source_addr => <<"127.0.0.1">>,
+     source_addr_npi => <<"Internet (IP)">>,
+     source_addr_ton => <<"Abbreviated">>, user_response_code => 39,
+     validity_period => <<>>}},
   {"broadcast_sm_#69",
    "00 00 00 B1 00 00 01 11 00 00 00 00 00 00 00 01 00 02 08 31 32 37 2E 30 "
    "2E 30 2E 31 00 74 68 69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 "
@@ -457,30 +458,32 @@
    "03 00 00 81 06 04 00 02 00 00 06 05 00 03 0B 00 05 06 02 00 24 6D 79 5F "
    "62 72 6F 61 64 63 61 73 74 5F 63 6F 6E 74 65 6E 74 5F 74 79 70 65 5F 69 "
    "6E 66 6F 5F 30 30 30 31 32",
-  #{broadcast_area_identifier =>
-        [#{details => <<"my_broadcast_area_identifier_00010">>, format => 2}],
-    broadcast_content_type => #{network_type => 0,service => 129},
-    broadcast_content_type_info => <<"my_broadcast_content_type_info_00012">>,
-    broadcast_frequency_interval => #{number => 5,time_unit => 11},
-    broadcast_rep_num => 0, command_id => <<"broadcast_sm">>,
-    command_length => 177, command_status => <<"ESME_ROK">>,
-    data_coding => <<"255">>, message_id => <<"this_could_be_a_message_id">>,
-    priority_flag => 4, replace_if_present_flag => 1,
-    schedule_delivery_time => <<>>, sequence_number => 1, service_type => <<>>,
-    sm_default_msg_id => 127, source_addr => <<"127.0.0.1">>,
-    source_addr_npi => <<"National">>, source_addr_ton => <<"National">>,
-    validity_period => <<"990310000000000R">>}},
+   #{broadcast_area_identifier => [
+	   #{details => <<"my_broadcast_area_identifier_00010">>, format => 2}
+	 ],
+     broadcast_content_type => #{network_type => 0,service => 129},
+     broadcast_content_type_info => <<"my_broadcast_content_type_info_00012">>,
+     broadcast_frequency_interval => #{number => 5,time_unit => 11},
+     broadcast_rep_num => 0, command_id => <<"broadcast_sm">>,
+     command_length => 177, command_status => <<"ESME_ROK">>,
+     data_coding => <<"255">>, message_id => <<"this_could_be_a_message_id">>,
+     priority_flag => 4, replace_if_present_flag => 1,
+     schedule_delivery_time => <<>>, sequence_number => 1, service_type => <<>>,
+     sm_default_msg_id => 127, source_addr => <<"127.0.0.1">>,
+     source_addr_npi => <<"National">>, source_addr_ton => <<"National">>,
+     validity_period => <<"990310000000000R">>}},
   {"broadcast_sm_resp_#70",
    "00 00 00 59 80 00 01 11 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 06 00 2A 00 "
    "6D 79 5F 66 61 69 6C 65 64 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 "
    "5F 69 64 65 6E 74 69 66 69 65 72 5F 30 30 30 30 38",
-  #{command_id => <<"broadcast_sm_resp">>, command_length => 89,
-    command_status => <<"ESME_ROK">>,
-    failed_broadcast_area_identifier =>
-        [#{details => <<"my_failed_broadcast_area_identifier_00008">>,
-           format => 0}],
-    message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+   #{command_id => <<"broadcast_sm_resp">>, command_length => 89,
+     command_status => <<"ESME_ROK">>,
+     failed_broadcast_area_identifier => [
+		#{details => <<"my_failed_broadcast_area_identifier_00008">>,
+          format => 0}
+	 ],
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
   {"submit_multi_#79",
    "00 00 01 0D 00 00 00 21 00 00 00 00 00 00 00 01 47 55 54 53 00 01 04 31 "
    "39 32 2E 31 2E 31 2E 31 30 00 0A 02 64 69 73 74 72 69 62 75 74 69 6F 6E "
@@ -494,9 +497,9 @@
    "2E 30 2E 31 00 40 03 03 39 39 30 34 32 37 32 30 30 30 30 30 30 30 30 2B "
    "00 39 39 30 34 32 37 32 30 30 30 30 30 30 30 30 2B 00 01 00 3F 03 01 54 "
    "02 0F 00 01 C0",
-  #{command_id => <<"submit_multi">>,command_length => 269,
-    command_status => <<"ESME_ROK">>, data_coding => <<"63">>,
-    dest_address => [
+   #{command_id => <<"submit_multi">>,command_length => 269,
+     command_status => <<"ESME_ROK">>, data_coding => <<"63">>,
+     dest_address => [
         #{dest_flag => 2,dl_name => <<"distribution_lst_#6">>},
         #{dest_addr_npi => 18,dest_addr_ton => 6,dest_flag => 1,
           destination_addr => <<"168.123.234.321">>},
@@ -511,47 +514,47 @@
         #{dest_flag => 2,dl_name => <<"distribution_lst_#2">>},
         #{dest_addr_npi => 18,dest_addr_ton => 5,dest_flag => 1,
           destination_addr => <<"168.0.0.1">>}
-        ],
-    esm_class => 64, priority_flag => 3, protocol_id => 3,
-    registered_delivery => 1, replace_if_present_flag => 0,
-    sar_segment_seqnum => 192, sequence_number => 1,
-    schedule_delivery_time => <<"990427200000000+">>,
-    service_type => <<"GUTS">>, short_message => <<"T">>,
-    sm_default_msg_id => 3, source_addr => <<"192.1.1.10">>,
-    source_addr_npi => <<"Telex (F.69)">>,
-    source_addr_ton => <<"International">>,
-    validity_period => <<"990427200000000+">>}},
+     ],
+     esm_class => 64, priority_flag => 3, protocol_id => 3,
+     registered_delivery => 1, replace_if_present_flag => 0,
+     sar_segment_seqnum => 192, sequence_number => 1,
+     schedule_delivery_time => <<"990427200000000+">>,
+     service_type => <<"GUTS">>, short_message => <<"T">>,
+     sm_default_msg_id => 3, source_addr => <<"192.1.1.10">>,
+     source_addr_npi => <<"Telex (F.69)">>,
+     source_addr_ton => <<"International">>,
+     validity_period => <<"990427200000000+">>}},
   {"query_broadcast_sm_resp_#78",
    "00 00 00 5C 80 00 01 12 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 09 "
    "06 06 00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 "
    "64 65 6E 74 69 66 69 65 72 5F 30 30 30 31 32 06 08 00 01 49",
-  #{broadcast_area_identifier => [
+   #{broadcast_area_identifier => [
         #{details => <<"my_broadcast_area_identifier_00012">>, format => 1}
-    ],
-    broadcast_area_success => "I", command_id => <<"query_broadcast_sm_resp">>,
-    command_length => 92, command_status => <<"ESME_ROK">>,
-    message_id => <<"this_could_be_a_message_id">>, message_state => <<"SKIPPED">>,
-    sequence_number => 1}},
+     ],
+     broadcast_area_success => "I", command_id => <<"query_broadcast_sm_resp">>,
+     command_length => 92, command_status => <<"ESME_ROK">>,
+     message_id => <<"this_could_be_a_message_id">>, message_state => <<"SKIPPED">>,
+     sequence_number => 1}},
   {"deliver_sm_resp_#77",
    "00 00 00 55 80 00 00 05 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D "
    "79 5F 61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F "
    "5F 74 65 78 74 00 04 23 00 03 05 38 32",
-  #{additional_status_info_text => <<"my_additional_status_info_text">>,
-    command_id => <<"deliver_sm_resp">>, command_length => 85,
-    command_status => <<"ESME_ROK">>, sequence_number => 1,
-    message_id => <<"this_could_be_a_message_id">>,
-    network_error_code => #{error => 14386,type => 5}}},
+   #{additional_status_info_text => <<"my_additional_status_info_text">>,
+     command_id => <<"deliver_sm_resp">>, command_length => 85,
+     command_status => <<"ESME_ROK">>, sequence_number => 1,
+     message_id => <<"this_could_be_a_message_id">>,
+     network_error_code => #{error => 14386,type => 5}}},
   {"submit_sm_resp_#76",
    "00 00 00 53 80 00 00 04 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D "
    "79 5F 61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F "
    "5F 74 65 78 74 00 04 20 00 01 01",
-  #{additional_status_info_text => <<"my_additional_status_info_text">>,
-    command_id => <<"submit_sm_resp">>, command_length => 83,
-	command_status => <<"ESME_ROK">>, dpf_result => 1, sequence_number => 1,
-	message_id => <<"this_could_be_a_message_id">>}},
+   #{additional_status_info_text => <<"my_additional_status_info_text">>,
+     command_id => <<"submit_sm_resp">>, command_length => 83,
+	 command_status => <<"ESME_ROK">>, dpf_result => 1, sequence_number => 1,
+	 message_id => <<"this_could_be_a_message_id">>}},
   {"submit_multi_resp_#75",
    "00 00 00 54 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 00 1D 00 1F "
@@ -560,7 +563,34 @@
    #{additional_status_info_text => <<"my_additional_status_info_text">>,
      command_id => <<"submit_multi_resp">>, command_length => 84,
      command_status => <<"ESME_ROK">>, dpf_result => 0, sequence_number => 1,
- 	 message_id => <<"this_could_be_a_message_id">>, unsuccess_sme => <<>>}}
+ 	 message_id => <<"this_could_be_a_message_id">>, unsuccess_sme => <<>>}},
+  {"data_sm_resp_#74",
+   "00 00 00 53 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D "
+   "79 5F 61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F "
+   "5F 74 65 78 74 00 04 20 00 01 00",
+   #{additional_status_info_text => <<"my_additional_status_info_text">>,
+     command_id => <<"data_sm_resp">>,command_length => 83,
+	 command_status => <<"ESME_ROK">>, dpf_result => 0, sequence_number => 1,
+	 message_id => <<"this_could_be_a_message_id">>}},
+  {"submit_sm_#73",
+   "00 00 00 4E 00 00 00 04 00 00 00 00 00 00 00 01 57 41 50 00 01 08 31 32 "
+   "37 2E 30 2E 30 2E 31 00 01 06 31 39 32 2E 31 2E 31 2E 31 30 00 C0 03 01 "
+   "39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00 00 01 00 0F 0F 01 54 "
+   "00 08 00 02 42 00",
+   #{command_id => <<"submit_sm">>, command_length => 78,
+     command_status => <<"ESME_ROK">>,data_coding => <<"15">>,
+             dest_addr_npi => <<"Land Mobile (E.212)">>,
+             dest_addr_ton => <<"International">>,
+             dest_telematics_id => #{protocol_id => 66,reserved => 0},
+             destination_addr => <<"192.1.1.10">>,esm_class => 192,
+             priority_flag => 1,protocol_id => 3,registered_delivery => 1,
+             replace_if_present_flag => 0,
+             schedule_delivery_time => <<"991021145141448+">>,
+             sequence_number => 1,service_type => <<"WAP">>,
+             short_message => <<"T">>,sm_default_msg_id => 15,
+             source_addr => <<"127.0.0.1">>,source_addr_npi => <<"National">>,
+             source_addr_ton => <<"International">>,validity_period => <<>>}}
 ]).
 
 -define(TESTS2,
