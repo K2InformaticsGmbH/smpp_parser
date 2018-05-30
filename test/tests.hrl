@@ -1,4 +1,12 @@
 -ifndef(_TESTS_HRL_).
+-define(_TESTS_HRL_, true).
+
+-define(PDU(_Id,_Extra), <<"{\"command_id\":",(integer_to_binary(_Id))/binary,
+                           ",\"command_status\":0,\"sequence_number\":0",
+                           _Extra,"}">>).
+-define(PDU(_Id), ?PDU(_Id, "")).
+-define(PDU_SYSID(_Id), ?PDU(_Id, ",\"system_id\":\"\",\"sc_interface_version\":80")).
+-define(PDU_DSTADDR(_Id), ?PDU(_Id, ",\"destination_addr\":\"\"")).
 
 -define(TESTS,
 [{"bind_transceiver",
@@ -535,6 +543,33 @@
     command_status => <<"ESME_ROK">>, sequence_number => 1,
     message_id => <<"this_could_be_a_message_id">>,
     network_error_code => #{error => 14386,type => 5}}}
+]).
+
+-define(TESTS2,
+[% requests
+{"bind_receiver",          16#00000001,  ?PDU_SYSID(16#00000001)},
+{"bind_transmitter",       16#00000002,  ?PDU_SYSID(16#00000002)},
+{"query_sm",               16#00000003,  ?PDU_DSTADDR(16#00000003)},
+{"submit_sm",              16#00000004,  ?PDU_DSTADDR(16#00000004)},
+{"deliver_sm",             16#00000005,  ?PDU_DSTADDR(16#00000005)},
+{"unbind",                 16#00000006,  ?PDU_DSTADDR(16#00000006)},
+{"replace_sm",             16#00000007,  ?PDU_DSTADDR(16#00000007)},
+{"cancel_sm",              16#00000008,  ?PDU_DSTADDR(16#00000008)},
+{"bind_transceiver",       16#00000009,  ?PDU_SYSID(16#00000009)},
+{"outbind",                16#0000000B,  ?PDU_SYSID(16#0000000B)},
+{"enquire_link",           16#00000015,  ?PDU(16#000000015)},
+
+% responses
+{"bind_receiver_resp",     16#80000001,  ?PDU_SYSID(16#80000001)},
+{"bind_transmitter_resp",  16#80000002,  ?PDU_SYSID(16#80000002)},
+{"query_sm_resp",          16#80000003,  ?PDU(16#80000003)},
+{"submit_sm_resp",         16#80000004,  ?PDU(16#80000004)},
+{"deliver_sm_resp",        16#80000005,  ?PDU(16#80000005)},
+{"unbind_resp",            16#80000006,  ?PDU(16#80000006)},
+{"replace_sm_resp",        16#80000007,  ?PDU(16#80000007)},
+{"cancel_sm_resp",         16#80000008,  ?PDU(16#80000008)},
+{"bind_transceiver_resp",  16#80000009,  ?PDU_SYSID(16#80000009)},
+{"enquire_link_resp",      16#80000015,  ?PDU(16#80000015)}
 ]).
 
 -endif. % _TESTS_HRL_
