@@ -229,7 +229,7 @@ encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
     end,
     encode_msg(EncodingScheme, MsgBin);
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
-encode_msg(_, Msg) -> base64:encode_to_string(Msg).
+encode_msg(_, Msg) -> base64:decode_to_string(Msg).
 
 decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
     Pdu#{short_message => decode_msg(EncodingScheme, Msg)};
@@ -240,7 +240,7 @@ decode_msg(EncodingScheme, Msg) when is_list(Msg) ->
 decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
 decode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
-decode_msg(_, Msg) -> base64:decode(Msg).
+decode_msg(_, Msg) -> base64:encode(Msg).
 
 ucs2_encoding(Msg) when is_binary(Msg) ->
     ucs2_encoding(unicode:characters_to_list(Msg, unicode));
@@ -857,12 +857,11 @@ schema() ->
     password => <<"fdgasrgs">>, sequence_number => 1, system_id => <<"4115">>,
     system_type => <<"testing">>}},
  {"submit_sm",
-  "00 00 00 4C 00 00 00 04 00 00 00 00 00 00 00 01 00 05 00 34 31 30 33 37 00 "
-  "00 00 30 37 39 34 36 35 30 31 31 35 00 00 00 00 00 00 11 00 00 00 1C 64 47 "
-  "56 7A 64 43 42 7A 64 32 6C 7A 63 32 4E 76 62 53 41 6F 55 30 31 51 55 43 6B "
-  "3D",
-  #{command_id => <<"submit_sm">>,command_length => 76,
-    command_status => <<"ESME_ROK">>, data_coding => <<"MC Specific">>,
+  "00 00 00 44 00 00 00 04 00 00 00 00 00 00 00 01 00 05 00 34 31 30 33 37 00 "
+  "00 00 30 37 39 34 36 35 30 31 31 35 00 00 00 00 00 00 11 00 03 00 14 74 65 "
+  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29",
+  #{command_id => <<"submit_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>, data_coding => <<"Latin 1 (ISO-8859-1)">>,
     dest_addr_npi => <<"Unknown">>, dest_addr_ton => <<"Unknown">>,
     destination_addr => <<"0794650115">>,esm_class => 0, priority_flag => 0,
     protocol_id => 0, registered_delivery => 17, replace_if_present_flag => 0,
@@ -871,12 +870,11 @@ schema() ->
     source_addr => <<"41037">>, source_addr_npi => <<"Unknown">>,
     source_addr_ton => <<"Alphanumeric">>, validity_period => <<>>}},
  {"deliver_sm",
-  "00 00 00 4D 00 00 00 05 00 00 00 00 00 00 00 01 00 00 00 34 31 37 39 34 34 "
-  "34 34 34 34 34 00 00 00 31 32 33 34 35 00 00 00 00 00 00 00 00 00 00 1C 61 "
-  "47 6B 67 5A 32 39 30 49 48 6C 76 64 58 49 67 62 57 56 7A 63 32 46 6E 5A 51 "
-  "3D 3D",
-  #{command_id => <<"deliver_sm">>,command_length => 77,
-    command_status => <<"ESME_ROK">>, data_coding => <<"MC Specific">>,
+  "00 00 00 44 00 00 00 05 00 00 00 00 00 00 00 01 00 00 00 34 31 37 39 34 34 "
+  "34 34 34 34 34 00 00 00 31 32 33 34 35 00 00 00 00 00 00 00 00 03 00 13 68 "
+  "69 20 67 6F 74 20 79 6F 75 72 20 6D 65 73 73 61 67 65",
+  #{command_id => <<"deliver_sm">>,command_length => 68,
+    command_status => <<"ESME_ROK">>, data_coding => <<"Latin 1 (ISO-8859-1)">>,
     dest_addr_npi => <<"Unknown">>,dest_addr_ton => <<"Unknown">>,
     destination_addr => <<"12345">>,esm_class => 0, priority_flag => 0,
     protocol_id => 0,registered_delivery => 0, replace_if_present_flag => 0,
@@ -1173,14 +1171,14 @@ schema() ->
     source_addr => <<"168.0.0.1">>, source_addr_npi => <<"ISDN (E163/E164)">>,
     source_addr_ton => <<"Abbreviated">>}},
  {"submit_sm_issue_61",
-  "00 00 00 6C 00 00 00 04 00 00 00 00 00 00 00 01 55 53 53 44 00 00 06 31 39 "
+  "00 00 00 68 00 00 00 04 00 00 00 00 00 00 00 01 55 53 53 44 00 00 06 31 39 "
   "32 2E 31 2E 31 2E 31 30 00 02 03 31 39 32 2E 31 2E 31 2E 31 30 00 01 02 00 "
   "39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00 39 39 30 39 32 32 31 35 "
-  "35 32 34 32 30 30 30 52 00 01 00 00 1F 08 56 47 68 70 63 77 3D 3D 02 0B 00 "
-  "02 30 5A 00 07 00 01 00",
-  #{command_id => <<"submit_sm">>,command_length => 108,
+  "35 32 34 32 30 30 30 52 00 01 00 03 1F 04 54 68 69 73 02 0B 00 02 30 5A 00 "
+  "07 00 01 00",
+  #{command_id => <<"submit_sm">>,command_length => 104,
     command_status => <<"ESME_ROK">>,
-    data_coding => <<"MC Specific">>,
+    data_coding => <<"Latin 1 (ISO-8859-1)">>,
     dest_addr_npi => <<"Data (X.121)">>,
     dest_addr_ton => <<"National">>,dest_bearer_type => 0,
     dest_port => 12378,destination_addr => <<"192.1.1.10">>,
@@ -1194,13 +1192,12 @@ schema() ->
     source_addr_ton => <<"Unknown">>,
     validity_period => <<"990922155242000R">>}},
  {"submit_sm_protocol_id_52_issue_65",
-  "00 00 00 4C 00 00 00 04 00 00 00 00 00 00 00 01 00 01 01 34 31 30 33 37 00 "
-  "01 01 30 37 39 34 36 35 30 31 31 35 00 00 34 00 00 00 11 00 00 00 1C 64 47 "
-  "56 7A 64 43 42 7A 64 32 6C 7A 63 32 4E 76 62 53 41 6F 55 30 31 51 55 43 6B "
-  "3D",
-  #{command_id => <<"submit_sm">>,command_length => 76,
+  "00 00 00 44 00 00 00 04 00 00 00 00 00 00 00 01 00 01 01 34 31 30 33 37 00 "
+  "01 01 30 37 39 34 36 35 30 31 31 35 00 00 34 00 00 00 11 00 03 00 14 74 65 "
+  "73 74 20 73 77 69 73 73 63 6F 6D 20 28 53 4D 50 50 29",
+  #{command_id => <<"submit_sm">>,command_length => 68,
     command_status => <<"ESME_ROK">>,
-    data_coding => <<"MC Specific">>,
+    data_coding => <<"Latin 1 (ISO-8859-1)">>,
     dest_addr_npi => <<"ISDN (E163/E164)">>,
     dest_addr_ton => <<"International">>,
     destination_addr => <<"0794650115">>,esm_class => 0,
@@ -1308,7 +1305,7 @@ packunpack_test_() ->
      [{T, fun() ->
             Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(L, " ")]),
             SMPP = unpack_map(Bin),
-            E1 = decode_msg(to_enum(internal2json(SMPP))),
+            E1 = to_enum(internal2json(decode_msg(SMPP))),
             if E /= E1 ->
                     ?debugFmt("~n~s~nExpected : ~p~n"
                                 "Got      : ~p", [T, E, E1]);
@@ -1543,9 +1540,9 @@ encod_msg_test() ->
                             <<"Abc₭"/utf8>>, utf8, utf16
                         ))}},
              {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
-                         short_message => "Test"},
+                          short_message => base64:encode_to_string("Test")},
                 #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
-                  short_message => base64:encode_to_string("Test")}}
+                  short_message => "Test"}}
             ]
         ]
     }.
