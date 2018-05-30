@@ -229,15 +229,14 @@ encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
     encode_msg(enc(EncodingScheme), Msg);
 encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
-encode_msg(EncodingScheme, Msg) when is_list(Msg) ->
-    MsgBin =
-    case catch list_to_binary(Msg) of
-        MBin when is_binary(MBin) -> MBin;
-        _ -> unicode:characters_to_binary(Msg)
-    end,
-    encode_msg(EncodingScheme, MsgBin);
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> ucs2_encoding(Msg);
-encode_msg(_, Msg) -> base64:decode(Msg).
+encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    encode_msg(EncodingScheme, binary_to_list(Msg));
+encode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        fase -> base64:decode(Msg)
+    end.
 
 decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
     Pdu#{<<"short_message">> => decode_msg(EncodingScheme, Msg)};
@@ -247,12 +246,16 @@ decode_msg(Pdu) -> Pdu.
 
 decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
     decode_msg(enc(EncodingScheme), Msg);
-decode_msg(EncodingScheme, Msg) when is_list(Msg) ->
-    decode_msg(EncodingScheme, list_to_binary(Msg));
 decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
 decode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> Msg;
 decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> Msg;
-decode_msg(_, Msg) -> base64:encode(Msg).
+decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    decode_msg(EncodingScheme, binary_to_list(Msg));
+decode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        fase -> base64:encode(Msg)
+    end.
 
 ucs2_encoding(Msg) when is_binary(Msg) ->
     ucs2_encoding(unicode:characters_to_list(Msg, unicode));

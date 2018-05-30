@@ -204,7 +204,7 @@ encode_msg_test() ->
                             <<"Abc₭"/utf8>>, utf8, utf16
                         )}},
              {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
-                          short_message => base64:encode("Test")},
+                          short_message => <<"Test">>},
                 #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
                   short_message => <<"Test">>}}
             ]
@@ -228,7 +228,7 @@ decode_msg_test() ->
              {"base64", #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC,
                           short_message => <<"Test">>},
                 #{data_coding => ?ENCODING_SCHEME_MC_SPECIFIC, 
-                  short_message => base64:encode("Test")}}
+                  short_message => <<"Test">>}}
             ]
         ]
     }.
