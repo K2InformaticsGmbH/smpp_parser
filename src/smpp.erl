@@ -286,10 +286,9 @@ ucs2_to_utf16_cp([], Result) -> lists:reverse(Result);
 ucs2_to_utf16_cp([A,B|Rest], Result) when A >= 16#D8, A =< 16#DF ->
     ucs2_to_utf16_cp(
       Rest, lists:reverse(
-              lists:flatten(
-                [$\\, $u,
-                 io_lib:format("~2.16.0B~2.16.0B", [A,B])]
-               )) ++ Result);
+                lists:flatten(
+                    [io_lib:format("\\u~2.16.0B~2.16.0B", [A,B])]
+                )) ++ Result);
 ucs2_to_utf16_cp([A,B|Rest], Result) ->
     ucs2_to_utf16_cp(Rest, [(A bsl 8) + B | Result]).
 

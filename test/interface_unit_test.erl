@@ -190,25 +190,26 @@ schema_test() ->
 
 encode_msg_test_() ->
     {inparallel,
-        [{Title, ?_assertEqual(Result, smpp:encode_msg(SubmitSm))}
-         || {Title, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST
+        [{T, ?_assertEqual(Result, smpp:encode_msg(SubmitSm))}
+         || {T, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST
         ]
     }.
 
 decode_msg_test_() ->
     {inparallel,
-        [{Title, ?_assertEqual(Result, smpp:decode_msg(SubmitSm))}
-         || {Title, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST
+        [{T, ?_assertEqual(Result, smpp:decode_msg(SubmitSm))}
+         || {T, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST
         ]
     }.
 
 emoji_test_() ->
     {inparallel,
-        [{Title, fun() ->
+        [{T, 
+            fun() ->
                 {ok, Encoded} = smpp:encode(smpp:encode_msg(SubmitSm)),
                 {ok, Decoded} = smpp:decode(Encoded),
                 ?assertEqual(Target, smpp:decode_msg(Decoded))
-            end}
-         || {Title, SubmitSm, Target} <- ?EMOJI_TEST
+            end
+         } || {T, SubmitSm, Target} <- ?EMOJI_TEST
         ]
     }.

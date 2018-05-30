@@ -680,8 +680,7 @@
         replace_if_present_flag => 0,schedule_delivery_time => <<>>,
         sequence_number => 0,service_type => <<>>,
         short_message => <<"🙂🙃🙄🙅🙆🙇🙈🙉🙊🙋🙌🙍🙎🙏"/utf8>>,
-        sm_default_msg_id => 0,
-        source_addr => <<>>,
+        sm_default_msg_id => 0, source_addr => <<>>,
         source_addr_npi => <<"ISDN (E163/E164)">>,
         source_addr_ton => <<"International">>,
         validity_period => <<>>},
@@ -695,11 +694,14 @@
         replace_if_present_flag => 0,schedule_delivery_time => <<>>,
         sequence_number => 0,service_type => <<>>,
         short_message =>
-            <<"\\uD83D\\uDE42\\uD83D\\uDE43\\uD83D\\uDE44\\uD83D\\uDE45\\uD83D\\uDE46\\uD83D\\uDE47\\uD83D\\uDE48\\uD83D\\uDE49\\uD83D\\uDE4A\\uD83D\\uDE4B\\uD83D\\uDE4C\\uD83D\\uDE4D\\uD83D\\uDE4E\\uD83D\\uDE4F">>,
+            <<"\\uD83D\\uDE42\\uD83D\\uDE43\\uD83D\\uDE44\\uD83D\\uDE45\\uD83D"
+              "\\uDE46\\uD83D\\uDE47\\uD83D\\uDE48\\uD83D\\uDE49\\uD83D\\uDE4A"
+              "\\uD83D\\uDE4B\\uD83D\\uDE4C\\uD83D\\uDE4D\\uD83D\\uDE4E\\uD83D"
+              "\\uDE4F">>,
         sm_default_msg_id => 0,source_addr => <<>>,
         source_addr_npi => <<"ISDN (E163/E164)">>,
-        source_addr_ton => <<"International">>,
-        validity_period => <<>>}}
+        source_addr_ton => <<"International">>, validity_period => <<>>}
+   }
   ]).
 
 -endif. % _TESTS_HRL_
