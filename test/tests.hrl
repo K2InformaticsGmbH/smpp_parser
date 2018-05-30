@@ -687,7 +687,7 @@
     [{"empty", 
       #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1},
       #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_LATIN_1}},
-     {"emty_ucs2", 
+     {"empty_ucs2", 
       #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2},
       #{short_message => <<>>, data_coding => ?ENCODING_SCHEME_UCS2}},
      {"ucs2_bigger_eur", 

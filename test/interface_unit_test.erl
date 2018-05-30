@@ -179,27 +179,20 @@ vendor_tlv_test_() ->
                             #{len => 1,tag => 5122,val => <<5>>}]
                   }
                 }
-
             ]
         ]
     }.
 
-schema_test() ->
-    #{schema := Schema} = smpp:info(),
-    ?assertEqual(true, is_binary(jsx:encode(Schema))).
-
 encode_msg_test_() ->
     {inparallel,
         [{T, ?_assertEqual(Result, smpp:encode_msg(SubmitSm))}
-         || {T, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST
-        ]
+        || {T, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST]
     }.
 
 decode_msg_test_() ->
     {inparallel,
         [{T, ?_assertEqual(Result, smpp:decode_msg(SubmitSm))}
-         || {T, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST
-        ]
+        || {T, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST]
     }.
 
 emoji_test_() ->
@@ -210,6 +203,10 @@ emoji_test_() ->
                 {ok, Decoded} = smpp:decode(Encoded),
                 ?assertEqual(Target, smpp:decode_msg(Decoded))
             end
-         } || {T, SubmitSm, Target} <- ?EMOJI_TEST
-        ]
+         }
+        || {T, SubmitSm, Target} <- ?EMOJI_TEST]
     }.
+
+schema_test() ->
+    #{schema := Schema} = smpp:info(),
+    ?assertEqual(true, is_binary(jsx:encode(Schema))).
