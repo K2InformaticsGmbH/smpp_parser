@@ -1,5 +1,6 @@
 -module(interface_unit_test).
 -include_lib("eunit/include/eunit.hrl").
+-include("../src/smpp_globals.hrl").
 
 -include("tests.hrl").
 
@@ -52,6 +53,11 @@ encode_decode_test_() ->
         [{T,
             fun() ->
                 {ok, D} = smpp:decode(P),
+                if D /= Ex ->
+                    ?debugFmt("~n~s~nExpected : ~p~n"
+                                "Got      : ~p", [T, Ex, D]);
+                    true -> ok
+                end,
                 ?assertEqual(Ex, D),
                 ?assertEqual(true, is_map(D)),
                 ?assertEqual({ok, D}, smpp:decode(re:replace(P,"\s","",[global,{return,list}]))),
@@ -173,9 +179,32 @@ vendor_tlv_test_() ->
                             #{len => 1,tag => 5122,val => <<5>>}]
                   }
                 }
-
             ]
         ]
+    }.
+
+encode_msg_test_() ->
+    {inparallel,
+        [{T, ?_assertEqual(Result, smpp:encode_msg(SubmitSm))}
+        || {T, SubmitSm, Result} <- ?ENOCDE_MSG_DECODE_MSG_TEST]
+    }.
+
+decode_msg_test_() ->
+    {inparallel,
+        [{T, ?_assertEqual(Result, smpp:decode_msg(SubmitSm))}
+        || {T, Result, SubmitSm} <- ?ENOCDE_MSG_DECODE_MSG_TEST]
+    }.
+
+emoji_test_() ->
+    {inparallel,
+        [{T, 
+            fun() ->
+                {ok, Encoded} = smpp:encode(smpp:encode_msg(SubmitSm)),
+                {ok, Decoded} = smpp:decode(Encoded),
+                ?assertEqual(Target, smpp:decode_msg(Decoded))
+            end
+         }
+        || {T, SubmitSm, Target} <- ?EMOJI_TEST]
     }.
 
 schema_test() ->
