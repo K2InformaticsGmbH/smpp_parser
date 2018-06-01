@@ -169,10 +169,13 @@ rec_info(dest_address_sme) ->
     record_info(fields, dest_address_sme);
 rec_info(dest_address_dl) ->
     record_info(fields, dest_address_dl);
+rec_info(dest_subaddress) ->
+    record_info(fields, subaddress);
 rec_info(Type) ->
     io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
+rec_type(dest_subaddress) -> subaddress;
 rec_type(ms_validity) -> ms_validity_absolute;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
@@ -547,6 +550,7 @@ b2a(<<"command_status">>) -> command_status;
 b2a(<<"its_reply_type">>) -> its_reply_type;
 b2a(<<"command_length">>) -> command_length;
 b2a(<<"message_payload">>) -> message_payload;
+b2a(<<"dest_subaddress">>) -> dest_subaddress;
 b2a(<<"sequence_number">>) -> sequence_number;
 b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;

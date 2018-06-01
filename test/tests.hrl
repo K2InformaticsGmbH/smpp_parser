@@ -785,7 +785,25 @@
    #{additional_status_info_text => <<"my_additional_status_info_text">>,
      command_id => <<"data_sm_resp">>,command_length => 83,
      command_status => <<"ESME_ROK">>,dpf_result => 0, sequence_number => 1,
-     message_id => <<"this_could_be_a_message_id">>}}
+     message_id => <<"this_could_be_a_message_id">>}},
+  {"submit_sm_#95",
+   "00 00 00 79 00 00 00 04 00 00 00 00 00 00 00 01 00 02 06 31 36 38 2E 31 "
+   "32 33 2E 32 33 34 2E 33 32 31 00 01 00 31 36 38 2E 31 32 33 2E 32 33 34 "
+   "2E 33 32 31 00 80 1F 04 39 39 30 36 32 35 31 38 35 35 34 35 30 30 30 2B "
+   "00 39 39 30 38 32 33 31 36 35 33 34 33 30 30 30 52 00 04 00 07 0F 04 54 "
+   "68 69 73 02 03 00 12 A0 75 73 65 72 5F 73 70 65 63 69 66 69 65 64 5F 35 "
+   "35",
+   #{command_id => <<"submit_sm">>,command_length => 121,
+     command_status => <<"ESME_ROK">>, replace_if_present_flag => 0,
+     data_coding => <<"Latin/Hebrew (ISO-8859-8)">>,
+     dest_addr_npi => <<"Unknown">>, dest_addr_ton => <<"International">>,
+     dest_subaddress => #{a => 1}, destination_addr => <<"168.123.234.321">>,
+     esm_class => 128, priority_flag => 4, protocol_id => 31,
+     registered_delivery => 4, source_addr_npi => <<"Land Mobile (E.212)">>,
+     schedule_delivery_time => <<"990625185545000+">>, sequence_number => 1,
+     service_type => <<>>, short_message => <<"This">>,sm_default_msg_id => 15,
+     source_addr => <<"168.123.234.321">>, source_addr_ton => <<"National">>,
+     validity_period => <<"990823165343000R">>}}
 ]).
 
 -define(TESTS2,
