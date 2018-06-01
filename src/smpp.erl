@@ -171,6 +171,8 @@ rec_info(dest_address_dl) ->
     record_info(fields, dest_address_dl);
 rec_info(dest_subaddress) ->
     record_info(fields, subaddress);
+rec_info(subaddress) ->
+    record_info(fields, subaddress);
 rec_info(Type) ->
     io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
@@ -505,6 +507,7 @@ b2a(<<"tag">>) -> tag;
 b2a(<<"val">>) -> val;
 b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"type">>) -> type;
+b2a(<<"data">>) -> data;
 b2a(<<"error">>) -> error;
 b2a(<<"format">>) -> format;
 b2a(<<"number">>) -> number;

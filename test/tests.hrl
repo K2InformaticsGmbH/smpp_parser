@@ -797,11 +797,12 @@
      command_status => <<"ESME_ROK">>, replace_if_present_flag => 0,
      data_coding => <<"Latin/Hebrew (ISO-8859-8)">>,
      dest_addr_npi => <<"Unknown">>, dest_addr_ton => <<"International">>,
-     dest_subaddress => #{a => 1}, destination_addr => <<"168.123.234.321">>,
-     esm_class => 128, priority_flag => 4, protocol_id => 31,
-     registered_delivery => 4, source_addr_npi => <<"Land Mobile (E.212)">>,
-     schedule_delivery_time => <<"990625185545000+">>, sequence_number => 1,
-     service_type => <<>>, short_message => <<"This">>,sm_default_msg_id => 15,
+     dest_subaddress => #{data => "user_specified_55",tag => 160},
+     destination_addr => <<"168.123.234.321">>, esm_class => 128,
+     priority_flag => 4, protocol_id => 31, registered_delivery => 4,
+     source_addr_npi => <<"Land Mobile (E.212)">>, sequence_number => 1,
+     schedule_delivery_time => <<"990625185545000+">>, sm_default_msg_id => 15,
+     service_type => <<>>, short_message => <<"This">>,
      source_addr => <<"168.123.234.321">>, source_addr_ton => <<"National">>,
      validity_period => <<"990823165343000R">>}}
 ]).
