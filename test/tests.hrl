@@ -819,7 +819,34 @@
      unsuccess_sme => [
       #{dest_addr_npi => 3,dest_addr_ton => 5, error_status_code => 255,
         destination_addr => <<"127.0.0.1">>}
-     ]}}
+     ]}},
+  {"submit_multi_#93",
+   "00 00 00 AD 00 00 00 21 00 00 00 00 00 00 00 01 43 42 53 00 01 06 31 39 "
+   "32 2E 31 36 38 2E 31 2E 31 00 04 01 03 04 31 39 32 2E 31 36 38 2E 31 2E "
+   "31 00 02 64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 73 74 5F 23 34 00 02 "
+   "64 69 73 74 72 69 62 75 74 69 6F 6E 5F 6C 73 74 5F 23 32 00 01 06 00 31 "
+   "39 32 2E 31 2E 31 2E 31 30 00 01 44 03 39 39 30 31 30 31 30 30 30 30 30 "
+   "30 30 30 30 52 00 39 39 30 32 30 31 30 30 30 30 30 30 30 30 30 52 00 10 "
+   "00 7F 02 0F 54 68 69 73 20 69 73 20 61 20 73 68 6F 72 74 03 02 00 01 00 "
+   "05 01 00 01 13",
+   #{callback_num_pres_ind => <<0>>, command_id => <<"submit_multi">>,
+     command_length => 173, command_status => <<"ESME_ROK">>,
+     data_coding => <<"127">>, dest_address => [
+        #{dest_addr_npi => 4,dest_addr_ton => 3,dest_flag => 1,
+          destination_addr => <<"192.168.1.1">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#4">>},
+        #{dest_flag => 2,dl_name => <<"distribution_lst_#2">>},
+        #{dest_addr_npi => 0,dest_addr_ton => 6,dest_flag => 1,
+          destination_addr => <<"192.1.1.10">>}
+     ],
+     esm_class => 1,priority_flag => 3,protocol_id => 68,
+     registered_delivery => 16,replace_if_present_flag => 0,
+     schedule_delivery_time => <<"990101000000000R">>,
+     sequence_number => 1,service_type => <<"CBS">>,sm_default_msg_id => 2,
+     short_message => <<"This is a short">>, source_addr => <<"192.168.1.1">>,
+     source_addr_npi => <<"Land Mobile (E.212)">>,
+     source_addr_ton => <<"International">>,ussd_service_op => 19,
+     validity_period => <<"990201000000000R">>}}
 ]).
 
 -define(TESTS2,
