@@ -169,10 +169,15 @@ rec_info(dest_address_sme) ->
     record_info(fields, dest_address_sme);
 rec_info(dest_address_dl) ->
     record_info(fields, dest_address_dl);
+rec_info(dest_subaddress) ->
+    record_info(fields, subaddress);
+rec_info(subaddress) ->
+    record_info(fields, subaddress);
 rec_info(Type) ->
     io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
+rec_type(dest_subaddress) -> subaddress;
 rec_type(ms_validity) -> ms_validity_absolute;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
@@ -502,6 +507,7 @@ b2a(<<"tag">>) -> tag;
 b2a(<<"val">>) -> val;
 b2a(<<"tlvs">>) -> tlvs;
 b2a(<<"type">>) -> type;
+b2a(<<"data">>) -> data;
 b2a(<<"error">>) -> error;
 b2a(<<"format">>) -> format;
 b2a(<<"number">>) -> number;
@@ -546,21 +552,27 @@ b2a(<<"unsuccess_sme">>) -> unsuccess_sme;
 b2a(<<"command_status">>) -> command_status;
 b2a(<<"its_reply_type">>) -> its_reply_type;
 b2a(<<"command_length">>) -> command_length;
+b2a(<<"session_number">>) -> session_number;
 b2a(<<"message_payload">>) -> message_payload;
+b2a(<<"dest_subaddress">>) -> dest_subaddress;
 b2a(<<"sequence_number">>) -> sequence_number;
 b2a(<<"source_addr_npi">>) -> source_addr_npi;
 b2a(<<"source_addr_ton">>) -> source_addr_ton;
 b2a(<<"validity_period">>) -> validity_period;
 b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
 b2a(<<"dest_network_id">>) -> dest_network_id;
+b2a(<<"ussd_service_op">>) -> ussd_service_op;
 b2a(<<"destination_addr">>) -> destination_addr;
 b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
+b2a(<<"its_session_info">>) -> its_session_info;
+b2a(<<"error_status_code">>) -> error_status_code;
 b2a(<<"dest_network_type">>) -> dest_network_type;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"broadcast_rep_num">>) -> broadcast_rep_num;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"callback_num_atag">>) -> callback_num_atag;
+b2a(<<"broadcast_end_time">>) -> broadcast_end_time;
 b2a(<<"display_characters">>) -> display_characters;
 b2a(<<"number_of_messages">>) -> number_of_messages;
 b2a(<<"dest_telematics_id">>) -> dest_telematics_id;
@@ -569,6 +581,7 @@ b2a(<<"network_error_code">>) -> network_error_code;
 b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
+b2a(<<"source_addr_subunit">>) -> source_addr_subunit;
 b2a(<<"registered_delivery">>) -> registered_delivery;
 b2a(<<"digit_mode_indicator">>) -> digit_mode_indicator;
 b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
