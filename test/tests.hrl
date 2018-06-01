@@ -894,7 +894,20 @@
                         "This is a short message8 This is a short message9 "
                         "This is a short messageA This is a short messageB "
                         "End">>,
-     source_addr_subunit => 3, validity_period => <<"990922155242000R">>}}
+     source_addr_subunit => 3, validity_period => <<"990922155242000R">>}},
+  {"data_sm_#90",
+   "00 00 00 46 00 00 01 03 00 00 00 00 00 00 00 01 47 55 54 53 00 04 03 31 "
+   "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 01 09 31 36 38 2E 31 32 33 "
+   "2E 32 33 34 2E 33 32 31 00 10 04 02 03 02 00 01 00 05 01 00 01 13",
+   #{callback_num_pres_ind => <<0>>, command_id => <<"data_sm">>,
+     command_length => 70, command_status => <<"ESME_ROK">>,
+     data_coding => <<"Octet unspecified (8-bit binary)">>,
+     dest_addr_npi => <<"Private">>, dest_addr_ton => <<"International">>,
+     destination_addr => <<"168.123.234.321">>, esm_class => 16,
+     registered_delivery => 4,sequence_number => 1, service_type => <<"GUTS">>,
+     source_addr => <<"168.123.234.321">>, ussd_service_op => 19,
+     source_addr_npi => <<"Data (X.121)">>,
+     source_addr_ton => <<"Subscriber Number">>}}
 ]).
 
 -define(TESTS2,
