@@ -919,7 +919,27 @@
         #{details => <<"my_failed_broadcast_area_identifier_00009">>,
           format => 0}
      ],
-     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}}
+     message_id => <<"this_could_be_a_message_id">>, sequence_number => 1}},
+  {"broadcast_sm_#88",
+   "00 00 00 99 00 00 01 11 00 00 00 00 00 00 00 01 00 01 08 31 36 38 2E 30 "
+   "2E 30 2E 31 00 74 68 69 73 5F 63 6F 75 6C 64 5F 62 65 5F 61 5F 6D 65 73 "
+   "73 61 67 65 5F 69 64 00 04 39 39 30 38 32 33 31 36 35 33 34 33 30 30 30 "
+   "52 00 39 39 30 39 32 32 31 35 35 32 34 32 30 30 30 52 00 01 FF 03 06 06 "
+   "00 23 01 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 64 65 "
+   "6E 74 69 66 69 65 72 5F 30 30 30 31 30 06 01 00 03 00 01 00 06 04 00 02 "
+   "00 00 06 05 00 03 0D 00 03",
+   #{broadcast_area_identifier => [
+      #{details => <<"my_broadcast_area_identifier_00010">>, format => 1}],
+     broadcast_content_type => #{network_type => 0,service => 256},
+     broadcast_frequency_interval => #{number => 3,time_unit => 13},
+     broadcast_rep_num => 0,command_id => <<"broadcast_sm">>,
+     command_length => 153,command_status => <<"ESME_ROK">>,
+     data_coding => <<"255">>, message_id => <<"this_could_be_a_message_id">>,
+     priority_flag => 4,replace_if_present_flag => 1,sm_default_msg_id => 3,
+     schedule_delivery_time => <<"990823165343000R">>, sequence_number => 1,
+     service_type => <<>>, source_addr => <<"168.0.0.1">>,
+     source_addr_npi => <<"National">>, source_addr_ton => <<"International">>,
+     validity_period => <<"990922155242000R">>}}
 ]).
 
 -define(TESTS2,
