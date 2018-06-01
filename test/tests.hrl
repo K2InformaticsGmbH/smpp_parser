@@ -846,7 +846,20 @@
      short_message => <<"This is a short">>, source_addr => <<"192.168.1.1">>,
      source_addr_npi => <<"Land Mobile (E.212)">>,
      source_addr_ton => <<"International">>,ussd_service_op => 19,
-     validity_period => <<"990201000000000R">>}}
+     validity_period => <<"990201000000000R">>}},
+  {"query_broadcast_sm_resp_#92",
+   "00 00 00 77 80 00 01 12 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 27 00 01 04 "
+   "06 06 00 23 02 6D 79 5F 62 72 6F 61 64 63 61 73 74 5F 61 72 65 61 5F 69 "
+   "64 65 6E 74 69 66 69 65 72 5F 30 30 30 31 33 06 08 00 01 3D 02 04 00 02 "
+   "65 0F 06 09 00 11 39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00",
+   #{broadcast_area_identifier => [
+      #{details => <<"my_broadcast_area_identifier_00013">>, format => 2}],
+     broadcast_area_success => "=", command_status => <<"ESME_ROK">>,
+     broadcast_end_time => <<"991021145141448+">>,
+     command_id => <<"query_broadcast_sm_resp">>, sequence_number => 1,
+     command_length => 119, message_id => <<"this_could_be_a_message_id">>,
+     message_state => <<"DELETED">>, user_message_reference => 25871}}
 ]).
 
 -define(TESTS2,

@@ -570,6 +570,7 @@ b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"broadcast_rep_num">>) -> broadcast_rep_num;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"callback_num_atag">>) -> callback_num_atag;
+b2a(<<"broadcast_end_time">>) -> broadcast_end_time;
 b2a(<<"display_characters">>) -> display_characters;
 b2a(<<"number_of_messages">>) -> number_of_messages;
 b2a(<<"dest_telematics_id">>) -> dest_telematics_id;
