@@ -562,6 +562,7 @@ b2a(<<"sar_msg_ref_num">>) -> sar_msg_ref_num;
 b2a(<<"dest_network_id">>) -> dest_network_id;
 b2a(<<"destination_addr">>) -> destination_addr;
 b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
+b2a(<<"error_status_code">>) -> error_status_code;
 b2a(<<"dest_network_type">>) -> dest_network_type;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
 b2a(<<"interface_version">>) -> interface_version;

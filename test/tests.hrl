@@ -804,7 +804,22 @@
      schedule_delivery_time => <<"990625185545000+">>, sm_default_msg_id => 15,
      service_type => <<>>, short_message => <<"This">>,
      source_addr => <<"168.123.234.321">>, source_addr_ton => <<"National">>,
-     validity_period => <<"990823165343000R">>}}
+     validity_period => <<"990823165343000R">>}},
+  {"submit_multi_resp_#94",
+   "00 00 00 66 80 00 00 21 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 01 05 03 31 32 "
+   "37 2E 30 2E 30 2E 31 00 00 00 00 FF 00 1D 00 1F 6D 79 5F 61 64 64 69 74 "
+   "69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 78 74 00 04 "
+   "23 00 03 05 32 33",
+   #{additional_status_info_text => <<"my_additional_status_info_text">>,
+     command_id => <<"submit_multi_resp">>, command_length => 102,
+     command_status => <<"ESME_ROK">>, sequence_number => 1,
+     message_id => <<"this_could_be_a_message_id">>,
+     network_error_code => #{error => 12851,type => 5},
+     unsuccess_sme => [
+      #{dest_addr_npi => 3,dest_addr_ton => 5, error_status_code => 255,
+        destination_addr => <<"127.0.0.1">>}
+     ]}}
 ]).
 
 -define(TESTS2,
