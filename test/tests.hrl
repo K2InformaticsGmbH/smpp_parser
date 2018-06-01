@@ -767,7 +767,7 @@
      command_id => <<"submit_sm_resp">>,command_length => 83,
      command_status => <<"ESME_ROK">>,dpf_result => 0, sequence_number => 1,
      message_id => <<"this_could_be_a_message_id">>}},
-  {"submit_sm_resp_#97",
+  {"deliver_sm_resp_#97",
    "00 00 00 55 80 00 00 05 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
    "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D "
    "79 5F 61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F "
