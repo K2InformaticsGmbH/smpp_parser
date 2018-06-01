@@ -854,12 +854,47 @@
    "64 65 6E 74 69 66 69 65 72 5F 30 30 30 31 33 06 08 00 01 3D 02 04 00 02 "
    "65 0F 06 09 00 11 39 39 31 30 32 31 31 34 35 31 34 31 34 34 38 2B 00",
    #{broadcast_area_identifier => [
-      #{details => <<"my_broadcast_area_identifier_00013">>, format => 2}],
+      #{details => <<"my_broadcast_area_identifier_00013">>, format => 2}
+     ],
      broadcast_area_success => "=", command_status => <<"ESME_ROK">>,
      broadcast_end_time => <<"991021145141448+">>,
      command_id => <<"query_broadcast_sm_resp">>, sequence_number => 1,
      command_length => 119, message_id => <<"this_could_be_a_message_id">>,
-     message_state => <<"DELETED">>, user_message_reference => 25871}}
+     message_state => <<"DELETED">>, user_message_reference => 25871}},
+  {"deliver_sm_#91",
+   "00 00 01 5D 00 00 00 05 00 00 00 00 00 00 00 01 00 02 00 31 32 37 2E 30 "
+   "2E 30 2E 31 00 04 12 31 32 37 2E 30 2E 30 2E 31 00 18 44 01 39 39 30 39 "
+   "32 32 31 35 35 32 34 32 30 30 30 52 00 39 39 30 39 32 32 31 35 35 32 34 "
+   "32 30 30 30 52 00 0C 01 01 1F FF 31 20 54 68 69 73 20 69 73 20 61 20 73 "
+   "68 6F 72 74 20 6D 65 73 73 61 67 65 32 20 54 68 69 73 20 69 73 20 61 20 "
+   "73 68 6F 72 74 20 6D 65 73 73 61 67 65 33 20 54 68 69 73 20 69 73 20 61 "
+   "20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 34 20 54 68 69 73 20 69 73 20 "
+   "61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 35 20 54 68 69 73 20 69 73 "
+   "20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 36 20 54 68 69 73 20 69 "
+   "73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 37 20 54 68 69 73 20 "
+   "69 73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 38 20 54 68 69 73 "
+   "20 69 73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 39 20 54 68 69 "
+   "73 20 69 73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 41 20 54 68 "
+   "69 73 20 69 73 20 61 20 73 68 6F 72 74 20 6D 65 73 73 61 67 65 42 20 45 "
+   "6E 64 00 0D 00 01 03 13 83 00 02 C8 7A",
+   #{command_id => <<"deliver_sm">>, command_length => 349,
+     command_status => <<"ESME_ROK">>,source_addr => <<"127.0.0.1">>,
+     data_coding => <<"IA5 (CCITT T.50)/ASCII (ANSI X3.4)">>,
+     dest_addr_npi => <<"WAP Client Id">>, source_addr_npi => <<"Unknown">>,
+     dest_addr_ton => <<"Subscriber Number">>, sm_default_msg_id => 31,
+     destination_addr => <<"127.0.0.1">>,esm_class => 24,
+     its_session_info => #{sequence_number => 122,session_number => 200},
+     priority_flag => 1,protocol_id => 68,registered_delivery => 12,
+     replace_if_present_flag => 1, source_addr_ton => <<"National">>,
+     schedule_delivery_time => <<"990922155242000R">>, sequence_number => 1,
+     service_type => <<>>,
+     short_message => <<"1 This is a short message2 This is a short message3 "
+                        "This is a short message4 This is a short message5 "
+                        "This is a short message6 This is a short message7 "
+                        "This is a short message8 This is a short message9 "
+                        "This is a short messageA This is a short messageB "
+                        "End">>,
+     source_addr_subunit => 3, validity_period => <<"990922155242000R">>}}
 ]).
 
 -define(TESTS2,
