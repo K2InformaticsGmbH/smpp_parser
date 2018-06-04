@@ -810,7 +810,10 @@ info() ->
 -include("smpp_pdu.hrl").
 
 -define(BINLIST(__R,__T,__F),
-        [atom_to_binary(N, utf8) || #__R{name = N} <- ?__T#pdu.__F]).
+    (fun(_T) ->
+        [atom_to_binary(N, utf8) || #__R{name = N} <- _T#pdu.__F]
+     end)(?__T)
+).
 -define(SPEC(__T),
     #{props => ?BINLIST(standard,__T,std_types),
       tlvs  => ?BINLIST(tlv,__T,tlv_types),
