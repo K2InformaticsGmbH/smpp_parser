@@ -4255,10 +4255,12 @@ create_unsuccess(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
 file_create_ct_all(_CompactedDetailed, []) ->
     ok;
 file_create_ct_all(CompactedDetailed, [Rule | Rules]) ->
-    file_create_ct(CompactedDetailed, Rule),
+    file_create_ct(CompactedDetailed, Rule, ?FUNCTIONS),
     file_create_ct_all(CompactedDetailed, Rules).
 
-file_create_ct(CompactedDetailed, Rule) ->
+file_create_ct(_CompactedDetailed, _Rule, []) ->
+    ok;
+file_create_ct(CompactedDetailed, Rule, [Function | Tail]) ->
     [{Rule, Code}] = ets:lookup(?CODE_TEMPLATES, Rule),
 
     CodeLength = length(Code),
@@ -4270,6 +4272,8 @@ file_create_ct(CompactedDetailed, Rule) ->
         CompactedDetailed,
         "_",
         RuleString,
+        "_",
+        atom_to_list(Function),
         "_SUITE"
     ]),
     {ok, File, _} = file:path_open([?PATH_CT], FileName ++ ".erl", [write]),
@@ -4285,7 +4289,8 @@ file_create_ct(CompactedDetailed, Rule) ->
     io:format(File, "~s~n",
         [lists:append(["%%% File        : ", FileName, ".erl"])]),
     io:format(File, "~s~n", [lists:append(
-        ["%%% Description : Test Suite for command: ", RuleString, "."])]),
+        ["%%% Description : Test Suite for command: ", RuleString, " and function: ", atom_to_list(
+            Function), "."])]),
     io:format(File, "~s~n", ["%%%"]),
     io:format(File, "~s~n", ["%%% Created     : " ++ lists:flatten(
         io_lib:format("~2..0w.~2..0w.~4..0w",
@@ -4306,7 +4311,7 @@ file_create_ct(CompactedDetailed, Rule) ->
                 "compacted" ->
                     io:format(File, "~s~n",
                         [lists:append(["    test_compacted/1"])]);
-                _ -> file_write_ct_export(1, File, CodeLength)
+                _ -> file_write_ct_export(1, File, CodeLength, Function)
             end
     end,
 
@@ -4349,7 +4354,7 @@ file_create_ct(CompactedDetailed, Rule) ->
                  "compacted" ->
                      io:format(File, "~s~n",
                          [lists:append(["        test_compacted"])]);
-                 _ -> file_write_ct_all(1, File, CodeLength)
+                 _ -> file_write_ct_all(1, File, CodeLength, Function)
              end
     end,
 
@@ -4370,53 +4375,44 @@ file_create_ct(CompactedDetailed, Rule) ->
                          [lists:append(["test_compacted(_Config) ->"])]);
                  _ -> ok
              end,
-            file_write_ct(1, CompactedDetailed, File, Code)
-    end.
+            file_write_ct(1, CompactedDetailed, File, Function, Code)
+    end,
+    file_create_ct(CompactedDetailed, Rule, Tail).
 
-file_write_ct(_Current, CompactedDetailed, File, []) ->
+file_write_ct(_Current, CompactedDetailed, File, _Function, []) ->
     case CompactedDetailed of
         "compacted" -> io:format(File, "~s~n", ["    ok."]);
         _ -> ok
     end,
     file:close(File);
-file_write_ct(Current, CompactedDetailed, File, [{Command, CommandStatus, PDUBody} | T]) ->
-    ok =
-        file_write_ct_test(Current, CompactedDetailed, File,
-            {Command, CommandStatus, PDUBody},
-            ?FUNCTIONS),
-    file_write_ct(Current + 1, CompactedDetailed, File, T).
+file_write_ct(Current, CompactedDetailed, File, Function, [{Command, CommandStatus, PDUBody} | T]) ->
+    ok = file_write_ct_test(Current, CompactedDetailed, File,
+        {Command, CommandStatus, PDUBody}, Function),
+    file_write_ct(Current + 1, CompactedDetailed, File, Function, T).
 
-file_write_ct_all(Current, File, Target)
+file_write_ct_all(Current, File, Target, Function)
     when Current == Target ->
-    [io:format(File, "~s~n", [lists:append(
-        ["        test_", integer_to_list(Current), "_", atom_to_list(F),
-            case F == ?FUNCTIONS_LAST of
-                true -> [];
-                _ -> ","
-            end])]) || F <- ?FUNCTIONS];
-file_write_ct_all(Current, File, Target) ->
-    [io:format(File, "~s~n", [lists:append(
+    io:format(File, "~s~n", [lists:append(
         ["        test_", integer_to_list(Current), "_", atom_to_list(
-            F), ","])]) || F <- ?FUNCTIONS],
-    file_write_ct_all(Current + 1, File, Target).
+            Function)])]);
+file_write_ct_all(Current, File, Target, Function) ->
+    io:format(File, "~s~n", [lists:append(
+        ["        test_", integer_to_list(Current), "_", atom_to_list(
+            Function), ","])]),
+    file_write_ct_all(Current + 1, File, Target, Function).
 
-file_write_ct_export(Current, File, Target)
+file_write_ct_export(Current, File, Target, Function)
     when Current == Target ->
-    [io:format(File, "~s~n", [lists:append(
-        ["    test_", integer_to_list(Current), "_", atom_to_list(F), "/1",
-            case F == ?FUNCTIONS_LAST of
-                true -> [];
-                _ -> ","
-            end])]) || F <- ?FUNCTIONS];
-file_write_ct_export(Current, File, Target) ->
-    [io:format(File, "~s~n", [lists:append(
+    io:format(File, "~s~n", [lists:append(
         ["    test_", integer_to_list(Current), "_", atom_to_list(
-            F), "/1,"])]) || F <- ?FUNCTIONS],
-    file_write_ct_export(Current + 1, File, Target).
+            Function), "/1"])]);
+file_write_ct_export(Current, File, Target, Function) ->
+    io:format(File, "~s~n", [lists:append(
+        ["    test_", integer_to_list(Current), "_", atom_to_list(
+            Function), "/1,"])]),
+    file_write_ct_export(Current + 1, File, Target, Function).
 
-file_write_ct_test(_Current, _CompactedDetailed, _File, _, []) ->
-    ok;
-file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PDUBody}, [Method | Tail]) ->
+file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PDUBody}, Function) ->
     PDU = lists:append([
         "{",
         atom_to_list(Command),
@@ -4435,7 +4431,7 @@ file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PD
             end,
             io:format(File, "~s~n", [lists:append([
                 "    smpp_test_utils:",
-                atom_to_list(Method),
+                atom_to_list(Function),
                 "(",
                 PDU,
                 "),"
@@ -4443,18 +4439,16 @@ file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PD
         _ ->
             io:format(File, "~s~n", [lists:append(
                 ["test_", integer_to_list(Current), "_", atom_to_list(
-                    Method), "(_Config) ->"])]),
+                    Function), "(_Config) ->"])]),
             io:format(File, "~s~n", [lists:append([
                 "    smpp_test_utils:",
-                atom_to_list(Method),
+                atom_to_list(Function),
                 "(",
                 PDU,
                 ")."
             ])]),
             io:format(File, "~s~n", [""])
-    end,
-    file_write_ct_test(Current, CompactedDetailed, File,
-        {Command, CommandStatus, PDUBody}, Tail).
+    end.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Convert an integer into a number of octets.

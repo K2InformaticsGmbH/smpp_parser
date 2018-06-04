@@ -132,9 +132,9 @@
 -define(F_RANDOM, fun(X, Y) -> erlang:phash2(X) < erlang:phash2(Y) end).
 
 -define(FUNCTIONS, [
-    encode_decode,
-    pack_unpack,
-    pack_unpack_map
+    decode_encode_decode,
+    unpack_map_pack,
+    unpack_pack
 ]).
 -define(FUNCTIONS_LAST, lists:last(?FUNCTIONS)).
 
