@@ -23,9 +23,9 @@
 -module(smpp_test_utils).
 
 -export([
-    encode_decode/1,
-    pack_unpack/1,
-    pack_unpack_map/1
+    decode_encode_decode/1,
+    unpack_map_pack/1,
+    unpack_pack/1
 ]).
 
 -define(NODEBUG, true).
@@ -33,29 +33,23 @@
 -include("smpp_parser_generator.hrl").
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Test: smpp:decode & smpp:encode.
+%% Test: smpp:decode & smpp:encode & smpp:decode.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-encode_decode({Command, PDU}) ->
+decode_encode_decode({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
-    {ok, D} = smpp:decode(PDU),
-    ?assertEqual(true, is_map(D)),
-    ?assertEqual({ok, D},
-        smpp:decode(re:replace(PDU, "\s", "", [global, {return, list}]))),
-    ?assertEqual({ok, D},
-        smpp:decode(re:replace(PDU, "\s", "", [global, {return, binary}]))),
-    {ok, E} = smpp:encode(jsx:decode(jsx:encode(D), [return_maps])),
-    ?assertEqual(true, is_binary(E)),
-    ?assertEqual({ok, D}, smpp:decode(E)).
+    {ok, Map1} = smpp:decode(PDU),
+    {ok, PDU2} = smpp:encode(jsx:decode(jsx:encode(Map1), [return_maps])),
+    ?assertEqual({ok, Map1}, smpp:decode(PDU2)).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Test: smpp:pack & smpp:unpack.
+%% Test: smpp:unpack_map & smpp:internal2json & smpp:pack.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-pack_unpack({Command, PDU}) ->
+unpack_map_pack({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(PDU, " ")]),
-    SMPP = lists:foldl(fun smpp:list_to_map/2, #{}, smpp:unpack(Bin)),
+    SMPP = smpp:unpack_map(Bin),
     JSON = smpp:internal2json(SMPP),
     ?D_CT("~s~n~p~n~s~n", [Command, SMPP, jsx:prettify(jsx:encode(JSON))]),
     {ok, NewBin} = smpp:pack(SMPP),
@@ -66,13 +60,13 @@ pack_unpack({Command, PDU}) ->
     ?assertEqual(Bin, NewBin).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Test: smpp:pack & smpp:unpack_map.
+%% Test: smpp:unpack & smpp:internal2json & smpp:pack.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-pack_unpack_map({Command, PDU}) ->
+unpack_pack({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(PDU, " ")]),
-    SMPP = smpp:unpack_map(Bin),
+    SMPP = lists:foldl(fun smpp:list_to_map/2, #{}, smpp:unpack(Bin)),
     JSON = smpp:internal2json(SMPP),
     ?D_CT("~s~n~p~n~s~n", [Command, SMPP, jsx:prettify(jsx:encode(JSON))]),
     {ok, NewBin} = smpp:pack(SMPP),
