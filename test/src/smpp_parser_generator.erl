@@ -498,15 +498,16 @@ create_code(alert_on_msg_delivery = Rule) ->
     ParameterTag = "130C",
 
     Code =
-        [ParameterTag ++ "0000"] ++
-        [
-            lists:append([
-                ParameterTag,
-                "0001",
-                integer_2_octet(Value)
-            ])
-            || Value <- lists:seq(0, 3)
-        ],
+%% not supported with current parser:
+%%        [ParameterTag ++ "0000"] ++
+    [
+        lists:append([
+            ParameterTag,
+            "0001",
+            integer_2_octet(Value)
+        ])
+        || Value <- lists:seq(0, 3)
+    ],
 
     store_code(Rule, Code, ?MAX_TLV, false),
     store_code(broadcast_request_optional_tlv, Code, ?MAX_TLV, false),
