@@ -40,7 +40,12 @@ decode_encode_decode({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     {ok, Map1} = smpp:decode(PDU),
     {ok, PDU2} = smpp:encode(jsx:decode(jsx:encode(Map1), [return_maps])),
-    ?assertEqual({ok, Map1}, smpp:decode(PDU2)).
+    {ok, Map2} = smpp:decode(PDU2),
+    if Map1 /= Map2 ->
+        ?D_CT("~nExpected : ~p~nGot      : ~p", [Map1, Map2]);
+        true -> ok
+    end,
+    ?assertEqual(Map1, Map2).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Test: smpp:unpack_map & smpp:internal2json & smpp:pack.
@@ -49,15 +54,16 @@ decode_encode_decode({Command, PDU}) ->
 unpack_map_pack({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(PDU, " ")]),
-    SMPP = smpp:unpack_map(Bin),
-    JSON = smpp:internal2json(SMPP),
-    ?D_CT("~s~n~p~n~s~n", [Command, SMPP, jsx:prettify(jsx:encode(JSON))]),
-    {ok, NewBin} = smpp:pack(SMPP),
-    if Bin /= NewBin ->
-        ?D_CT("~nExpected : ~p~nGot      : ~p", [Bin, NewBin]);
+    SMPP1 = smpp:unpack_map(Bin),
+    JSON = smpp:internal2json(SMPP1),
+    ?D_CT("~s~n~p~n~s~n", [Command, SMPP1, jsx:prettify(jsx:encode(JSON))]),
+    {ok, NewBin} = smpp:pack(SMPP1),
+    SMPP2 = smpp:unpack_map(NewBin),
+    if SMPP1 /= SMPP2 ->
+        ?D_CT("~nExpected : ~p~nGot      : ~p", [SMPP1, SMPP2]);
         true -> ok
     end,
-    ?assertEqual(Bin, NewBin).
+    ?assertEqual(SMPP1, SMPP2).
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Test: smpp:unpack & smpp:internal2json & smpp:pack.
@@ -66,12 +72,13 @@ unpack_map_pack({Command, PDU}) ->
 unpack_pack({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(PDU, " ")]),
-    SMPP = lists:foldl(fun smpp:list_to_map/2, #{}, smpp:unpack(Bin)),
-    JSON = smpp:internal2json(SMPP),
-    ?D_CT("~s~n~p~n~s~n", [Command, SMPP, jsx:prettify(jsx:encode(JSON))]),
-    {ok, NewBin} = smpp:pack(SMPP),
-    if Bin /= NewBin ->
-        ?D_CT("~nExpected : ~p~nGot      : ~p", [Bin, NewBin]);
+    SMPP1 = lists:foldl(fun smpp:list_to_map/2, #{}, smpp:unpack(Bin)),
+    JSON = smpp:internal2json(SMPP1),
+    ?D_CT("~s~n~p~n~s~n", [Command, SMPP1, jsx:prettify(jsx:encode(JSON))]),
+    {ok, NewBin} = smpp:pack(SMPP1),
+    SMPP2 = smpp:unpack_map(NewBin),
+    if SMPP1 /= SMPP2 ->
+        ?D_CT("~nExpected : ~p~nGot      : ~p", [SMPP1, SMPP2]);
         true -> ok
     end,
-    ?assertEqual(Bin, NewBin).
+    ?assertEqual(SMPP1, SMPP2).
