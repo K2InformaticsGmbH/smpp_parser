@@ -939,7 +939,16 @@
      schedule_delivery_time => <<"990823165343000R">>, sequence_number => 1,
      service_type => <<>>, source_addr => <<"168.0.0.1">>,
      source_addr_npi => <<"National">>, source_addr_ton => <<"International">>,
-     validity_period => <<"990922155242000R">>}}
+     validity_period => <<"990922155242000R">>}},
+  {"broadcast_sm_resp_#101",
+   "00 00 00 33 80 00 01 11 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 07 00 04 00 "
+   "00 00 C1",
+   #{broadcast_error_status => ?ESME_RTLVNOTALLWD,
+     command_id => <<"broadcast_sm_resp">>,command_length => 51,
+     command_status => <<"ESME_ROK">>,
+     message_id => <<"this_could_be_a_message_id">>,
+     sequence_number => 1}}
 ]).
 
 -define(TESTS2,
