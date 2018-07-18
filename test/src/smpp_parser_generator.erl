@@ -1994,9 +1994,21 @@ create_code(dest_node_id = Rule) ->
             lists:append([
                 ParameterTag,
                 "0006",
-                integer_2_octet(Value, 6)
+                Value
             ])
-            || Value <- lists:seq(0, 8)
+            || Value <- [
+            "39313233343536",
+            "38313233343536",
+            "37313233343536",
+            "36313233343536",
+            "35313233343536",
+            "34313233343536",
+            "33313233343536",
+            "32313233343536",
+            "31393233343536",
+            "30383233343536",
+            "30373233343536"
+        ]
         ],
 
     store_code(Rule, Code, ?MAX_TLV, false),
@@ -3637,9 +3649,21 @@ create_code(source_node_id = Rule) ->
             lists:append([
                 ParameterTag,
                 "0006",
-                integer_2_octet(Value, 6)
+                Value
             ])
-            || Value <- lists:seq(0, 8)
+            || Value <- [
+            "39313233343536",
+            "38313233343536",
+            "37313233343536",
+            "36313233343536",
+            "35313233343536",
+            "34313233343536",
+            "33313233343536",
+            "32313233343536",
+            "31393233343536",
+            "30383233343536",
+            "30373233343536"
+        ]
         ],
 
     store_code(Rule, Code, ?MAX_TLV, false),
@@ -4452,7 +4476,7 @@ file_write_ct_test(Current, CompactedDetailed, File, {Command, CommandStatus, PD
     end.
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Convert an integer into a number of octets.
+%% Convert an integer into a number of octets (decimal).
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 integer_2_octet(Integer) ->
