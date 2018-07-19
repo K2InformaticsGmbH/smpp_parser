@@ -72,11 +72,9 @@ unpack_map_pack({Command, PDU}) ->
 unpack_pack({Command, PDU}) ->
     ?D_CT("Start~nCommand: ~p~nPDU: ~p~n", [Command, PDU]),
     Bin = list_to_binary([binary_to_integer(B, 16) || B <- re:split(PDU, " ")]),
-    SMPP1 = lists:foldl(fun smpp:list_to_map/2, #{}, smpp:unpack(Bin)),
-    JSON = smpp:internal2json(SMPP1),
-    ?D_CT("~s~n~p~n~s~n", [Command, SMPP1, jsx:prettify(jsx:encode(JSON))]),
+    SMPP1 = smpp:unpack(Bin),
     {ok, NewBin} = smpp:pack(SMPP1),
-    SMPP2 = smpp:unpack_map(NewBin),
+    SMPP2 = smpp:unpack(NewBin),
     if SMPP1 /= SMPP2 ->
         ?D_CT("~nExpected : ~p~nGot      : ~p", [SMPP1, SMPP2]);
         true -> ok
