@@ -56,7 +56,8 @@ pack([{_,_}|_] = SMPP) ->
     end,
     Body1 = proplists:delete(command_id, SMPP),
     Body2 = proplists:delete(command_status, Body1),
-    Body = proplists:delete(sequence_number, Body2),
+    Body3 = proplists:delete(sequence_number, Body2),
+    Body = lists:foldl(fun pl_to_list/2, [], Body3),
     pack({CmdId, Status, SeqNum, Body}).
 
 unpack(Bin) -> unpack(Bin, []).
@@ -108,6 +109,15 @@ list_to_pl({K, V}, Acc) when is_list(V) ->
 list_to_pl({K, V}, Acc) ->
     [{K, V} | Acc].
 
+pl_to_list({K, V}, Acc) when is_list(V) ->
+    case V of 
+        [H| _] when is_tuple(H) ->
+            [{K, pl_to_rec(K, V)} | Acc];
+        _ ->  [{K, V} | Acc]
+    end;
+pl_to_list({K, V}, Acc) ->
+    [{K, V} | Acc].
+
 map_to_pl(K, V, Acc) when is_map(V) ->
     [{K, map_to_rec(K, V)} | Acc];
 map_to_pl(K, V, Acc) when is_list(V) ->
@@ -126,6 +136,9 @@ rec_to_map(Rec) ->
 rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
+
+pl_to_rec(K, V) when is_list(V) ->
+    list_to_tuple([K | [V1 || {_, V1} <- V ]]).
 
 map_to_rec(tlvs, Map) when is_map(Map) ->
     #{tag := T, len := L, val := V} = Map,
