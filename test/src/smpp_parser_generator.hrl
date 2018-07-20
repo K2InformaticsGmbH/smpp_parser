@@ -142,6 +142,11 @@
 -define(GENERATE_COMPACTED, list_to_atom(string:to_lower(
     os:getenv("GENERATE_COMPACTED", "true")))).
 
+-define(I(Format), ?I(Format, [])).
+-define(I(Format, Args),
+    io:format(user, "~p:~p:~p ===> "Format,
+[?MODULE, ?FUNCTION_NAME, ?LINE | Args])).
+
 -define(LOGGING, list_to_atom(string:to_lower(os:getenv("LOGGING", "false")))).
 
 -define(MAX_BASIC, list_to_integer(os:getenv("MAX_BASIC", "50"))).
