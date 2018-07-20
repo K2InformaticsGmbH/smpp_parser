@@ -31,6 +31,7 @@ internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
 internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
 internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
 internal2json(broadcast_area_success, V) -> V;
+internal2json(_, [I|_] = V) when is_integer(I)  -> V;
 internal2json(_, V) when is_list(V)   -> list_to_binary(V);
 internal2json(_, V)                   -> V.
 
@@ -113,6 +114,8 @@ pl_to_list({K, V}, Acc) when is_list(V) ->
     case V of 
         [H| _] when is_tuple(H) ->
             [{K, pl_to_rec(K, V)} | Acc];
+        [H| _] when is_list(H) ->
+            [{K, [pl_to_rec(K, V1) || V1 <- V]} | Acc];
         _ ->  [{K, V} | Acc]
     end;
 pl_to_list({K, V}, Acc) ->
@@ -137,8 +140,19 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
 
-pl_to_rec(K, V) when is_list(V) ->
-    list_to_tuple([K | [V1 || {_, V1} <- V ]]).
+pl_to_rec(failed_broadcast_area_identifier, V) ->
+    Rec = rec_type(broadcast_area),
+    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+pl_to_rec(dest_address, V) ->
+    Rec =
+    case lists:keyfind(dl_name, 1, V) of
+        false -> rec_type(dest_address_sme);
+        _ -> rec_type(dest_address_dl)
+    end,
+    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+pl_to_rec(Type, V) when is_list(V) ->
+    Rec = rec_type(Type),
+    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]).
 
 map_to_rec(tlvs, Map) when is_map(Map) ->
     #{tag := T, len := L, val := V} = Map,
