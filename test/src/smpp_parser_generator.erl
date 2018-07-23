@@ -4186,8 +4186,15 @@ create_code(ussd_service_op = Rule) ->
                 "0001",
                 integer_2_octet(Value)
             ])
-            || Value <- lists:seq(0, 19)
-        ],
+            || Value <- lists:seq(0, 3)
+        ] ++ [
+        lists:append([
+            ParameterTag,
+            "0001",
+            integer_2_octet(Value)
+        ])
+        || Value <- lists:seq(16, 19)
+    ],
 
     store_code(Rule, Code, ?MAX_TLV, false),
     store_code(message_delivery_request_tlv, Code, ?MAX_TLV, false),
