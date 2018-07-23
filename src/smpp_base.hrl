@@ -721,7 +721,7 @@
 %% A list with all countries and global destinations with a country codes
 %% can be found on **e164.hrl**
 -define(DEST_ADDR_NP_COUNTRY_DATATYPE, ?INTEGER(5)).
--define(DEST_ADDR_NP_COUNTRY_DOMAIN,   ?INTEGER(5)).
+-define(DEST_ADDR_NP_COUNTRY_DOMAIN,   ?FIXED_OCTET_STRING(5)).
 -define(DEST_ADDR_NP_COUNTRY_RESERVED, ?EMPTY).
 
 %% **TODO** Review the domain declaration for this parameter.
