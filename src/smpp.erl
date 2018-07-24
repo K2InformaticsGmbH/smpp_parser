@@ -110,6 +110,8 @@ list_to_pl({K, V}, Acc) when is_list(V) ->
 list_to_pl({K, V}, Acc) ->
     [{K, V} | Acc].
 
+pl_to_list({tlvs, TLVs}, Acc) ->
+    [{tlvs, TLVs} | Acc];
 pl_to_list({K, V}, Acc) when is_list(V) ->
     case V of 
         [H| _] when is_tuple(H) ->
@@ -140,6 +142,8 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
 
+pl_to_rec(tlvs, TLVs) ->
+    list_to_tuple([proplists:get_value(K, TLVs) || K <- [tag, len, val]]);
 pl_to_rec(failed_broadcast_area_identifier, V) ->
     Rec = rec_type(broadcast_area),
     list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
@@ -149,6 +153,12 @@ pl_to_rec(dest_address, V) ->
         false -> rec_type(dest_address_sme);
         _ -> rec_type(dest_address_dl)
     end,
+    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+pl_to_rec(ms_validity, V) when length(V) == 1 ->
+    Rec = ms_validity_absolute,
+    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+pl_to_rec(ms_validity, V) when length(V) == 3 ->
+    Rec = ms_validity_relative,
     list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
 pl_to_rec(Type, V) when is_list(V) ->
     Rec = rec_type(Type),
@@ -166,6 +176,12 @@ map_to_rec(dest_address, #{dl_name := _} = DA) ->
 map_to_rec(dest_address, DA) ->
     Rec = rec_type(dest_address_sme),
     list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
+map_to_rec(ms_validity, Map) when map_size(Map) == 1 ->
+    Rec = ms_validity_absolute,
+    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
+map_to_rec(ms_validity, Map) when map_size(Map) == 3 ->
+    Rec = ms_validity_relative,
+    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
     list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
@@ -178,6 +194,8 @@ rec_info(its_session_info) ->
     record_info(fields, its_session_info);
 rec_info(ms_validity_absolute) ->
     record_info(fields, ms_validity_absolute);
+rec_info(ms_validity_relative) ->
+    record_info(fields, ms_validity_relative);
 rec_info(callback_num_atag) ->
     record_info(fields, callback_num_atag);
 rec_info(network_error_code) ->
@@ -205,7 +223,7 @@ rec_info(Type) ->
     [].
 
 rec_type(dest_subaddress) -> subaddress;
-rec_type(ms_validity) -> ms_validity_absolute;
+rec_type(ms_validity) -> ms_validity_relative;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
 rec_type(broadcast_area_identifier) -> broadcast_area;
@@ -541,6 +559,7 @@ b2a(<<"number">>) -> number;
 b2a(<<"details">>) -> details;
 b2a(<<"service">>) -> service;
 b2a(<<"dl_name">>) -> dl_name;
+b2a(<<"set_dpf">>) -> set_dpf;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;

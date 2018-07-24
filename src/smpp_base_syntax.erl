@@ -56,9 +56,9 @@ decode(Binary, #constant{value = Value} = Type) ->
         _Mismatch ->
             {error, {type_mismatch, Type, Binary}}
     end;
-decode(Binary, #integer{size = Size} = Type) ->
+decode(Binary, #integer{size = Size, min = Min, max = Max} = Type) ->
     case Binary of
-        <<Value:Size/integer-unit:8, Rest/binary>> ->
+        <<Value:Size/integer-unit:8, Rest/binary>> when Value >= Min, Value =< Max ->
             {ok, Value, Rest};
         _Mismatch ->
             {error, {type_mismatch, Type, Binary}}
