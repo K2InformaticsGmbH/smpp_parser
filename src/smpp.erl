@@ -31,8 +31,12 @@ internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
 internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
 internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
 internal2json(broadcast_area_success, V) -> V;
-internal2json(_, [I|_] = V) when is_integer(I)  -> V;
-internal2json(_, V) when is_list(V)   -> list_to_binary(V);
+internal2json(broadcast_error_status, V) -> V;
+internal2json(_, V) when is_list(V) ->
+    case io_lib:printable_unicode_list(V) of
+        true -> unicode:characters_to_binary(V);
+        false -> V
+    end;
 internal2json(_, V)                   -> V.
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
