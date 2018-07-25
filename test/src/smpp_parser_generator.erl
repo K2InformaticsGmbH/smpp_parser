@@ -1506,9 +1506,7 @@ create_code(command_status = Rule) ->
             17,
             255,
             256,
-            274,
-            1024,
-            1279
+            274
         ],
 
     store_code(Rule, [integer_2_octet(C, 4) || C <- Code], ?MAX_BASIC, false),
