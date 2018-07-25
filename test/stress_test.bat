@@ -47,7 +47,7 @@ IF "%1" == "" (
     SET GENERATE_COMPACTED=true
     SET HEAP_SIZE=+hms 33554432
     SET LOGGING=false
-    SET MAX_BASIC=250
+    SET MAX_BASIC=200
 
     FOR /L %%G IN (1,1,%NO_RUNS%) DO (
        ECHO -----------------------------------------------------------------------
