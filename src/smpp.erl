@@ -33,8 +33,8 @@ internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
 internal2json(broadcast_area_success, V) -> V;
 internal2json(broadcast_error_status, V) -> V;
 internal2json(_, V) when is_list(V) ->
-    case io_lib:printable_unicode_list(V) of
-        true -> unicode:characters_to_binary(V);
+    case io_lib:printable_list(V) of
+        true -> list_to_binary(V);
         false -> V
     end;
 internal2json(_, V)                   -> V.

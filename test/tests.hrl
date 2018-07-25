@@ -164,30 +164,28 @@
      dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
      sequence_number => 1, unsuccess_sme => <<>>}},
   {"data_sm_dest_addr_np_country",
-   "00 00 00 3C 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
+   "00 00 00 3B 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
-   "7F 06 13 00 05 00 00 00 22 72",
-   #{command_id => <<"data_sm">>, command_length => 60,
+   "7F 06 13 00 04 38 38 31 38",
+   #{command_id => <<"data_sm">>, command_length => 59,
      command_status => <<"ESME_ROK">>,data_coding => <<"127">>,
-     dest_addr_np_country => 8818,dest_addr_npi => <<"ERMES">>,
+     dest_addr_np_country => <<"8818">>,dest_addr_npi => <<"ERMES">>,
      dest_addr_ton => <<"Network Specific">>,
      destination_addr => <<"192.168.1.1">>, esm_class => 192,
      registered_delivery => 0, sequence_number => 1, service_type => <<"CMT">>,
      source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Telex (F.69)">>,
      source_addr_ton => <<"Alphanumeric">>}},
   {"data_sm_resp_additional_status_info_text",
-   "00 00 00 6B 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
-   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D 79 5F "
-   "61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 "
-   "78 74 00 04 24 00 19 6D 79 5F 6D 65 73 73 61 67 65 5F 70 61 79 6C 6F 61 64 "
-   "5F 30 30 30 30 39 00",
+   "00 00 00 5E 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 24 00 0C 74 65 73 "
+   "74 20 6D 65 73 73 61 67 65 00 1D 00 1F 6D 79 5F 61 64 64 69 74 69 6F 6E 61 "
+   "6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 78 74 00",
     #{additional_status_info_text => <<"my_additional_status_info_text">>,
-      command_id => <<"data_sm_resp">>, command_length => 107,
+      command_id => <<"data_sm_resp">>, command_length => 94,
       command_status => <<"ESME_ROK">>,
       message_id => <<"this_could_be_a_message_id">>, sequence_number => 1,
-      tlvs => [#{len => 25,tag => 1060,
-                 val => <<109,121,95,109,101,115,115,97,103,101,95,112,97,
-                          121,108,111,97,100,95,48,48,48,48,57,0>>}]}},
+      tlvs => [#{len => 12,tag => 1060,
+                 val => <<"test message">>}]}},
   {"data_sm_ms_msg_wait_facilities",
    "00 00 00 42 00 00 01 03 00 00 00 00 00 00 00 01 57 41 50 00 04 03 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 04 08 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 "
@@ -829,7 +827,7 @@
    "30 30 30 30 52 00 39 39 30 32 30 31 30 30 30 30 30 30 30 30 30 52 00 10 "
    "00 7F 02 0F 54 68 69 73 20 69 73 20 61 20 73 68 6F 72 74 03 02 00 01 00 "
    "05 01 00 01 13",
-   #{callback_num_pres_ind => <<0>>, command_id => <<"submit_multi">>,
+   #{callback_num_pres_ind => [0], command_id => <<"submit_multi">>,
      command_length => 173, command_status => <<"ESME_ROK">>,
      data_coding => <<"127">>, dest_address => [
         #{dest_addr_npi => 4,dest_addr_ton => 3,dest_flag => 1,
@@ -899,7 +897,7 @@
    "00 00 00 46 00 00 01 03 00 00 00 00 00 00 00 01 47 55 54 53 00 04 03 31 "
    "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 01 09 31 36 38 2E 31 32 33 "
    "2E 32 33 34 2E 33 32 31 00 10 04 02 03 02 00 01 00 05 01 00 01 13",
-   #{callback_num_pres_ind => <<0>>, command_id => <<"data_sm">>,
+   #{callback_num_pres_ind => [0], command_id => <<"data_sm">>,
      command_length => 70, command_status => <<"ESME_ROK">>,
      data_coding => <<"Octet unspecified (8-bit binary)">>,
      dest_addr_npi => <<"Private">>, dest_addr_ton => <<"International">>,
