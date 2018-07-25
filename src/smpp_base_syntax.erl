@@ -387,5 +387,6 @@ error_priority(_Other, Depth) -> % contants and unknown errors
 get_size(Int) ->
     case Int div 256 of
         Value when Value >= 256 -> 1 + get_size(Value);
-        Value -> Value + 1
+        0 -> 1;
+        _Value -> 2
     end.
