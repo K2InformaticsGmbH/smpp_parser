@@ -1822,8 +1822,8 @@ create_code(dest_addr_np_country = Rule) ->
             integer_2_octet(1),
             integer_2_octet(41),
             integer_2_octet(423, 2),
-            integer_2_octet(44, 2),
-            integer_2_octet(49, 2),
+            integer_2_octet(44),
+            integer_2_octet(49),
             integer_2_octet(8818, 2),
             integer_2_octet(88210, 3)
         ]],

@@ -53,7 +53,7 @@ mkdir  tmp/backup
 export GENERATE_COMPACTED="true"
 export HEAP_SIZE="+hms 33554432"
 export LOGGING="false"
-export MAX_BASIC=250
+export MAX_BASIC=200
 
 for i in $(seq 1 $NO_RUNS)
 do
