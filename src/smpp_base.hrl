@@ -261,6 +261,30 @@
                    {?SUBADDRESS_TAG_RESERVED,
                     ?SUBADDRESS_DATA_RESERVED})).
 
+%% A billing_identification value should be defined using the billing_identification record. 
+%% The first octet represents the Billing Format tag and indicates the 
+%% format of the billing information in the remaining octets. 
+-define(BILLING_IDENTIFICATION_TAG_DATATYPE, ?INTEGER(1)). 
+-define(BILLING_IDENTIFICATION_TAG_DOMAIN,   ?INTEGER(1)). 
+-define(BILLING_IDENTIFICATION_TAG_RESERVED, ?EMPTY). 
+ 
+-define(BILLING_IDENTIFICATION_DATA_DATATYPE, ?VAR_OCTET_STRING(1023)). 
+-define(BILLING_IDENTIFICATION_DATA_DOMAIN,   ?VAR_OCTET_STRING(1023)). 
+-define(BILLING_IDENTIFICATION_DATA_RESERVED, ?EMPTY). 
+ 
+-define(BILLING_IDENTIFICATION_DATATYPE, 
+        ?COMPOSITE(billing_identification, 
+                   {?BILLING_IDENTIFICATION_TAG_DATATYPE, 
+                    ?BILLING_IDENTIFICATION_DATA_DATATYPE})). 
+-define(BILLING_IDENTIFICATION_DOMAIN, 
+        ?COMPOSITE(billing_identification, 
+                   {?BILLING_IDENTIFICATION_TAG_DOMAIN, 
+                    ?BILLING_IDENTIFICATION_DATA_DOMAIN})). 
+-define(BILLING_IDENTIFICATION_RESERVED, 
+        ?COMPOSITE(billing_identification, 
+                   {?BILLING_IDENTIFICATION_TAG_RESERVED, 
+                    ?BILLING_IDENTIFICATION_DATA_RESERVED})). 
+
 %% A telematics_id value must be defined using the telematics_id record.
 %%
 %% Used on: dest_telematics_id, source_telematics_id
@@ -543,12 +567,6 @@
 -define(ALERT_ON_MESSAGE_DELIVERY_DOMAIN,   ?BOUND_INTEGER(1, 3)).
 -define(ALERT_ON_MESSAGE_DELIVERY_RESERVED, ?RANGE_INTEGER(1, 4, 255)).
 
-%% The first octet represents the Billing Format tag and indicates the
-%% format of the billing information in the remaining octets.
--define(BILLING_IDENTIFICATION_DATATYPE, ?VAR_OCTET_STRING(1024)).
--define(BILLING_IDENTIFICATION_DOMAIN,   ?VAR_OCTET_STRING(1024)).
--define(BILLING_IDENTIFICATION_RESERVED, ?EMPTY).
-
 -define(BROADCAST_AREA_IDENTIFIER_DATATYPE,        ?BROADCAST_AREA_DATATYPE).
 -define(BROADCAST_AREA_IDENTIFIER_DOMAIN,          ?BROADCAST_AREA_DOMAIN).
 -define(BROADCAST_AREA_IDENTIFIER_RESERVED,        ?BROADCAST_AREA_RESERVED).
@@ -697,11 +715,11 @@
 -define(CALLBACK_NUM_ATAG_DATATYPE,
         ?COMPOSITE(callback_num_atag,
                    {?ENCODING_SCHEME_DATATYPE,
-                     ?CALLBACK_NUM_ATAG_DISPLAY_CHARACTERS_DATATYPE})).
+                    ?CALLBACK_NUM_ATAG_DISPLAY_CHARACTERS_DATATYPE})).
 -define(CALLBACK_NUM_ATAG_DOMAIN,
         ?COMPOSITE(callback_num_atag,
                    {?ENCODING_SCHEME_DOMAIN,
-                     ?CALLBACK_NUM_ATAG_DISPLAY_CHARACTERS_DOMAIN})).
+                    ?CALLBACK_NUM_ATAG_DISPLAY_CHARACTERS_DOMAIN})).
 -define(CALLBACK_NUM_ATAG_RESERVED, ?EMPTY).
 
 -define(CALLBACK_NUM_PRES_IND_DATATYPE, ?INTEGER(1)).
@@ -1043,6 +1061,9 @@
 
 -define(SUBADDRESS_DEFAULT_VALUE, #subaddress{}).
 -define(SUBADDRESS_VALUE(Tag, Data), #subaddress{tag = Tag, data = Data}).
+
+-define(BILLING_IDENTIFICATION_DEFAULT_VALUE, #billing_identification{}). 
+-define(BILLING_IDENTIFICATION_VALUE(Tag, Data), #billing_identification{tag = Tag, data = Data}).
 
 -define(CALLBACK_NUM_DEFAULT_VALUE, #callback_num{}).
 -define(CALLBACK_NUM_VALUE(DigitModeIndicator, AddrTon, AddrNpi, NumberDigits),

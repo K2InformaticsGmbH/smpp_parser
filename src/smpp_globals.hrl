@@ -1026,6 +1026,25 @@
         {tag = ?SUBADDRESS_TAG_USER,
          data}).
 
+%% %@spec {billing_identification, Tag, Data} 
+%%    Tag  = int() 
+%%    Data = string() 
+%% 
+%% <p>The macro ?BILLING_IDENTIFICATION_DATATYPE defines the type specifier for these 
+%% TLVs.</p> 
+%% <dl> 
+%%   <dt>Tag: </dt><dd>The first octet represents the Billing Format tag  
+%%     and indicates the format of the billing information in the remaining octets 
+%%   </dd> 
+%%   <dt>Data: </dt><dd>Contain the billing identitification in the tag format. 
+%%     Max 1023 octets. 
+%%   </dd> 
+%% </dl> 
+%% %@end 
+-record(billing_identification, 
+        {tag, 
+         data}). 
+
 %% %@spec {callback_num,
 %%         DigitModeIndicator,
 %%         AddrTon,

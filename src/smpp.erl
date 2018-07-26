@@ -222,6 +222,8 @@ rec_info(dest_subaddress) ->
     record_info(fields, subaddress);
 rec_info(subaddress) ->
     record_info(fields, subaddress);
+rec_info(billing_identification) -> 
+    record_info(fields, billing_identification); 
 rec_info(Type) ->
     io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
