@@ -827,7 +827,7 @@
    "30 30 30 30 52 00 39 39 30 32 30 31 30 30 30 30 30 30 30 30 30 52 00 10 "
    "00 7F 02 0F 54 68 69 73 20 69 73 20 61 20 73 68 6F 72 74 03 02 00 01 00 "
    "05 01 00 01 13",
-   #{callback_num_pres_ind => [0], command_id => <<"submit_multi">>,
+   #{callback_num_pres_ind => <<0>>, command_id => <<"submit_multi">>,
      command_length => 173, command_status => <<"ESME_ROK">>,
      data_coding => <<"127">>, dest_address => [
         #{dest_addr_npi => 4,dest_addr_ton => 3,dest_flag => 1,
@@ -897,7 +897,7 @@
    "00 00 00 46 00 00 01 03 00 00 00 00 00 00 00 01 47 55 54 53 00 04 03 31 "
    "36 38 2E 31 32 33 2E 32 33 34 2E 33 32 31 00 01 09 31 36 38 2E 31 32 33 "
    "2E 32 33 34 2E 33 32 31 00 10 04 02 03 02 00 01 00 05 01 00 01 13",
-   #{callback_num_pres_ind => [0], command_id => <<"data_sm">>,
+   #{callback_num_pres_ind => <<0>>, command_id => <<"data_sm">>,
      command_length => 70, command_status => <<"ESME_ROK">>,
      data_coding => <<"Octet unspecified (8-bit binary)">>,
      dest_addr_npi => <<"Private">>, dest_addr_ton => <<"International">>,
