@@ -56,9 +56,9 @@ decode(Binary, #constant{value = Value} = Type) ->
         _Mismatch ->
             {error, {type_mismatch, Type, Binary}}
     end;
-decode(Binary, #integer{size = Size} = Type) ->
+decode(Binary, #integer{size = Size, min = Min, max = Max} = Type) ->
     case Binary of
-        <<Value:Size/integer-unit:8, Rest/binary>> ->
+        <<Value:Size/integer-unit:8, Rest/binary>> when Value >= Min, Value =< Max ->
             {ok, Value, Rest};
         _Mismatch ->
             {error, {type_mismatch, Type, Binary}}
@@ -216,6 +216,10 @@ encode(Value, #constant{value = Value}) when is_integer(Value) ->
     {ok, <<Value/integer>>};
 encode(Value, #constant{value = Value}) when is_binary(Value) ->
     {ok, <<Value/binary>>};
+encode(Value, #integer{size = 0, min = Min, max = Max})
+  when is_integer(Value), Value >= Min, Value =< Max  ->
+    Size = length([X || <<X>> <= <<Value:40>>, X /= 0]),
+    {ok, <<Value:Size/integer-unit:8>>};
 encode(Value, #integer{size = Size, min = Min, max = Max})
   when is_integer(Value), Value >= Min, Value =< Max  ->
     {ok, <<Value:Size/integer-unit:8>>};
@@ -334,7 +338,8 @@ encode_try(Value, [Type|Types], Error, Priority) ->
             end
     end.
 
-
+fit(#integer{size = 0} = Type, NewSize) ->
+    Type#integer{size = NewSize};
 fit(#integer{size = Size} = Type, NewSize) when NewSize < Size ->
     Type#integer{size = NewSize};
 fit(#c_octet_string{size = Size} = Type, NewSize) when NewSize =< Size ->

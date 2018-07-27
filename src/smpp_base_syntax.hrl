@@ -54,6 +54,8 @@
         #integer{size = Size, min = 0, max = Max}).
 -define(RANGE_INTEGER(Size, Min, Max),
         #integer{size = Size, min = Min, max = Max}).
+-define(VARIABLE_SIZE_INTEGER(_SizeMin, SizeMax),
+        #integer{size = 0, min = 0, max = math:pow(256, SizeMax) - 1}).
 
 -define(HEX_C_OCTET_STRING(Fixed, Size),
         #c_octet_string{
