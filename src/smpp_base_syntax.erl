@@ -218,7 +218,7 @@ encode(Value, #constant{value = Value}) when is_binary(Value) ->
     {ok, <<Value/binary>>};
 encode(Value, #integer{size = 0, min = Min, max = Max})
   when is_integer(Value), Value >= Min, Value =< Max  ->
-    Size = get_size(Value),
+    Size = length([X || <<X>> <= <<Value:40>>, X /= 0]),
     {ok, <<Value:Size/integer-unit:8>>};
 encode(Value, #integer{size = Size, min = Min, max = Max})
   when is_integer(Value), Value >= Min, Value =< Max  ->
@@ -383,10 +383,3 @@ error_priority({type_mismatch, T, _R}, Depth) when is_record(T, union);
     (Depth * 3) + 2;
 error_priority(_Other, Depth) -> % contants and unknown errors
     (Depth * 3) + 0.
-
-get_size(Int) ->
-    case Int div 256 of
-        Value when Value >= 256 -> 1 + get_size(Value);
-        0 -> 1;
-        _Value -> 2
-    end.
