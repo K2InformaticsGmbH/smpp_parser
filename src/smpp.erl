@@ -146,45 +146,50 @@ pl_to_rec(tlvs, TLVs) ->
     list_to_tuple([proplists:get_value(K, TLVs) || K <- [tag, len, val]]);
 pl_to_rec(failed_broadcast_area_identifier, V) ->
     Rec = rec_type(broadcast_area),
-    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+    to_rec(Rec, V);
 pl_to_rec(dest_address, V) ->
     Rec =
     case lists:keyfind(dl_name, 1, V) of
         false -> rec_type(dest_address_sme);
         _ -> rec_type(dest_address_dl)
     end,
-    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+    to_rec(Rec, V);
 pl_to_rec(ms_validity, V) when length(V) == 1 ->
     Rec = ms_validity_absolute,
-    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+    to_rec(Rec, V);
 pl_to_rec(ms_validity, V) when length(V) == 3 ->
     Rec = ms_validity_relative,
-    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]);
+    to_rec(Rec, V);
 pl_to_rec(Type, V) when is_list(V) ->
     Rec = rec_type(Type),
-    list_to_tuple([Rec | [proplists:get_value(K, V) || K <- rec_info(Rec)]]).
+    to_rec(Rec, V).
 
 map_to_rec(tlvs, Map) when is_map(Map) ->
     #{tag := T, len := L, val := V} = Map,
     {T, L, V};
-map_to_rec(failed_broadcast_area_identifier, DA) ->
+map_to_rec(failed_broadcast_area_identifier, Map) ->
     Rec = rec_type(broadcast_area),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
-map_to_rec(dest_address, #{dl_name := _} = DA) ->
+    to_rec(Rec, Map);
+map_to_rec(dest_address, #{dl_name := _} = Map) ->
     Rec = rec_type(dest_address_dl),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
-map_to_rec(dest_address, DA) ->
+    to_rec(Rec, Map);
+map_to_rec(dest_address, Map) ->
     Rec = rec_type(dest_address_sme),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
+    to_rec(Rec, Map);
 map_to_rec(ms_validity, Map) when map_size(Map) == 1 ->
     Rec = ms_validity_absolute,
-    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
+    to_rec(Rec, Map);
 map_to_rec(ms_validity, Map) when map_size(Map) == 3 ->
     Rec = ms_validity_relative,
-    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
+    to_rec(Rec, Map);
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
-    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
+    to_rec(Rec, Map).
+
+to_rec(Rec, Map) when is_map(Map) ->
+    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
+to_rec(Rec, List) when is_list(List) ->
+    list_to_tuple([Rec | [proplists:get_value(K, List) || K <- rec_info(Rec)]]).
 
 rec_info(telematics_id) ->
     record_info(fields, telematics_id);
@@ -225,7 +230,6 @@ rec_info(Type) ->
     [].
 
 rec_type(dest_subaddress) -> subaddress;
-rec_type(ms_validity) -> ms_validity_relative;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
 rec_type(broadcast_area_identifier) -> broadcast_area;
