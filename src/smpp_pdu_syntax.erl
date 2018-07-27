@@ -76,8 +76,9 @@ pack({CmdId, 0, SeqNum, Body}, PduType) ->
         {error, Status} ->
             {error, CmdId, Status, SeqNum}
     end;
-pack({CmdId, Status, SeqNum, _Body}, _PduType) ->
-    {ok, [<<16:32, CmdId:32, Status:32, SeqNum:32>>]}.
+%% Following clause is not required. Handle all statuses above
+pack({CmdId, Status, SeqNum, _BodyBin}, _PduType) ->
+    {ok, <<16:32, CmdId:32, Status:32, SeqNum:32>>}.
 
 
 unpack(<<Len:32, CmdId:32, ?ESME_ROK:32, SeqNum:32, Body/binary>>, PduType)

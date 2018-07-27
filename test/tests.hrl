@@ -946,7 +946,12 @@
      command_id => <<"broadcast_sm_resp">>,command_length => 51,
      command_status => <<"ESME_ROK">>,
      message_id => <<"this_could_be_a_message_id">>,
-     sequence_number => 1}}
+     sequence_number => 1}},
+  {"deliver_sm_resp_error_status_code_#107",
+   "00 00 00 17 80 00 01 03 00 00 00 05 00 00 00 00 31 32 33 34 35 36 00",
+   #{command_id => <<"data_sm_resp">>, command_length => 23,
+     command_status => <<"ESME_RALYBND">>, message_id => <<"123456">>,
+     sequence_number => 0}}
 ]).
 
 -define(TESTS2,
