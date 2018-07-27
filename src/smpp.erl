@@ -5,7 +5,7 @@
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, encode_msg/1,
-         decode_msg/1, list_to_map/2]).
+         decode_msg/1]).
 
 -safe([unpack_map/1]).
 
