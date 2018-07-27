@@ -36,7 +36,7 @@ echo "$(timestamp) Start Test Data Generation and Run"
 export GENERATE_COMPACTED="true"
 export HEAP_SIZE="+hms 33554432"
 export LOGGING="false"
-export MAX_BASIC=50
+export MAX_BASIC=500
 test/gen_tests.sh
 
 echo "$(timestamp) Start EUnit Tests"

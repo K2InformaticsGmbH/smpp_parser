@@ -400,7 +400,6 @@
               ?SHORT_MESSAGE],
              [],
              [?CALLBACK_NUM,
-              ?CALLBACK_NUM,
               ?CALLBACK_NUM_ATAG,         % (TDMA)
               ?CALLBACK_NUM_PRES_IND,     % (TDMA)
               ?DEST_ADDR_NP_COUNTRY,      % (CDMA, TDMA)

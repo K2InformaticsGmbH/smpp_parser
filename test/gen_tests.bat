@@ -47,7 +47,7 @@ REM ----------------------------------------------------------------------------
         SET GENERATE_COMPACTED=true
         SET HEAP_SIZE=+hms 33554432
         SET LOGGING=false
-        SET MAX_BASIC=50
+        SET MAX_BASIC=500
     )
 
     REM Starting test data generator ...........................................

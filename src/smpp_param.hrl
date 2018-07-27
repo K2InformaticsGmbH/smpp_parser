@@ -628,7 +628,7 @@
 %% <p>Wireless Network Technology:  CDMA, TDMA, GSM</p>
 %% %@end
 -define(BROADCAST_ERROR_STATUS,
-        ?MULTIPLE_TLV(broadcast_error_status,
+        ?SIMPLE_TLV(broadcast_error_status,
                       16#0607,
                       ?BROADCAST_ERROR_STATUS_DOMAIN,
                       ?BROADCAST_ERROR_STATUS_RESERVED,

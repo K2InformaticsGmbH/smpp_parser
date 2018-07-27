@@ -3,11 +3,24 @@ install:
   - wget https://s3.amazonaws.com/rebar3/rebar3 && chmod +x rebar3
 language: erlang
 otp_release:
+  - 21.0
   - 20.3
   - 20.2
 script:
   - ./rebar3 compile
+  - ./rebar3 ct
   - ./rebar3 eunit
+  - export GENERATE_COMPACTED="true"
+  - export GENERATE_CT="true"
+  - export GENERATE_EUNIT="false"
+  - export GENERATE_PERFORMANCE="true"
+  - export GENERATE_RELIABILITY="true"
+  - export HEAP_SIZE="+hms 33554432"
+  - export LOGGING="false"
+  - export MAX_BASIC=500
+  - chmod +x test/gen_tests.sh
+  - ./test/gen_tests.sh
+  - ./rebar3 ct
   - ./rebar3 cover
   - ./rebar3 as test coveralls send
   - ./rebar3 dialyzer
