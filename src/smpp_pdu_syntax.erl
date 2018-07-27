@@ -72,7 +72,7 @@ pack({CmdId, 0, SeqNum, Body}, PduType) ->
         {ok, BodyL} ->
 		    BodyBin = list_to_binary(BodyL),
             Len = size(BodyBin) + 16,
-            {ok, [<<Len:32, CmdId:32, 0:32, SeqNum:32>>, BodyBin]};
+            {ok, <<Len:32, CmdId:32, 0:32, SeqNum:32, BodyBin/binary>>};
         {error, Status} ->
             {error, CmdId, Status, SeqNum}
     end;

@@ -26,13 +26,14 @@ json2internal(SMPP) when is_map(SMPP) ->
                                end}
               end, #{}, SMPP).
 
-internal2json({error, _, _, _} = Err) -> error(err(Err));
-internal2json(SMPP) when is_map(SMPP) -> maps:map(fun internal2json/2, SMPP).
-internal2json(tlvs, TLVs)             -> [internal2json(V) || V <- TLVs];
+internal2json({error, _, _, _} = Err)      -> error(err(Err));
+internal2json(SMPP) when is_map(SMPP)      -> maps:map(fun internal2json/2, SMPP).
+internal2json(tlvs, TLVs)                  -> [internal2json(V) || V <- TLVs];
 internal2json(_, [M|_] = V) when is_map(M) -> [internal2json(I) || I <- V];
-internal2json(broadcast_area_success, V) -> V;
-internal2json(_, V) when is_list(V)   -> list_to_binary(V);
-internal2json(_, V)                   -> V.
+internal2json(broadcast_area_success, V)   -> V;
+internal2json(broadcast_error_status, V)   -> V;
+internal2json(_, V) when is_list(V)        -> list_to_binary(V);
+internal2json(_, V)                        -> V.
 
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
@@ -56,7 +57,8 @@ pack([{_,_}|_] = SMPP) ->
     end,
     Body1 = proplists:delete(command_id, SMPP),
     Body2 = proplists:delete(command_status, Body1),
-    Body = proplists:delete(sequence_number, Body2),
+    Body3 = proplists:delete(sequence_number, Body2),
+    Body = lists:foldl(fun pl_to_list/2, [], Body3),
     pack({CmdId, Status, SeqNum, Body}).
 
 unpack(Bin) -> unpack(Bin, []).
@@ -108,6 +110,19 @@ list_to_pl({K, V}, Acc) when is_list(V) ->
 list_to_pl({K, V}, Acc) ->
     [{K, V} | Acc].
 
+pl_to_list({tlvs, TLVs}, Acc) ->
+    [{tlvs, TLVs} | Acc];
+pl_to_list({K, V}, Acc) when is_list(V) ->
+    case V of 
+        [H| _] when is_tuple(H) ->
+            [{K, pl_to_rec(K, V)} | Acc];
+        [H| _] when is_list(H) ->
+            [{K, [pl_to_rec(K, V1) || V1 <- V]} | Acc];
+        _ ->  [{K, V} | Acc]
+    end;
+pl_to_list({K, V}, Acc) ->
+    [{K, V} | Acc].
+
 map_to_pl(K, V, Acc) when is_map(V) ->
     [{K, map_to_rec(K, V)} | Acc];
 map_to_pl(K, V, Acc) when is_list(V) ->
@@ -127,21 +142,54 @@ rec_to_pl(Rec) when is_tuple(Rec) ->
     Fields = rec_info(element(1, Rec)),
     [{lists:nth(N, Fields), element(N+1, Rec)} || N <- lists:seq(1, length(Fields))].
 
+pl_to_rec(tlvs, TLVs) ->
+    list_to_tuple([proplists:get_value(K, TLVs) || K <- [tag, len, val]]);
+pl_to_rec(failed_broadcast_area_identifier, V) ->
+    Rec = rec_type(broadcast_area),
+    to_rec(Rec, V);
+pl_to_rec(dest_address, V) ->
+    Rec =
+    case lists:keyfind(dl_name, 1, V) of
+        false -> rec_type(dest_address_sme);
+        _ -> rec_type(dest_address_dl)
+    end,
+    to_rec(Rec, V);
+pl_to_rec(ms_validity, V) when length(V) == 1 ->
+    Rec = ms_validity_absolute,
+    to_rec(Rec, V);
+pl_to_rec(ms_validity, V) when length(V) == 3 ->
+    Rec = ms_validity_relative,
+    to_rec(Rec, V);
+pl_to_rec(Type, V) when is_list(V) ->
+    Rec = rec_type(Type),
+    to_rec(Rec, V).
+
 map_to_rec(tlvs, Map) when is_map(Map) ->
     #{tag := T, len := L, val := V} = Map,
     {T, L, V};
-map_to_rec(failed_broadcast_area_identifier, DA) ->
+map_to_rec(failed_broadcast_area_identifier, Map) ->
     Rec = rec_type(broadcast_area),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
-map_to_rec(dest_address, #{dl_name := _} = DA) ->
+    to_rec(Rec, Map);
+map_to_rec(dest_address, #{dl_name := _} = Map) ->
     Rec = rec_type(dest_address_dl),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
-map_to_rec(dest_address, DA) ->
+    to_rec(Rec, Map);
+map_to_rec(dest_address, Map) ->
     Rec = rec_type(dest_address_sme),
-    list_to_tuple([Rec | [maps:get(K, DA) || K <- rec_info(Rec)]]);
+    to_rec(Rec, Map);
+map_to_rec(ms_validity, Map) when map_size(Map) == 1 ->
+    Rec = ms_validity_absolute,
+    to_rec(Rec, Map);
+map_to_rec(ms_validity, Map) when map_size(Map) == 3 ->
+    Rec = ms_validity_relative,
+    to_rec(Rec, Map);
 map_to_rec(Type, Map) when is_map(Map) ->
     Rec = rec_type(Type),
-    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]).
+    to_rec(Rec, Map).
+
+to_rec(Rec, Map) when is_map(Map) ->
+    list_to_tuple([Rec | [maps:get(K, Map) || K <- rec_info(Rec)]]);
+to_rec(Rec, List) when is_list(List) ->
+    list_to_tuple([Rec | [proplists:get_value(K, List) || K <- rec_info(Rec)]]).
 
 rec_info(telematics_id) ->
     record_info(fields, telematics_id);
@@ -151,6 +199,8 @@ rec_info(its_session_info) ->
     record_info(fields, its_session_info);
 rec_info(ms_validity_absolute) ->
     record_info(fields, ms_validity_absolute);
+rec_info(ms_validity_relative) ->
+    record_info(fields, ms_validity_relative);
 rec_info(callback_num_atag) ->
     record_info(fields, callback_num_atag);
 rec_info(network_error_code) ->
@@ -173,12 +223,13 @@ rec_info(dest_subaddress) ->
     record_info(fields, subaddress);
 rec_info(subaddress) ->
     record_info(fields, subaddress);
+rec_info(billing_identification) -> 
+    record_info(fields, billing_identification); 
 rec_info(Type) ->
     io:format(user, "~p:~p:~p unknown ~p~n", [?MODULE, ?FUNCTION_NAME, ?LINE, Type]),
     [].
 
 rec_type(dest_subaddress) -> subaddress;
-rec_type(ms_validity) -> ms_validity_absolute;
 rec_type(dest_telematics_id) -> telematics_id;
 rec_type(source_telematics_id) -> telematics_id;
 rec_type(broadcast_area_identifier) -> broadcast_area;
@@ -514,10 +565,12 @@ b2a(<<"number">>) -> number;
 b2a(<<"details">>) -> details;
 b2a(<<"service">>) -> service;
 b2a(<<"dl_name">>) -> dl_name;
+b2a(<<"set_dpf">>) -> set_dpf;
 b2a(<<"password">>) -> password;
 b2a(<<"addr_npi">>) -> addr_npi;
 b2a(<<"addr_ton">>) -> addr_ton;
 b2a(<<"reserved">>) -> reserved;
+b2a(<<"behaviour">>) -> behaviour;
 b2a(<<"esme_addr">>) -> esme_addr;
 b2a(<<"esm_class">>) -> esm_class;
 b2a(<<"dest_flag">>) -> dest_flag;
@@ -532,13 +585,18 @@ b2a(<<"command_id">>) -> command_id;
 b2a(<<"error_code">>) -> error_code;
 b2a(<<"final_date">>) -> final_date;
 b2a(<<"data_coding">>) -> data_coding;
+b2a(<<"ms_validity">>) -> ms_validity;
 b2a(<<"system_type">>) -> system_type;
 b2a(<<"source_addr">>) -> source_addr;
 b2a(<<"protocol_id">>) -> protocol_id;
+b2a(<<"source_port">>) -> source_port;
 b2a(<<"network_type">>) -> network_type;
+b2a(<<"payload_type">>) -> payload_type;
+b2a(<<"display_time">>) -> display_time;
 b2a(<<"dest_address">>) -> dest_address;
 b2a(<<"service_type">>) -> service_type;
 b2a(<<"callback_num">>) -> callback_num;
+b2a(<<"dest_node_id">>) -> dest_node_id;
 b2a(<<"number_digits">>) -> number_digits;
 b2a(<<"dest_addr_npi">>) -> dest_addr_npi;
 b2a(<<"dest_addr_ton">>) -> dest_addr_ton;
@@ -553,6 +611,7 @@ b2a(<<"command_status">>) -> command_status;
 b2a(<<"its_reply_type">>) -> its_reply_type;
 b2a(<<"command_length">>) -> command_length;
 b2a(<<"session_number">>) -> session_number;
+b2a(<<"source_node_id">>) -> source_node_id;
 b2a(<<"message_payload">>) -> message_payload;
 b2a(<<"dest_subaddress">>) -> dest_subaddress;
 b2a(<<"sequence_number">>) -> sequence_number;
@@ -565,6 +624,8 @@ b2a(<<"ussd_service_op">>) -> ussd_service_op;
 b2a(<<"destination_addr">>) -> destination_addr;
 b2a(<<"dest_bearer_type">>) -> dest_bearer_type;
 b2a(<<"its_session_info">>) -> its_session_info;
+b2a(<<"qos_time_to_live">>) -> qos_time_to_live;
+b2a(<<"privacy_indicator">>) -> privacy_indicator;
 b2a(<<"error_status_code">>) -> error_status_code;
 b2a(<<"dest_network_type">>) -> dest_network_type;
 b2a(<<"sm_default_msg_id">>) -> sm_default_msg_id;
@@ -572,6 +633,8 @@ b2a(<<"interface_version">>) -> interface_version;
 b2a(<<"broadcast_rep_num">>) -> broadcast_rep_num;
 b2a(<<"dest_addr_subunit">>) -> dest_addr_subunit;
 b2a(<<"callback_num_atag">>) -> callback_num_atag;
+b2a(<<"source_network_id">>) -> source_network_id;
+b2a(<<"language_indicator">>) -> language_indicator;
 b2a(<<"broadcast_end_time">>) -> broadcast_end_time;
 b2a(<<"display_characters">>) -> display_characters;
 b2a(<<"number_of_messages">>) -> number_of_messages;
@@ -581,25 +644,34 @@ b2a(<<"network_error_code">>) -> network_error_code;
 b2a(<<"sar_segment_seqnum">>) -> sar_segment_seqnum;
 b2a(<<"sar_total_segments">>) -> sar_total_segments;
 b2a(<<"user_response_code">>) -> user_response_code;
-b2a(<<"source_addr_subunit">>) -> source_addr_subunit;
 b2a(<<"registered_delivery">>) -> registered_delivery;
+b2a(<<"source_addr_subunit">>) -> source_addr_subunit;
+b2a(<<"source_network_type">>) -> source_network_type;
 b2a(<<"digit_mode_indicator">>) -> digit_mode_indicator;
 b2a(<<"dest_addr_np_country">>) -> dest_addr_np_country;
+b2a(<<"receipted_message_id">>) -> receipted_message_id;
 b2a(<<"sc_interface_version">>) -> sc_interface_version;
 b2a(<<"callback_num_pres_ind">>) -> callback_num_pres_ind;
 b2a(<<"more_messages_to_send">>) -> more_messages_to_send;
+b2a(<<"billing_identification">>) -> billing_identification;
 b2a(<<"broadcast_area_success">>) -> broadcast_area_success;
 b2a(<<"broadcast_content_type">>) -> broadcast_content_type;
 b2a(<<"ms_msg_wait_facilities">>) -> ms_msg_wait_facilities;
 b2a(<<"ms_availability_status">>) -> ms_availability_status;
 b2a(<<"user_message_reference">>) -> user_message_reference;
 b2a(<<"schedule_delivery_time">>) -> schedule_delivery_time;
-b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
+b2a(<<"broadcast_error_status">>) -> broadcast_error_status;
+b2a(<<"broadcast_message_class">>) -> broadcast_message_class;
+b2a(<<"broadcast_service_group">>) -> broadcast_service_group;
 b2a(<<"delivery_failure_reason">>) -> delivery_failure_reason;
+b2a(<<"dest_addr_np_resolution">>) -> dest_addr_np_resolution;
+b2a(<<"replace_if_present_flag">>) -> replace_if_present_flag;
+b2a(<<"dest_addr_np_information">>) -> dest_addr_np_information;
 b2a(<<"broadcast_area_identifier">>) -> broadcast_area_identifier;
 b2a(<<"alert_on_message_delivery">>) -> alert_on_message_delivery;
-b2a(<<"broadcast_content_type_info">>) -> broadcast_content_type_info;
 b2a(<<"additional_status_info_text">>) -> additional_status_info_text;
+b2a(<<"broadcast_channel_indicator">>) -> broadcast_channel_indicator;
+b2a(<<"broadcast_content_type_info">>) -> broadcast_content_type_info;
 b2a(<<"broadcast_frequency_interval">>) -> broadcast_frequency_interval;
 b2a(<<"failed_broadcast_area_identifier">>) -> failed_broadcast_area_identifier;
 b2a(Field) when is_atom(Field) -> Field.

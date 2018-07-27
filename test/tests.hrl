@@ -164,10 +164,10 @@
      dpf_result => 1, message_id => <<"this_could_be_a_message_id">>,
      sequence_number => 1, unsuccess_sme => <<>>}},
   {"data_sm_dest_addr_np_country",
-   "00 00 00 3C 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
+   "00 00 00 39 00 00 01 03 00 00 00 00 00 00 00 01 43 4D 54 00 05 04 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 03 0A 31 39 32 2E 31 36 38 2E 31 2E 31 00 C0 00 "
-   "7F 06 13 00 05 00 00 00 22 72",
-   #{command_id => <<"data_sm">>, command_length => 60,
+   "7F 06 13 00 02 22 72",
+   #{command_id => <<"data_sm">>, command_length => 57,
      command_status => <<"ESME_ROK">>,data_coding => <<"127">>,
      dest_addr_np_country => 8818,dest_addr_npi => <<"ERMES">>,
      dest_addr_ton => <<"Network Specific">>,
@@ -176,18 +176,16 @@
      source_addr => <<"192.168.1.1">>, source_addr_npi => <<"Telex (F.69)">>,
      source_addr_ton => <<"Alphanumeric">>}},
   {"data_sm_resp_additional_status_info_text",
-   "00 00 00 6B 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
-   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 00 1D 00 1F 6D 79 5F "
-   "61 64 64 69 74 69 6F 6E 61 6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 "
-   "78 74 00 04 24 00 19 6D 79 5F 6D 65 73 73 61 67 65 5F 70 61 79 6C 6F 61 64 "
-   "5F 30 30 30 30 39 00",
+   "00 00 00 5E 80 00 01 03 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 6C "
+   "64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 04 24 00 0C 74 65 73 "
+   "74 20 6D 65 73 73 61 67 65 00 1D 00 1F 6D 79 5F 61 64 64 69 74 69 6F 6E 61 "
+   "6C 5F 73 74 61 74 75 73 5F 69 6E 66 6F 5F 74 65 78 74 00",
     #{additional_status_info_text => <<"my_additional_status_info_text">>,
-      command_id => <<"data_sm_resp">>, command_length => 107,
+      command_id => <<"data_sm_resp">>, command_length => 94,
       command_status => <<"ESME_ROK">>,
       message_id => <<"this_could_be_a_message_id">>, sequence_number => 1,
-      tlvs => [#{len => 25,tag => 1060,
-                 val => <<109,121,95,109,101,115,115,97,103,101,95,112,97,
-                          121,108,111,97,100,95,48,48,48,48,57,0>>}]}},
+      tlvs => [#{len => 12,tag => 1060,
+                 val => <<"test message">>}]}},
   {"data_sm_ms_msg_wait_facilities",
    "00 00 00 42 00 00 01 03 00 00 00 00 00 00 00 01 57 41 50 00 04 03 31 39 32 "
    "2E 31 36 38 2E 31 2E 31 00 04 08 31 36 38 2E 31 32 33 2E 32 33 34 2E 33 32 "
@@ -939,7 +937,16 @@
      schedule_delivery_time => <<"990823165343000R">>, sequence_number => 1,
      service_type => <<>>, source_addr => <<"168.0.0.1">>,
      source_addr_npi => <<"National">>, source_addr_ton => <<"International">>,
-     validity_period => <<"990922155242000R">>}}
+     validity_period => <<"990922155242000R">>}},
+  {"broadcast_sm_resp_#101",
+   "00 00 00 33 80 00 01 11 00 00 00 00 00 00 00 01 74 68 69 73 5F 63 6F 75 "
+   "6C 64 5F 62 65 5F 61 5F 6D 65 73 73 61 67 65 5F 69 64 00 06 07 00 04 00 "
+   "00 00 C1",
+   #{broadcast_error_status => ?ESME_RTLVNOTALLWD,
+     command_id => <<"broadcast_sm_resp">>,command_length => 51,
+     command_status => <<"ESME_ROK">>,
+     message_id => <<"this_could_be_a_message_id">>,
+     sequence_number => 1}}
 ]).
 
 -define(TESTS2,
