@@ -38,15 +38,7 @@ internal2json(_, V)                        -> V.
 pack(#{command_id := CmdId, command_status := Status, sequence_number := SeqNum} = SMPP) ->
     NewSMPP = maps:without([command_id, command_status, sequence_number], SMPP),
     Body = maps:fold(fun map_to_pl/3, [], NewSMPP),
-    case pack({CmdId, Status, SeqNum, Body}) of
-        {ok, PduBinParts} when is_list(PduBinParts) ->
-            {ok, list_to_binary(PduBinParts)};
-        Error -> Error
-    end;
-pack({CmdId, Status, SeqNum, Body} = SMPP)
-    when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
-         is_list(Body) ->
-    smpp_operation:pack(SMPP);
+    pack({CmdId, Status, SeqNum, Body});
 pack([{_,_}|_] = SMPP) ->
     CmdId = proplists:get_value(command_id, SMPP, '$notfound'),
     Status = proplists:get_value(command_status, SMPP, '$notfound'),
@@ -59,7 +51,11 @@ pack([{_,_}|_] = SMPP) ->
     Body2 = proplists:delete(command_status, Body1),
     Body3 = proplists:delete(sequence_number, Body2),
     Body = lists:foldl(fun pl_to_list/2, [], Body3),
-    pack({CmdId, Status, SeqNum, Body}).
+    pack({CmdId, Status, SeqNum, Body});
+pack({CmdId, Status, SeqNum, Body} = SMPP)
+    when is_integer(CmdId), is_integer(Status), is_integer(SeqNum),
+         is_list(Body) ->
+    smpp_operation:pack(SMPP).
 
 unpack(Bin) -> unpack(Bin, []).
 unpack_map(Bin) -> unpack(Bin, [return_maps]).
