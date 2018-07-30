@@ -58,6 +58,10 @@
     ct:pal(info, ?MAX_IMPORTANCE, "~p:~p:~p ===> "Format,
 [?MODULE, ?FUNCTION_NAME, ?LINE | Args])).
 
+-define(E(Format), ?D(Format, [])).
+-define(E(Format, Args),
+    io:format(user, "~p:~p:~p ===> "Format,
+[?MODULE, ?FUNCTION_NAME, ?LINE | Args])).
 -define(ESME, [
     "00000000",
     "00000001",

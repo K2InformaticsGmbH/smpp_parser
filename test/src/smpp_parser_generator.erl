@@ -4229,14 +4229,12 @@ create_dest(Number, Addr_Npi, Addr_Npi_Length, Addr_Ton, Addr_Ton_Length,
 %% Create operation.
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-create_operation(Rule, _CommandStatus, PDUBody) ->
+create_operation(Rule, CommandStatus, PDUBody) ->
     PDU = lists:append(
         [
             integer_2_octet(length(PDUBody) div 2 + 16, 4),
             integer_2_octet(?COMMAND_ID(Rule), 4),
-%% not used because of issue #25 (https://github.com/K2InformaticsGmbH/smpp_parser/issues/25)
-%%            CommandStatus,
-            "00000000",
+            CommandStatus,
             "00000001",
             PDUBody
         ]),
