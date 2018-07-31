@@ -61,37 +61,27 @@ sequence_number({_CmdId, _Status, SeqNum, _Body}) ->
 %%%-----------------------------------------------------------------------------
 %%% PDU EXPORTS
 %%%-----------------------------------------------------------------------------
-new_pdu(CmdId, 0, SeqNum, Body) ->
-    {CmdId,  0, SeqNum, Body};
-new_pdu(CmdId, Status, SeqNum, _Body) ->
-    {CmdId, Status, SeqNum, []}.
+new_pdu(CmdId, Status, SeqNum, Body) ->
+    {CmdId, Status, SeqNum, Body}.
 
-
-pack({CmdId, 0, SeqNum, Body}, PduType) ->
+pack({CmdId, Status, SeqNum, Body}, PduType) ->
     case pack_body(Body, PduType) of
         {ok, BodyL} ->
 		    BodyBin = list_to_binary(BodyL),
             Len = size(BodyBin) + 16,
-            {ok, <<Len:32, CmdId:32, 0:32, SeqNum:32, BodyBin/binary>>};
-        {error, Status} ->
-            {error, CmdId, Status, SeqNum}
-    end;
-%% Following clause is not required. Handle all statuses above
-pack({CmdId, Status, SeqNum, _BodyBin}, _PduType) ->
-    {ok, <<16:32, CmdId:32, Status:32, SeqNum:32>>}.
+            {ok, <<Len:32, CmdId:32, Status:32, SeqNum:32, BodyBin/binary>>};
+        {error, Error} ->
+            {error, CmdId, Error, SeqNum}
+    end.
 
-
-unpack(<<Len:32, CmdId:32, ?ESME_ROK:32, SeqNum:32, Body/binary>>, PduType)
+unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, PduType)
   when Len == size(Body) + 16 ->
     case unpack_body(Body, PduType) of
         {ok, BodyParams} ->
-            {ok, new_pdu(CmdId, ?ESME_ROK, SeqNum, BodyParams)};
-        {error, Status} ->
-            {error, CmdId, Status, SeqNum}
+            {ok, new_pdu(CmdId, Status, SeqNum, BodyParams)};
+        {error, Error} ->
+            {error, CmdId, Error, SeqNum}
     end;
-unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, _PduType)
-  when Len == size(Body) + 16 ->
-    {ok, new_pdu(CmdId, Status, SeqNum, [])};
 unpack(<<_Len:32, CmdId:32, _Status:32, SeqNum:32, _Body/binary>>, _PduType) ->
     {error, CmdId, ?ESME_RINVCMDLEN, SeqNum}.
 
