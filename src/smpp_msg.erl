@@ -1,6 +1,37 @@
 -module(smpp_msg).
 
--export([encode_ucs2/1, decode_ucs2/1, encode_latin1_ascii/1, decode_latin1_ascii/1]).
+-include("smpp_globals.hrl").
+
+-export([encode_msg/2, decode_msg/2]).
+% -export([encode_ucs2/1, decode_ucs2/1, encode_latin1_ascii/1, decode_latin1_ascii/1]).
+
+encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    encode_msg(smpp:enc(EncodingScheme), Msg);
+encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> encode_latin1_ascii(Msg);
+encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> encode_latin1_ascii(Msg);
+encode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> encode_latin1_ascii(Msg);
+encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> encode_ucs2(Msg);
+encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    encode_msg(EncodingScheme, binary_to_list(Msg));
+encode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        false -> base64:decode(Msg)
+    end.
+
+decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
+    decode_msg(smpp:enc(EncodingScheme), Msg);
+decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
+decode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> decode_latin1_ascii(Msg);
+decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> decode_latin1_ascii(Msg);
+decode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> decode_latin1_ascii(Msg);
+decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
+    decode_msg(EncodingScheme, binary_to_list(Msg));
+decode_msg(_, Msg) when is_list(Msg) ->
+    case io_lib:printable_list(Msg) of
+        true -> list_to_binary(Msg);
+        false -> base64:encode(Msg)
+    end.
 
 encode_ucs2(Msg) when is_binary(Msg) ->
     encode_ucs2(unicode:characters_to_list(Msg, unicode));
@@ -28,9 +59,6 @@ ucs2_to_utf16({cp, CPList}) ->
               (ucs2_to_utf16({cp, Rest}))/binary>>;
         ConvertedBin when is_binary(ConvertedBin) -> ConvertedBin
     end;
-% ucs2_to_utf16(Msg) when is_list(Msg) ->
-%     CPList = ucs2_to_utf16_cp(Msg, []),
-%     ucs2_to_utf16({cp, CPList}).
 ucs2_to_utf16(Msg) when is_list(Msg) ->
     case cut_udh(Msg) of
         {Udh, SM} ->
@@ -41,8 +69,6 @@ ucs2_to_utf16(Msg) when is_list(Msg) ->
             CPList = ucs2_to_utf16_cp(Msg, []),
             ucs2_to_utf16({cp, CPList})
     end.
-    % CPList = ucs2_to_utf16_cp(Msg, []),
-    % ucs2_to_utf16({cp, CPList}).
 
 cut_udh([5,0,3,R,C,N | Rest])       -> {[5,0,3,R,C,N],      Rest};
 cut_udh([6,8,4,RH,RL,C,N | Rest])   -> {[6,8,4,RH,RL,C,N],  Rest};
