@@ -67,7 +67,7 @@ new_pdu(CmdId, Status, SeqNum, Body) ->
 pack({CmdId, Status, SeqNum, Body}, PduType) ->
     case pack_body(Body, PduType) of
         {ok, BodyL} ->
-		    BodyBin = list_to_binary(BodyL),
+            BodyBin = list_to_binary(BodyL),
             Len = size(BodyBin) + 16,
             {ok, <<Len:32, CmdId:32, Status:32, SeqNum:32, BodyBin/binary>>};
         {error, Error} ->
