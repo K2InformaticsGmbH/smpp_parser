@@ -5,7 +5,7 @@
          internal2json/1, encode/1, decode/1, decode_bin/1, info/0]).
 
 -export([err/1, cmd/1, cmdstr/1, to_enum/1, from_enum/1, encode_msg/1,
-         decode_msg/1]).
+         decode_msg/1, enc/1]).
 
 -safe([unpack_map/1]).
 
@@ -272,44 +272,16 @@ decode_bin(Bin) when is_binary(Bin) ->
     end.
 
 encode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
-    Pdu#{<<"short_message">> => encode_msg(EncodingScheme, Msg)};
+    Pdu#{<<"short_message">> => smpp_msg:encode_msg(EncodingScheme, Msg)};
 encode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
-    Pdu#{short_message => encode_msg(EncodingScheme, Msg)};
+    Pdu#{short_message => smpp_msg:encode_msg(EncodingScheme, Msg)};
 encode_msg(Pdu) -> Pdu.
 
-encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
-    encode_msg(enc(EncodingScheme), Msg);
-encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> smpp_msg:encode_latin1_ascii(Msg);
-encode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> smpp_msg:encode_latin1_ascii(Msg);
-encode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> smpp_msg:encode_latin1_ascii(Msg);
-encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> smpp_msg:encode_ucs2(Msg);
-encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
-    encode_msg(EncodingScheme, binary_to_list(Msg));
-encode_msg(_, Msg) when is_list(Msg) ->
-    case io_lib:printable_list(Msg) of
-        true -> list_to_binary(Msg);
-        false -> base64:decode(Msg)
-    end.
-
 decode_msg(#{<<"data_coding">> := EncodingScheme, <<"short_message">> := Msg} = Pdu) ->
-    Pdu#{<<"short_message">> => decode_msg(EncodingScheme, Msg)};
+    Pdu#{<<"short_message">> => smpp_msg:decode_msg(EncodingScheme, Msg)};
 decode_msg(#{data_coding := EncodingScheme, short_message := Msg} = Pdu) ->
-    Pdu#{short_message => decode_msg(EncodingScheme, Msg)};
+    Pdu#{short_message => smpp_msg:decode_msg(EncodingScheme, Msg)};
 decode_msg(Pdu) -> Pdu.
-
-decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
-    decode_msg(enc(EncodingScheme), Msg);
-decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> smpp_msg:decode_ucs2(Msg);
-decode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> smpp_msg:decode_latin1_ascii(Msg);
-decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> smpp_msg:decode_latin1_ascii(Msg);
-decode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> smpp_msg:decode_latin1_ascii(Msg);
-decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
-    decode_msg(EncodingScheme, binary_to_list(Msg));
-decode_msg(_, Msg) when is_list(Msg) ->
-    case io_lib:printable_list(Msg) of
-        true -> list_to_binary(Msg);
-        false -> base64:encode(Msg)
-    end.
 
 to_enum(SMPP) when is_map(SMPP) ->
     maps:fold(
