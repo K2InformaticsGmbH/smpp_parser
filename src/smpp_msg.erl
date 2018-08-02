@@ -38,17 +38,13 @@ encode_ucs2(Msg) when is_list(Msg) ->
 decode_ucs2(Msg) when is_binary(Msg) ->
     decode_ucs2(binary_to_list(Msg));
 decode_ucs2(Msg) when is_list(Msg) ->
-    io:format("smppp_msg : ~p~nsize : ~p~n", [Msg, length(Msg)]),
     re:replace(ucs2_to_utf16(Msg), "\"", "\\\\\"", [global, {return, binary}]).
 
 decode_latin1_ascii(Msg) when is_binary(Msg) ->
     decode_latin1_ascii(unicode:characters_to_list(Msg, unicode));
-decode_latin1_ascii({error, List, Bin}) ->
-    io:format("smpp_msg : decode_latin1_ascii error Msg :~p ~p~n", [List, Bin]),
-    Msg1 = unicode:characters_to_binary(binary_to_list(Bin)),
-    re:replace(Msg1, "\"", "\\\\\"", [global, {return, binary}]);
+decode_latin1_ascii({error, _List, Bin}) ->
+    {error, {not_unicode, Bin}};
 decode_latin1_ascii(Msg) ->
-    io:format("smpp_msg : decode_latin1_ascii Msg : ~p~n", [Msg]),
     Msg1 = unicode:characters_to_binary(udh_to_escaped_utf8(Msg)),
     re:replace(Msg1, "\"", "\\\\\"", [global, {return, binary}]).
 
@@ -100,8 +96,7 @@ encode_latin1_ascii(Msg) when is_list(Msg) ->
                 Messages when is_list(Messages), length(Messages) > 1 ->
                     Messages
             catch
-                _:Exception ->
-                    io:format("!!! error encoding use ucs2 ~p~n", [Exception]),
+                _:_Exception ->
                     {error, ucs2_encoding}
             end
     end.
