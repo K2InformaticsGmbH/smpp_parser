@@ -3,8 +3,9 @@
 -include("smpp_globals.hrl").
 
 -export([encode_msg/2, decode_msg/2]).
-% -export([encode_ucs2/1, decode_ucs2/1, encode_latin1_ascii/1, decode_latin1_ascii/1]).
 
+encode_msg(_, <<>>) -> <<>>;
+encode_msg(_, "") -> "";
 encode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
     encode_msg(smpp:enc(EncodingScheme), Msg);
 encode_msg(?ENCODING_SCHEME_LATIN_1, Msg) -> encode_latin1_ascii(Msg);
@@ -13,12 +14,10 @@ encode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> encode_latin1_ascii(Msg);
 encode_msg(?ENCODING_SCHEME_UCS2, Msg) -> encode_ucs2(Msg);
 encode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
     encode_msg(EncodingScheme, binary_to_list(Msg));
-encode_msg(_, Msg) when is_list(Msg) ->
-    case io_lib:printable_list(Msg) of
-        true -> list_to_binary(Msg);
-        false -> base64:decode(Msg)
-    end.
+encode_msg(_, Msg) when is_list(Msg) -> base64:decode(Msg).
 
+decode_msg(_, <<>>) -> <<>>;
+decode_msg(_, "") -> "";
 decode_msg(EncodingScheme, Msg) when is_binary(EncodingScheme) ->
     decode_msg(smpp:enc(EncodingScheme), Msg);
 decode_msg(?ENCODING_SCHEME_UCS2, Msg) -> decode_ucs2(Msg);
@@ -27,11 +26,7 @@ decode_msg(?ENCODING_SCHEME_IA5_ASCII, Msg) -> decode_latin1_ascii(Msg);
 decode_msg(?ENCODING_SCHEME_MC_SPECIFIC, Msg) -> decode_latin1_ascii(Msg);
 decode_msg(EncodingScheme, Msg) when is_binary(Msg) ->
     decode_msg(EncodingScheme, binary_to_list(Msg));
-decode_msg(_, Msg) when is_list(Msg) ->
-    case io_lib:printable_list(Msg) of
-        true -> list_to_binary(Msg);
-        false -> base64:encode(Msg)
-    end.
+decode_msg(_, Msg) when is_list(Msg) -> base64:encode(Msg).
 
 encode_ucs2(Msg) when is_binary(Msg) ->
     encode_ucs2(unicode:characters_to_list(Msg, unicode));
@@ -48,7 +43,12 @@ decode_ucs2(Msg) when is_list(Msg) ->
 
 decode_latin1_ascii(Msg) when is_binary(Msg) ->
     decode_latin1_ascii(unicode:characters_to_list(Msg, unicode));
+decode_latin1_ascii({error, List, Bin}) ->
+    io:format("smpp_msg : decode_latin1_ascii error Msg :~p ~p~n", [List, Bin]),
+    Msg1 = unicode:characters_to_binary(binary_to_list(Bin)),
+    re:replace(Msg1, "\"", "\\\\\"", [global, {return, binary}]);
 decode_latin1_ascii(Msg) ->
+    io:format("smpp_msg : decode_latin1_ascii Msg : ~p~n", [Msg]),
     Msg1 = unicode:characters_to_binary(udh_to_escaped_utf8(Msg)),
     re:replace(Msg1, "\"", "\\\\\"", [global, {return, binary}]).
 
@@ -286,3 +286,201 @@ udh_to_escaped_utf8([6,8,4,RH,RL,C,N | Rest]) ->
 
 % No UDH headers detected
 udh_to_escaped_utf8(M) -> M.
+
+%% ===================================================================
+%% TESTS
+%% ===================================================================
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+encode_test_() ->
+    {inparallel,
+        [{Title, ?_assertEqual(Result, encode_msg(Encoding, Msg))}
+         || {Title, Encoding, Msg, Result} <-
+            [{"empty", <<"Latin 1 (ISO-8859-1)">>, <<>>, <<>>},
+             {"base64", <<"KS C 5601">>, base64:encode(<<"Test">>), <<"Test">>},
+             {"ia5_max", <<"IA5 (CCITT T.50)/ASCII (ANSI X3.4)">>, <<"äöüéèà€"/utf8>>,
+              <<16#E4,16#F6,16#FC,16#05,16#04,16#7F,16#1B,16#65>>},
+             {"ucs2_bigger_eur", <<"UCS2 (ISO/IEC-10646)">>, <<"Abc₭"/utf8>>,
+              unicode:characters_to_binary(
+                            <<"Abc₭"/utf8>>, utf8, utf16
+                )}
+            ]
+        ]
+    }.
+
+decode_test_() ->
+    {inparallel,
+        [{Title, ?_assertEqual(Result, decode_msg(Encoding, Msg))}
+         || {Title, Encoding, Msg, Result} <-
+            [{"empty", <<"Latin 1 (ISO-8859-1)">>, <<>>, <<>>},
+             {"base64", <<"KS C 5601">>, <<"Test">>, base64:encode(<<"Test">>)},
+            %  {"ia5_max", <<"IA5 (CCITT T.50)/ASCII (ANSI X3.4)">>,
+            %   <<16#E4,16#F6,16#FC,16#05,16#04,16#7F,16#1B,16#65>>,
+            %   <<"äöüéèà€"/utf8>>},
+             {"ucs2_bigger_eur", <<"UCS2 (ISO/IEC-10646)">>,
+              unicode:characters_to_binary(<<"Abc₭"/utf8>>, utf8, utf16),
+              <<"Abc₭"/utf8>>}
+            ]
+        ]
+    }.
+
+escape_latin1_length_test_() ->
+    % 64 + 64 + 27 + 1 (for €)
+    EscapeLatinOne136 =
+% 00   01   02   03   04   05   06   07   08   09   0A   0B   0C   0D   0E   0F
+       "£"  "$"  "¥"  "è"  "é"  "ù"  "ì"  "ò"  "Ç"  "\n" "Ø"       "\r" "Å"  "å"
+% 10   11   12   13   14   15   16   17   18   19   1A   1B   1C   1D   1E   1F
+  "Δ"  "_"  "Φ"  "Γ"  "Λ"  "Ω"  "Π"  "Ψ"  "Σ"  "Θ"  "Ξ"       "Æ"  "æ"  "ß"  "É"
+% 20   21   22   23   24   25   26   27   28   29   2A   2B   2C   2D   2E   2F
+  " "  "!"  "\"" "#"       "%"  "&"  "'"  "("  ")"  "*"  "+"  ","  "-"  "."  "/"
+% 30   31   32   33   34   35   36   37   38   39   3A   3B   3C   3D   3E   3F
+  "0"  "1"  "2"  "3"  "4"  "5"  "6"  "7"  "8"  "9"  ":"  ";"  "<"  "="  ">"  "?"
+% 40   41   42   43   44   45   46   47   48   49   4A   4B   4C   4D   4E   4F
+  "@"  "A"  "B"  "C"  "D"  "E"  "F"  "G"  "H"  "I"  "J"  "K"  "L"  "M"  "N"  "O"
+% 50   51   52   53   54   55   56   57   58   59   5A   5B   5C   5D   5E   5F
+  "P"  "Q"  "R"  "S"  "T"  "U"  "V"  "W"  "X"  "Y"  "Z"  "["  "\\" "]"  "^"
+% 60   61   62   63   64   65   66   67   68   69   6A   6B   6C   6D   6E   6F
+  "¿"  "a"  "b"  "c"  "d"  "e"  "f"  "g"  "h"  "i"  "j"  "k"  "l"  "m"  "n"  "o"
+% 70   71   72   73   74   75   76   77   78   79   7A   7B   7C   7D   7E   7F
+  "p"  "q"  "r"  "s"  "t"  "u"  "v"  "w"  "x"  "y"  "z"  "{"  "|"  "}"  "\~" "à"
+% 80   81   82   83   84   85   86   87   88   89   8A   8B   8C   8D   8E   8F
+% 90   91   92   93   94   95   96   97   98   99   9A   9B   9C   9D   9E   9F
+% A0   A1   A2   A3   A4   A5   A6   A7   A8   A9   AA   AB   AC   AD   AE   AF
+       "¡"            "¤"            "§"
+% B0   B1   B2   B3   B4   B5   B6   B7   B8   B9   BA   BB   BC   BD   BE   BF
+% C0   C1   C2   C3   C4   C5   C6   C7   C8   C9   CA   CB   CC   CD   CE   CF
+                      "Ä"
+% D0   D1   D2   D3   D4   D5   D6   D7   D8   D9   DA   DB   DC   DD   DE   DF
+       "Ñ"                      "Ö"                           "Ü"
+% E0   E1   E2   E3   E4   E5   E6   E7   E8   E9   EA   EB   EC   ED   EE   EF
+                      "ä"
+% F0   F1   F2   F3   F4   F5   F6   F7   F8   F9   FA   FB   FC   FD   FE   FF
+       "ñ"                      "ö"       "ø"                 "ü"
+% 1B   65
+       "€",
+    EscapeLatinOne145Codes = [
+% £      $      ¥      è      é      ù      ì      ò      Ç      \n     Ø
+  16#01, 16#02, 16#03, 16#04, 16#05, 16#06, 16#07, 16#08, 16#09, 16#0A, 16#0B,
+% \r     Å      å      Δ      _      Φ      Γ      Λ      Ω      Π      Ψ
+  16#0D, 16#0E, 16#0F, 16#10, 16#11, 16#12, 16#13, 16#14, 16#15, 16#16, 16#17,
+% Σ      Θ      Ξ      Æ      æ      ß      É      \s     !      "      #
+  16#18, 16#19, 16#1A, 16#1C, 16#1D, 16#1E, 16#1F, 16#20, 16#21, 16#22, 16#23,
+% %      &      '      (      )      *      +      ,      -      .
+  16#25, 16#26, 16#27, 16#28, 16#29, 16#2A, 16#2B, 16#2C, 16#2D, 16#2E,
+% /      0      1      2      3      4      5      6      7      8      9
+  16#2F, 16#30, 16#31, 16#32, 16#33, 16#34, 16#35, 16#36, 16#37, 16#38, 16#39,
+% :      ;      <      =      >      ?      @      A      B      C      D
+  16#3A, 16#3B, 16#3C, 16#3D, 16#3E, 16#3F, 16#40, 16#41, 16#42, 16#43, 16#44,
+% E      F      G      H      I      J      K      L      M      N      O
+  16#45, 16#46, 16#47, 16#48, 16#49, 16#4A, 16#4B, 16#4C, 16#4D, 16#4E, 16#4F,
+% P      Q      R      S      T      U      V      W      X      Y      Z
+  16#50, 16#51, 16#52, 16#53, 16#54, 16#55, 16#56, 16#57, 16#58, 16#59, 16#5A,
+% [      \      ]      ^      ¿      a      b      c      d      e
+  16#5B, 16#5C, 16#5D, 16#5E, 16#60, 16#61, 16#62, 16#63, 16#64, 16#65,
+% f      g      h      i      j      k      l      m      n      o      p
+  16#66, 16#67, 16#68, 16#69, 16#6A, 16#6B, 16#6C, 16#6D, 16#6E, 16#6F, 16#70,
+% q      r      s      t      u      v      w      x      y      z      {
+  16#71, 16#72, 16#73, 16#74, 16#75, 16#76, 16#77, 16#78, 16#79, 16#7A, 16#7B,
+% |      }      ~      à      ¡      ¤      §      Ä      Ñ
+  16#7C, 16#7D, 16#7E, 16#7F, 16#A1, 16#A4, 16#A7, 16#C4, 16#D1,
+% Ö      Ü      ä      ñ      ö      ø      ü             €
+  16#D6, 16#DC, 16#E4, 16#F1, 16#F6, 16#F8, 16#FC, 16#1B, 16#65
+    ],
+
+    {inparallel,
+        [{Title,
+            ?_assertEqual(
+                Target,
+                unicode_to_escaped_latin1(
+                    SubmitSm,
+                    {[[]], ?MAX_MSG_LENGTH_7BIT}
+                )
+            )}
+         || {Title, SubmitSm, Target} <-
+            [{"all chars in single segment", EscapeLatinOne136,
+                [list_to_binary(EscapeLatinOne145Codes)]},
+             {"two segments", EscapeLatinOne136
+                                ++ lists:duplicate(7,$a)
+                                ++ lists:duplicate(7,$b)
+                                ++ "€",
+                [list_to_binary(lists:duplicate(7,$b) ++ [16#1B,16#65]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(7,$a))]},
+             {"two segments doesn't split at double € bytes", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "€"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#1B, 16#65 | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments two double €€ bytes", EscapeLatinOne136
+                                ++ lists:duplicate(4,$a)
+                                ++ "€€"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#1B, 16#65 | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(4,$a)
+                                    ++ [16#1B, 16#65])]},
+
+             {"two segments doesn't split at [", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "["
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#5B | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at \\", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "\\"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#5C | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at ]", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "]"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#5D | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at ^", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "^"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#5E | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at {", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "{"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#7B | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at |", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "|"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#7C | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at }", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "}"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#7D | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]},
+             {"two segments doesn't split at \~", EscapeLatinOne136
+                                ++ lists:duplicate(6,$a)
+                                ++ "\~"
+                                ++ lists:duplicate(8,$b),
+                [list_to_binary([16#7E | lists:duplicate(8,$b)]),
+                 list_to_binary(EscapeLatinOne145Codes
+                                    ++ lists:duplicate(6,$a))]}
+            ]
+        ]
+    }.
+
+-endif. % TEST
