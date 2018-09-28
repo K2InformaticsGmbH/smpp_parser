@@ -84,7 +84,7 @@ unpack(<<Len:32, CmdId:32, ?ESME_ROK:32, SeqNum:32, Body/binary>>, PduType)
     end;
 unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, _PduType)
   when Len == size(Body) + 16 ->
-	    {ok, new_pdu(CmdId, Status, SeqNum, binary_to_list(Body))};
+    {ok, new_pdu(CmdId, Status, SeqNum, binary_to_list(Body))};
 unpack(<<_Len:32, CmdId:32, _Status:32, SeqNum:32, _Body/binary>>, _PduType) ->
     {error, CmdId, ?ESME_RINVCMDLEN, SeqNum}.
 
