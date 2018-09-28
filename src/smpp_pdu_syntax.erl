@@ -74,17 +74,17 @@ pack({CmdId, Status, SeqNum, Body}, PduType) ->
             {error, CmdId, Error, SeqNum}
     end.
 
-unpack(<<Len:32, CmdId:32, ?ESME_ROK:32, SeqNum:32, Body/binary>>, PduType)
+unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, PduType)
   when Len == size(Body) + 16 ->
     case unpack_body(Body, PduType) of
         {ok, BodyParams} ->
-            {ok, new_pdu(CmdId, ?ESME_ROK, SeqNum, BodyParams)};
+            {ok, new_pdu(CmdId, Status, SeqNum, BodyParams)};
         {error, Error} ->
-            {error, CmdId, Error, SeqNum}
+            case Status of
+                ?ESME_ROK -> {error, CmdId, Error, SeqNum};
+                Status -> {ok, new_pdu(CmdId, Status, SeqNum, [])}
+            end
     end;
-unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, _PduType)
-  when Len == size(Body) + 16 ->
-    {ok, new_pdu(CmdId, Status, SeqNum, binary_to_list(Body))};
 unpack(<<_Len:32, CmdId:32, _Status:32, SeqNum:32, _Body/binary>>, _PduType) ->
     {error, CmdId, ?ESME_RINVCMDLEN, SeqNum}.
 
