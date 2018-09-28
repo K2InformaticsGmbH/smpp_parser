@@ -80,7 +80,13 @@ unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, PduType)
         {ok, BodyParams} ->
             {ok, new_pdu(CmdId, Status, SeqNum, BodyParams)};
         {error, Error} ->
-            {error, CmdId, Error, SeqNum}
+            % SMPP Protocol Specification v3.4 compatibility
+            % Sections : 4.1.2, 4.1.4 and 4.4.2
+            %     Note: The PDU Body is not returned if the command_status field contains a non-zero value
+            case Status of
+                ?ESME_ROK -> {error, CmdId, Error, SeqNum};
+                Status -> {ok, new_pdu(CmdId, Status, SeqNum, [])}
+            end
     end;
 unpack(<<_Len:32, CmdId:32, _Status:32, SeqNum:32, _Body/binary>>, _PduType) ->
     {error, CmdId, ?ESME_RINVCMDLEN, SeqNum}.
