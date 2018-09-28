@@ -80,6 +80,8 @@ unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, PduType)
         {ok, BodyParams} ->
             {ok, new_pdu(CmdId, Status, SeqNum, BodyParams)};
         {error, Error} ->
+            %% 3.4 smpp spec compatibality check to support pdu's witout
+            %% body when the status is negative
             case Status of
                 ?ESME_ROK -> {error, CmdId, Error, SeqNum};
                 Status -> {ok, new_pdu(CmdId, Status, SeqNum, [])}
