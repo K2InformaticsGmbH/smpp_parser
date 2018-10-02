@@ -173,10 +173,10 @@ encode_std(undefined, #standard{default = undefined, error = undefined}) ->
 	{error, ?ESME_RUNKNOWNERR};
 encode_std(undefined, #standard{default = undefined, error = Error}) ->
 	{error, Error};
+% SMPP Protocol Specification v3.4 compatibility
+% Sections : 4.1.2, 4.1.4 and 4.4.2
+%     Empty/null message_id (00) is not added if not found in body
 encode_std(undefined, #standard{name = message_id}) ->
-    % SMPP Protocol Specification v3.4 compatibility
-    % Sections : 4.1.2, 4.1.4 and 4.4.2
-    %     Empty/null message_id (00) is not added if not found in body
     {ok, []};
 encode_std(undefined, #standard{domain = Domain, default = Default}) ->
     % Assumes default values should always be OK...if not, it'll be easier to
