@@ -192,7 +192,8 @@
               ?USSD_SERVICE_OP])).
 
 -define(SUBMIT_SM_RESP,
-        ?PDU([?MESSAGE_ID],
+        % ?PDU([?MESSAGE_ID],
+        ?PDU([?MESSAGE_ID_EMPTY],
              [],
              [?ADDITIONAL_STATUS_INFO_TEXT,
               ?CONGESTION_STATE,

@@ -236,6 +236,12 @@
                   ?NULL_C_OCTET_STRING,
                   ?ESME_RINVMSGID)).
 
+-define(MESSAGE_ID_EMPTY,
+        ?STANDARD(message_id,
+                  ?MESSAGE_ID_DOMAIN,
+                  empty,
+                  ?ESME_RINVMSGID)).
+
 %% message_state
 %%
 %% %@doc Specifies the status of the queried short message.  Integer, 1 octet
