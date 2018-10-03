@@ -71,7 +71,13 @@ pack({CmdId, Status, SeqNum, Body}, PduType) ->
             Len = size(BodyBin) + 16,
             {ok, <<Len:32, CmdId:32, Status:32, SeqNum:32, BodyBin/binary>>};
         {error, Error} ->
-            {error, CmdId, Error, SeqNum}
+            % SMPP Protocol Specification v3.4 compatibility
+            % Sections : 4.1.2, 4.1.4 and 4.4.2
+            %     Note: The PDU Body is not returned if the command_status field contains a non-zero value
+            case Status of
+                ?ESME_ROK -> {error, CmdId, Error, SeqNum};
+                Status -> {ok, <<16:32, CmdId:32, Status:32, SeqNum:32>>}
+            end
     end.
 
 unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, PduType)
