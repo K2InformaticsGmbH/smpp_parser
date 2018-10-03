@@ -823,25 +823,28 @@ err(undefined)                      -> err(?ESME_RUNKNOWNERR).
                      command_status => statusstr(?ESME_ROK),
                      sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => <<>>}).
+-define(M_MSG_ID(_Id), ?BASE(_Id)#{message_id => <<>>}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => <<>>}).
+
 info() ->
     #{templates =>
         #{unbind                    => ?BASE(cmd(unbind)),
-          query_sm                  => ?BASE(cmd(query_sm)),
-          replace_sm                => ?BASE(cmd(replace_sm)),
+          query_sm                  => ?M_MSG_ID(cmd(query_sm)),
+          replace_sm                => ?M_MSG_ID(cmd(replace_sm)),
           outbind                   => ?M_SYS_ID(cmd(outbind)),
           enquire_link              => ?BASE(cmd(enquire_link)),
           data_sm                   => ?M_DST_ADDR(cmd(data_sm)),
-          cancel_sm                 => ?M_DST_ADDR(cmd(cancel_sm)),
+          cancel_sm                 => ?M_DST_ADDR(cmd(cancel_sm))
+                                            #{message_id => <<>>},
           submit_sm                 => ?M_DST_ADDR(cmd(submit_sm)),
           deliver_sm                => ?M_DST_ADDR(cmd(deliver_sm)),
           bind_receiver             => ?M_SYS_ID(cmd(bind_receiver)),
           alert_notification        => ?BASE(cmd(alert_notification)),
-          query_broadcast_sm        => ?BASE(cmd(query_broadcast_sm)),
-          cancel_broadcast_sm       => ?BASE(cmd(cancel_broadcast_sm)),
+          query_broadcast_sm        => ?M_MSG_ID(cmd(query_broadcast_sm)),
+          cancel_broadcast_sm       => ?M_MSG_ID(cmd(cancel_broadcast_sm)),
           bind_transmitter          => ?M_SYS_ID(cmd(bind_transmitter)),
           bind_transceiver          => ?M_SYS_ID(cmd(bind_transceiver)),
-          broadcast_sm              => ?BASE(cmd(broadcast_sm))
+          broadcast_sm              => ?M_MSG_ID(cmd(broadcast_sm))
                                             #{broadcast_area_identifier =>
                                                 [#{details => <<>>, format => 0}],
                                               broadcast_content_type =>
@@ -853,22 +856,22 @@ info() ->
                                                     #{dest_address => <<>>},
 
           unbind_resp               => ?BASE(cmd(unbind_resp)),
-          data_sm_resp              => ?BASE(cmd(data_sm_resp)),
+          data_sm_resp              => ?M_MSG_ID(cmd(data_sm_resp)),
           generic_nack              => ?BASE(cmd(generic_nack)),
-          query_sm_resp             => ?BASE(cmd(query_sm_resp)),
-          submit_sm_resp            => ?BASE(cmd(submit_sm_resp)),
+          query_sm_resp             => ?M_MSG_ID(cmd(query_sm_resp)),
+          submit_sm_resp            => ?M_MSG_ID(cmd(submit_sm_resp)),
           cancel_sm_resp            => ?BASE(cmd(cancel_sm_resp)),
-          deliver_sm_resp           => ?BASE(cmd(deliver_sm_resp)),
+          deliver_sm_resp           => ?M_MSG_ID(cmd(deliver_sm_resp)),
           replace_sm_resp           => ?BASE(cmd(replace_sm_resp)),
-          broadcast_sm_resp         => ?BASE(cmd(broadcast_sm_resp)),
+          broadcast_sm_resp         => ?M_MSG_ID(cmd(broadcast_sm_resp)),
           enquire_link_resp         => ?BASE(cmd(enquire_link_resp)),
           bind_receiver_resp        => ?M_SYS_ID(cmd(bind_receiver_resp)),
           cancel_broadcast_sm_resp  => ?BASE(cmd(cancel_broadcast_sm_resp)),
           bind_transceiver_resp     => ?M_SYS_ID(cmd(bind_transceiver_resp)),
           bind_transmitter_resp     => ?M_SYS_ID(cmd(bind_transmitter_resp)),
-          submit_multi_resp         => ?BASE(cmd(submit_multi_resp))
+          submit_multi_resp         => ?M_MSG_ID(cmd(submit_multi_resp))
                                                        #{unsuccess_sme => <<>>},
-          query_broadcast_sm_resp   => ?BASE(cmd(query_broadcast_sm_resp))
+          query_broadcast_sm_resp   => ?M_MSG_ID(cmd(query_broadcast_sm_resp))
                                                     #{broadcast_area_identifier =>
                                                         [#{details => <<>>, format => 0}],
                                                       broadcast_area_success => [0],
