@@ -823,7 +823,6 @@ err(undefined)                      -> err(?ESME_RUNKNOWNERR).
                      command_status => statusstr(?ESME_ROK),
                      sequence_number => 0}).
 -define(M_SYS_ID(_Id), ?BASE(_Id)#{system_id => <<>>}).
--define(M_MSG_ID(_Id), ?BASE(_Id)#{message_id => <<>>}).
 -define(M_DST_ADDR(_Id), ?BASE(_Id)#{destination_addr => <<>>}).
 
 info() ->
