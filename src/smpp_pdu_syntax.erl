@@ -92,7 +92,7 @@ unpack(<<Len:32, CmdId:32, ?ESME_ROK:32, SeqNum:32, Body/binary>>, PduType)
 %     Note: The PDU Body is not returned if the command_status field contains a non-zero value
 unpack(<<Len:32, CmdId:32, Status:32, SeqNum:32, Body/binary>>, _PduType)
   when Len == size(Body) + 16 ->
-      {ok, new_pdu(CmdId, Status, SeqNum, [])};
+    {ok, new_pdu(CmdId, Status, SeqNum, [])};
 unpack(<<_Len:32, CmdId:32, _Status:32, SeqNum:32, _Body/binary>>, _PduType) ->
     {error, CmdId, ?ESME_RINVCMDLEN, SeqNum}.
 
