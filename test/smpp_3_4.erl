@@ -23,16 +23,15 @@
 
 packunpack_test_() ->
     {inparallel,
-     [{T, fun() -> packunpack(Pdu, Parsed) end}
+     [{T,
+	  	fun() ->
+		  	Bin = hex2bin(Pdu),
+			?assertEqual({ok, Parsed}, smpp_operation:unpack(Bin)),
+			?assertEqual({ok, Bin}, smpp_operation:pack(Parsed))
+		end}
       || {T, Pdu, Parsed} <- ?TESTS]
     }.
 
 hex2bin([]) -> <<>>;
 hex2bin([A,B|Rest]) ->
 	<<(list_to_integer([A,B], 16)), (hex2bin(Rest))/binary>>.
-
-packunpack(Pdu, Parsed) ->
-	Bin = hex2bin(Pdu),
-	?assertEqual({ok, Parsed}, smpp_operation:unpack(Bin)),
-	Packed = smpp_operation:pack(Parsed),
-	?assertEqual({ok, Bin}, Packed).
