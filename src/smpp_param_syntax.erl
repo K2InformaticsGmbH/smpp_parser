@@ -177,7 +177,7 @@ encode_std(undefined, #standard{default = undefined, error = Error}) ->
 % Sections : 4.1.2, 4.1.4 and 4.4.2
 %     Empty/null message_id (00) is not added if not found in body
 encode_std(undefined, #standard{name = message_id}) ->
-    {ok, []};
+    {ok, <<>>};
 encode_std(undefined, #standard{domain = Domain, default = Default}) ->
     % Assumes default values should always be OK...if not, it'll be easier to
     % review the default definitions rather than touching this clause.
