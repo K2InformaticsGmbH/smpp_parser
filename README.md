@@ -1,5 +1,11 @@
 # smpp_parser
 
-[![Build Status](https://travis-ci.org/K2InformaticsGmbH/smpp_parser.svg?branch=master)](https://travis-ci.org/K2InformaticsGmbH/smpp_parser) [![Coverage Status](https://coveralls.io/repos/github/K2InformaticsGmbH/smpp_parser/badge.svg?branch=master)](https://coveralls.io/github/K2InformaticsGmbH/smpp_parser?branch=master)
+![Travis (.org)](https://img.shields.io/travis/K2InformaticsGmbH/smpp_parser.svg)
+![Coveralls github](https://img.shields.io/coveralls/github/K2InformaticsGmbH/smpp_parser.svg)
+![GitHub](https://img.shields.io/github/license/K2InformaticsGmbH/smpp_parser.svg)
+![GitHub release](https://img.shields.io/github/release/K2InformaticsGmbH/smpp_parser.svg)
+![GitHub Release Date](https://img.shields.io/github/release-date/K2InformaticsGmbH/smpp_parser.svg)
+![GitHub commits since latest release](https://img.shields.io/github/commits-since/K2InformaticsGmbH/smpp_parser/2.0.1.svg)
+
 
 A parser for SMPP protocol PDUs
